@@ -1,1 +1,9 @@
 /aws
+node_modules/
+.next/
+out/
+engine/dist/
+/data/
+*.tsbuildinfo
+__pycache__/
+.DS_Store

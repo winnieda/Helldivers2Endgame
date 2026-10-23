@@ -1,0 +1,13 @@
+{
+  "name": "@hd2e/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Helldivers 2 Endgame economic engine: catalog, dynamic pricing, game rules and the squad simulator. Shared by the web app, the CLI and (later) the price-update Lambda.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "tsc -p . && node --test dist/test/",
+    "market": "tsc -p . && node dist/cli/market.js",
+    "sim": "tsc -p . && node dist/cli/sim.js"
+  }
+}

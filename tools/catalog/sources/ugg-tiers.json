@@ -1,0 +1,1893 @@
+{
+ "fetched": "2026-10-23",
+ "pages": {
+  "primary": {
+   "origin": "https://web.archive.org/web/20261006222110id_/https://u.gg/hd2/tier-list/helldivers-2-primary-weapons-tier-list",
+   "cols": [
+    "Primary Weapon",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "DPS",
+    "Weapon Type",
+    "Armor Pen"
+   ],
+   "rows": [
+    {
+     "Primary Weapon": "CB-9 Explosive Crossbow",
+     "vs Automatons": "OP",
+     "vs Terminids": "OP",
+     "vs Illuminate": "OP",
+     "DPS": "516",
+     "Weapon Type": "Explosive",
+     "Armor Pen": "3.Med",
+     "Source": "Democratic Detonation"
+    },
+    {
+     "Primary Weapon": "R-36 Eruptor",
+     "vs Automatons": "OP",
+     "vs Terminids": "OP",
+     "vs Illuminate": "OP",
+     "DPS": "853.12",
+     "Weapon Type": "Explosive",
+     "Armor Pen": "4.Heavy",
+     "Source": "Democratic Detonation"
+    },
+    {
+     "Primary Weapon": "PLAS-101 Purifier",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "DPS": "2916",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Polar Patriots"
+    },
+    {
+     "Primary Weapon": "AR-2 Coyote",
+     "vs Automatons": "A",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "DPS": "750",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Dust Devils"
+    },
+    {
+     "Primary Weapon": "SG-8 Punisher Plasma",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "DPS": "299.99",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Cutting Edge"
+    },
+    {
+     "Primary Weapon": "PLAS-1 Scorcher",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "DPS": "1166",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "DBS-2 Double Freedom",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "DPS": "1680",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "3.Med",
+     "Source": "Superstore"
+    },
+    {
+     "Primary Weapon": "ARC-12 Blitzer",
+     "vs Automatons": "D",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "DPS": "333",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Cutting Edge"
+    },
+    {
+     "Primary Weapon": "SG-97 Sweeper",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "DPS": "1260",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "3.Med",
+     "Source": "Superstore"
+    },
+    {
+     "Primary Weapon": "SMG-203 Gallant",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "DPS": "1495",
+     "Weapon Type": "SMG",
+     "Armor Pen": "3.Med",
+     "Source": "Exo Experts"
+    },
+    {
+     "Primary Weapon": "LAS-12 Sai",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "DPS": "1066",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Superstore"
+    },
+    {
+     "Primary Weapon": "LAS-13 Trident",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1800",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "2.Light",
+     "Source": "Siege Breakers"
+    },
+    {
+     "Primary Weapon": "VG-70 Variable",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1062",
+     "Weapon Type": "Special",
+     "Armor Pen": "2.Light",
+     "Source": "Control Group"
+    },
+    {
+     "Primary Weapon": "LAS-17 Double-Edge Sickle",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "816",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "4.Heavy",
+     "Source": "Servants of Freedom"
+    },
+    {
+     "Primary Weapon": "JAR-5 Dominator",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1145",
+     "Weapon Type": "Special",
+     "Armor Pen": "3.Med",
+     "Source": "Steeled Veterans"
+    },
+    {
+     "Primary Weapon": "BR-14 Adjudicator",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "DPS": "870",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Democratic Detonation"
+    },
+    {
+     "Primary Weapon": "AR-23P Liberator Penetrator",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "DPS": "693",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "SMG-32 Reprimand",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1143",
+     "Weapon Type": "SMG",
+     "Armor Pen": "3.Med",
+     "Source": "Truth Enforcers"
+    },
+    {
+     "Primary Weapon": "AR-61 Tenderizer",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1487",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Polar Patriots"
+    },
+    {
+     "Primary Weapon": "AR/GL-21 One-Two",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "DPS": "1029",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Python Commandos"
+    },
+    {
+     "Primary Weapon": "AR-23 Liberator",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "960",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Starter Weapon"
+    },
+    {
+     "Primary Weapon": "AR-23A Liberator Carbine",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1380",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Viper Commandos"
+    },
+    {
+     "Primary Weapon": "SG-20 Halt",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "DPS": "513",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "3.Med",
+     "Source": "Truth Enforcers"
+    },
+    {
+     "Primary Weapon": "MP-98 Knight",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "2070",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2.Light",
+     "Source": "Super Citizen Edition"
+    },
+    {
+     "Primary Weapon": "AR-32 Pacifier",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "C",
+     "DPS": "640",
+     "Weapon Type": "SMG",
+     "Armor Pen": "3.Med",
+     "Source": "Force of Law"
+    },
+    {
+     "Primary Weapon": "SG-225IE Breaker Incendiary",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1200",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Steeled Veterans"
+    },
+    {
+     "Primary Weapon": "SG-225 Breaker",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1650",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "SG-451 Cookout",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "DPS": "426",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Freedom’s Flame"
+    },
+    {
+     "Primary Weapon": "SG-8 Punisher",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "C",
+     "DPS": "540",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "MA5C Assault Rifle",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "960",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Halo: ODST"
+    },
+    {
+     "Primary Weapon": "LAS-5 Scythe",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "350",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "SMG/FLAM-34 Stoker",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "S",
+     "DPS": "910",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2. Light",
+     "Source": "Entrenched Division"
+    },
+    {
+     "Primary Weapon": "AR-11 Arbitrator",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "1400",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Ironclad Democracy"
+    },
+    {
+     "Primary Weapon": "GL-15 Evictor",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "DPS": "490",
+     "Weapon Type": "Explosive",
+     "Armor Pen": "3.Med",
+     "Source": "Ironclad Democracy"
+    },
+    {
+     "Primary Weapon": "PLAS-39 Accelerator Rifle",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "DPS": "3208",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Righteous Revenants"
+    },
+    {
+     "Primary Weapon": "AR-59 Suppressor",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "DPS": "1133",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Redacted Regiment"
+    },
+    {
+     "Primary Weapon": "LAS-16 Sickle",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "DPS": "750",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "2.Light",
+     "Source": "Cutting Edge"
+    },
+    {
+     "Primary Weapon": "FLAM-66 Torcher",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "S",
+     "DPS": "150",
+     "Weapon Type": "Special",
+     "Armor Pen": "4.Heavy",
+     "Source": "Freedom’s Flame"
+    },
+    {
+     "Primary Weapon": "M7S SMG",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "DPS": "1308",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2.Light",
+     "Source": "Halo: ODST"
+    },
+    {
+     "Primary Weapon": "StA-52 Assault Rifle",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "DPS": "1185",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Righteous Revenants"
+    },
+    {
+     "Primary Weapon": "StA-11 SMG",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "DPS": "1575",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2.Light",
+     "Source": "Righteous Revenants"
+    },
+    {
+     "Primary Weapon": "M90A Shotgun",
+     "vs Automatons": "D",
+     "vs Terminids": "B",
+     "vs Illuminate": "C",
+     "DPS": "806",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Halo: ODST"
+    },
+    {
+     "Primary Weapon": "SG-8S Slugger",
+     "vs Automatons": "D",
+     "vs Terminids": "B",
+     "vs Illuminate": "D",
+     "DPS": "440",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "3.Med",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "R-4 Hyena",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "DPS": "712.5",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Campaign Reward Celestial Fence"
+    },
+    {
+     "Primary Weapon": "R-72 Censor",
+     "vs Automatons": "S",
+     "vs Terminids": "C",
+     "vs Illuminate": "A",
+     "DPS": "1100",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Redacted Regiment"
+    },
+    {
+     "Primary Weapon": "R-63 Diligence",
+     "vs Automatons": "S",
+     "vs Terminids": "C",
+     "vs Illuminate": "A",
+     "DPS": "962",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "R-2 Amendment",
+     "vs Automatons": "A",
+     "vs Terminids": "C",
+     "vs Illuminate": "A",
+     "DPS": "1600",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Masters of Ceremony"
+    },
+    {
+     "Primary Weapon": "R-63CS Diligence Counter Sniper",
+     "vs Automatons": "A",
+     "vs Terminids": "C",
+     "vs Illuminate": "B",
+     "DPS": "1166",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "SMG-37 Defender",
+     "vs Automatons": "C",
+     "vs Terminids": "C",
+     "vs Illuminate": "B",
+     "DPS": "953",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "SG-225SP Breaker SPRAY & PRAY",
+     "vs Automatons": "C",
+     "vs Terminids": "C",
+     "vs Illuminate": "B",
+     "DPS": "1320",
+     "Weapon Type": "Shotgun",
+     "Armor Pen": "2.Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Primary Weapon": "R-6 Deadeye",
+     "vs Automatons": "C",
+     "vs Terminids": "C",
+     "vs Illuminate": "B",
+     "DPS": "500",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Borderline Justice"
+    },
+    {
+     "Primary Weapon": "SMG-72 Pummeler",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "DPS": "672",
+     "Weapon Type": "SMG",
+     "Armor Pen": "2.Light",
+     "Source": "Polar Patriots"
+    },
+    {
+     "Primary Weapon": "AR-23C Liberator Concussive",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "DPS": "500",
+     "Weapon Type": "Assault Rifle",
+     "Armor Pen": "2.Light",
+     "Source": "Steeled Veterans"
+    },
+    {
+     "Primary Weapon": "R-2124 Constitution",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "DPS": "180",
+     "Weapon Type": "Marksman Rifle",
+     "Armor Pen": "3.Med",
+     "Source": "Starter Weapon"
+    },
+    {
+     "Primary Weapon": "R/40-K Hot-Shot Marksman Rifle",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "C",
+     "DPS": "962",
+     "Weapon Type": "Energy-Based",
+     "Armor Pen": "3.Med",
+     "Source": "Castellan’s Creed"
+    }
+   ]
+  },
+  "secondary": {
+   "origin": "https://web.archive.org/web/20261006222111id_/https://u.gg/hd2/tier-list/helldivers-2-secondary-weapons-tier-list",
+   "cols": [
+    "Secondary Weapon",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "AP"
+   ],
+   "rows": [
+    {
+     "Secondary Weapon": "GP-20 Ultimatum",
+     "vs Automatons": "OP",
+     "vs Terminids": "OP",
+     "vs Illuminate": "A",
+     "AP": "6. Anti-Tank",
+     "Source": "Servants of Freedom"
+    },
+    {
+     "Secondary Weapon": "GP-31 Grenade Pistol",
+     "vs Automatons": "S",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "AP": "3. Medium",
+     "Source": "Democratic Detonation"
+    },
+    {
+     "Secondary Weapon": "P/40-K Bolt Pistol",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "AP": "4. Heavy",
+     "Source": "Castellan’s Creed"
+    },
+    {
+     "Secondary Weapon": "LAS-58 Talon",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "AP": "3. Medium",
+     "Source": "Borderline Justice"
+    },
+    {
+     "Secondary Weapon": "P-4 Senator",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "AP": "4. Heavy",
+     "Source": "Steeled Veterans"
+    },
+    {
+     "Secondary Weapon": "P-34 Breacher",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "AP": "7.Anti-Tank",
+     "Source": "Ironclad Democracy"
+    },
+    {
+     "Secondary Weapon": "PLAS-15 Loyalist",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "S",
+     "AP": "3. Medium",
+     "Source": "Truth Enforcers"
+    },
+    {
+     "Secondary Weapon": "P-72 Crisper",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "S+",
+     "AP": "4. Heavy",
+     "Source": "Freedom’s Flame"
+    },
+    {
+     "Secondary Weapon": "P-113 Verdict",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "3. Medium",
+     "Source": "Polar Patriots"
+    },
+    {
+     "Secondary Weapon": "P-69 Veto",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "3. Medium",
+     "Source": "Entrenched Division"
+    },
+    {
+     "Secondary Weapon": "P-35 Re-Educator",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "4. Heavy",
+     "Source": "Redacted Regiment"
+    },
+    {
+     "Secondary Weapon": "P-19 Redeemer",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "2. Light",
+     "Source": "Helldivers Mobilize"
+    },
+    {
+     "Secondary Weapon": "P-92 Warrant",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "3. Medium",
+     "Source": "Superstore"
+    },
+    {
+     "Secondary Weapon": "P-11 Stim Pistol",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "AP": "0. None",
+     "Source": "Chemical Agents"
+    },
+    {
+     "Secondary Weapon": "P-33 Missile Pistol",
+     "vs Automatons": "S",
+     "vs Terminids": "A",
+     "vs Illuminate": "S",
+     "AP": "5. Anti-Tank",
+     "Source": "Exo Experts"
+    },
+    {
+     "Secondary Weapon": "M6C-SOCOM",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "AP": "2. Light",
+     "Source": "Halo: ODST"
+    },
+    {
+     "Secondary Weapon": "SG-22 Bushwhacker",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "C",
+     "AP": "2. Light",
+     "Source": "Viper Commandos"
+    },
+    {
+     "Secondary Weapon": "CQC-2 Saber",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "AP": "3. Medium",
+     "Source": "Masters of Ceremony"
+    },
+    {
+     "Secondary Weapon": "CQC-5 Combat Hatchet",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "AP": "3. Medium",
+     "Source": "Superstore"
+    },
+    {
+     "Secondary Weapon": "CQC-42 Machete",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "AP": "3. Medium",
+     "Source": "Superstore"
+    },
+    {
+     "Secondary Weapon": "P-2 Peacemaker",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "AP": "2. Light",
+     "Source": "Starter Weapon"
+    },
+    {
+     "Secondary Weapon": "CQC-19 Stun Lance",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "AP": "3. Medium",
+     "Source": "Urban Legends"
+    },
+    {
+     "Secondary Weapon": "CQC-30 Stun Baton",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "AP": "3. Medium",
+     "Source": "Superstore"
+    },
+    {
+     "Secondary Weapon": "LAS-7 Dagger",
+     "vs Automatons": "C",
+     "vs Terminids": "C",
+     "vs Illuminate": "B",
+     "AP": "2. Light",
+     "Source": "Cutting Edge"
+    },
+    {
+     "Secondary Weapon": "CQC-73 Entrenchment Tool",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "AP": "3. Medium",
+     "Source": "Entrenched Division"
+    }
+   ]
+  },
+  "throwable": {
+   "origin": "https://web.archive.org/web/20261006222111id_/https://u.gg/hd2/tier-list/helldivers-2-throwables-tier-list",
+   "cols": [
+    "Throwables",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Source",
+    "Demo Force",
+    "AP"
+   ],
+   "rows": [
+    {
+     "Throwables": "G-123 Thermite",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Democratic Detonation",
+     "Demo Force": "30",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Throwables": "G-13 Incendiary Impact",
+     "vs Automatons": "B",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Polar Patriots",
+     "Demo Force": "30",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-10 Incendiary",
+     "vs Automatons": "B",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Steeled Veterans",
+     "Demo Force": "30",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-4 Gas",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Chemical Agents",
+     "Demo Force": "30",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Throwables": "TM-1 Lure Mine",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Redacted Regiment",
+     "Demo Force": "30",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Throwables": "G-16 Impact",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Helldivers Mobilize",
+     "Demo Force": "30",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "TED-63 Dynamite",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Borderline Justice",
+     "Demo Force": "40",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-23 Stun",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "C",
+     "Source": "Cutting Edge",
+     "Demo Force": "0",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Throwables": "G/SH-39 Shield",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Siege Breakers",
+     "Demo Force": "20",
+     "AP": "0"
+    },
+    {
+     "Throwables": "G-8 Immolation",
+     "vs Automatons": "C",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Ironclad Democracy",
+     "Demo Force": "N/A",
+     "AP": "N/A"
+    },
+    {
+     "Throwables": "G-60 Anti-Tank Seeker",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "B",
+     "Source": "Ironclad Democracy",
+     "Demo Force": "N/A",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Throwables": "G/40-K Melta Mine",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Castellan’s Creed",
+     "Demo Force": "10",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Throwables": "G-142 Pyrotech",
+     "vs Automatons": "S",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Masters of Ceremony",
+     "Demo Force": "30",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Throwables": "G-6 Frag",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Helldivers Mobilize",
+     "Demo Force": "20",
+     "AP": "3. Medium"
+    },
+    {
+     "Throwables": "G-12 High Explosive",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Starter Grenade",
+     "Demo Force": "30",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-7 Pineapple",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Dust Devils",
+     "Demo Force": "30",
+     "AP": "3. Medium"
+    },
+    {
+     "Throwables": "G-48 Giga Grenade",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Entrenched Division",
+     "Demo Force": "40",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Throwables": "G-50 Seeker",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Source": "Servants of Freedom",
+     "Demo Force": "30",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-31 Arc",
+     "vs Automatons": "C",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "Source": "Control Group",
+     "Demo Force": "0",
+     "AP": "4. Heavy"
+    },
+    {
+     "Throwables": "G-109 Urchin",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "C",
+     "Source": "Force of Law",
+     "Demo Force": "0",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Throwables": "K-2 Throwing Knife",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Viper Commandos",
+     "Demo Force": "10",
+     "AP": "3. Medium"
+    },
+    {
+     "Throwables": "G-89 Smokecreen",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Superstore",
+     "Demo Force": "0",
+     "AP": "0"
+    },
+    {
+     "Throwables": "G-3 Smoke",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Helldivers Mobilize",
+     "Demo Force": "0",
+     "AP": "0"
+    }
+   ]
+  },
+  "orbital": {
+   "origin": "https://web.archive.org/web/20261006222113id_/https://u.gg/hd2/tier-list/orbital-stratagem-tier-list",
+   "cols": [
+    "Orbital Stratagem",
+    "Source",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Cooldown (seconds)"
+   ],
+   "rows": [
+    {
+     "Orbital Stratagem": "Orbital Precision Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Cooldown (seconds)": "80s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Gatling Barrage",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "A",
+     "Cooldown (seconds)": "70s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Gas Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S",
+     "Cooldown (seconds)": "75s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Airburst Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "A",
+     "vs Terminids": "S+",
+     "vs Illuminate": "A",
+     "Cooldown (seconds)": "100s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Laser",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Cooldown (seconds)": "300s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Napalm Barrage",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Cooldown (seconds)": "240s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Railcannon Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "D",
+     "Cooldown (seconds)": "180s"
+    },
+    {
+     "Orbital Stratagem": "Orbital 120mm HE Barrage",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Cooldown (seconds)": "180s"
+    },
+    {
+     "Orbital Stratagem": "Orbital EMS Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "D",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Cooldown (seconds)": "75s"
+    },
+    {
+     "Orbital Stratagem": "Orbital 380mm HE Barrage",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "C",
+     "Cooldown (seconds)": "240s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Walking Barrage",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Cooldown (seconds)": "240s"
+    },
+    {
+     "Orbital Stratagem": "Orbital Smoke Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Cooldown (seconds)": "75s"
+    }
+   ]
+  },
+  "eagle": {
+   "origin": "https://web.archive.org/web/20261006222111id_/https://u.gg/hd2/tier-list/eagle-stratagem-tier-list",
+   "cols": [
+    "Eagle Stratagems",
+    "Source",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Uses per Rearm"
+   ],
+   "rows": [
+    {
+     "Eagle Stratagems": "Eagle Strafing Run",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Uses per Rearm": "Standard: 4Upgraded: 5"
+    },
+    {
+     "Eagle Stratagems": "Eagle Airstrike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "A",
+     "Uses per Rearm": "Standard: 2Upgraded: 3"
+    },
+    {
+     "Eagle Stratagems": "Eagle 500kg Bomb",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "B",
+     "Uses per Rearm": "Standard: 1Upgraded: 2"
+    },
+    {
+     "Eagle Stratagems": "Eagle Cluster Bomb",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Uses per Rearm": "Standard: 4Upgraded: 5"
+    },
+    {
+     "Eagle Stratagems": "Eagle 110mm Rocket Pods",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "D",
+     "Uses per Rearm": "Standard: 3Upgraded: 4"
+    },
+    {
+     "Eagle Stratagems": "Eagle Smoke Strike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Uses per Rearm": "Standard: 2Upgraded: 3"
+    },
+    {
+     "Eagle Stratagems": "Eagle Napalm Airstrike",
+     "Source": "Patriotic Administration Center",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "S",
+     "Uses per Rearm": "Standard: 2Upgraded: 3"
+    },
+    {
+     "Eagle Stratagems": "Eagle Gas Airstrike",
+     "Source": "Campaign Reward",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Uses per Rearm": "Standard: 2Upgraded: 3"
+    }
+   ]
+  },
+  "support": {
+   "origin": "https://web.archive.org/web/20261006222111id_/https://u.gg/hd2/tier-list/support-weapon-stratagem-tier-list",
+   "cols": [
+    "Support Weapon",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Source",
+    "Backpack",
+    "AP"
+   ],
+   "rows": [
+    {
+     "Support Weapon": "RL-77 Airburst Rocket Launcher",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "yes",
+     "AP": "3. Medium"
+    },
+    {
+     "Support Weapon": "M-105 Stalwart",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "2. Light"
+    },
+    {
+     "Support Weapon": "FLAM-40 Flamethrower",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "AC-8 Autocannon",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "yes",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "StA-X3 W.A.S.P. Launcher",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "yes",
+     "AP": "3. Medium"
+    },
+    {
+     "Support Weapon": "B/FLAM-80 Cremator",
+     "vs Automatons": "A",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Entrenched Division",
+     "Backpack": "Yes",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "MGX-42 Bullet Storm",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "S+",
+     "Source": "Exo Experts",
+     "Backpack": "No",
+     "AP": "2. Light"
+    },
+    {
+     "Support Weapon": "S-11 Speargun",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Dust Devils",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "GL-21 Grenade Launcher",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "3. Medium"
+    },
+    {
+     "Support Weapon": "MG-43 Machine Gun",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "3. Medium"
+    },
+    {
+     "Support Weapon": "EAT-700 Expendable Napalm",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Dust Devils",
+     "Backpack": "no",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "40-K Meltagun",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S",
+     "Source": "Castellan’s Creed",
+     "Backpack": "No",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Support Weapon": "B/MD C4 Pack",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Redacted Regiment",
+     "Backpack": "yes",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Support Weapon": "EAT-411 Leveller",
+     "vs Automatons": "S+",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Source": "Siege Breakers",
+     "Backpack": "no",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "MS-11 Solo Silo",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Dust Devils",
+     "Backpack": "no",
+     "AP": "9. Anti-Tank"
+    },
+    {
+     "Support Weapon": "CQC-20 Breaching Hammer",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Siege Breakers",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "ARC-3 Arc Thrower",
+     "vs Automatons": "C",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Support Weapon": "GL-52 De-Escalator",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Force of Law",
+     "Backpack": "no",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "M-1000 Maxigun",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Source": "Python Commandos",
+     "Backpack": "yes",
+     "AP": "3. Medium"
+    },
+    {
+     "Support Weapon": "GL-28 Belt-Fed Grenade Launcher",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Siege Breakers",
+     "Backpack": "yes",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "MLS-4X Commando",
+     "vs Automatons": "S",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "PLAS-45 Epoch",
+     "vs Automatons": "S",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "Source": "Control Group",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "MG-206 Heavy Machine Gun",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "LAS-98 Laser Cannon",
+     "vs Automatons": "B",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "GR-8 Recoilless Rifle",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "yes",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "APW-1 Anti-Materiel Rifle",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "4. Heavy"
+    },
+    {
+     "Support Weapon": "FAF-14 Spear",
+     "vs Automatons": "S",
+     "vs Terminids": "A",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "yes",
+     "AP": "7. Anti-Tank"
+    },
+    {
+     "Support Weapon": "RS-422 Railgun",
+     "vs Automatons": "S",
+     "vs Terminids": "B",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "EAT-17 Expendable Anti-Tank",
+     "vs Automatons": "S",
+     "vs Terminids": "S+",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "LAS-99 Quasar Cannon",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center",
+     "Backpack": "no",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Support Weapon": "TX-41 Sterilizer",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "C",
+     "Source": "Chemical Agents",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "CQC-9 Defoliation Tool",
+     "vs Automatons": "D",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "Source": "Python Commandos",
+     "Backpack": "no",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Support Weapon": "CQC-1 One True Flag",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Masters of Ceremony",
+     "Backpack": "no",
+     "AP": "3. Medium"
+    }
+   ]
+  },
+  "backpack": {
+   "origin": "https://web.archive.org/web/20261006222111id_/https://u.gg/hd2/tier-list/helldivers-2-backpack-stratagem-tier-list",
+   "cols": [
+    "Backpack Stratagem",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Source"
+   ],
+   "rows": [
+    {
+     "Backpack Stratagem": "AX/FLAM-75 Hot Dog",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Python Commandos"
+    },
+    {
+     "Backpack Stratagem": "LIFT-182 Warp Pack",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Control Group"
+    },
+    {
+     "Backpack Stratagem": "B-1 Supply Pack",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "B-100 Portable Hellbomb",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Servants of Freedom"
+    },
+    {
+     "Backpack Stratagem": "AX/AR-23 Guard Dog",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "LIFT-850 Jump Pack",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "SH-32 Shield Generator Pack",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "AX/LAS-5 Rover",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "LIFT-860 Hover Pack",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "A",
+     "Source": "Borderline Justice"
+    },
+    {
+     "Backpack Stratagem": "AX/ARC-3 K-9",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Force of Law"
+    },
+    {
+     "Backpack Stratagem": "AX/TX-13 Dog Breath",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "Source": "Chemical Agents"
+    },
+    {
+     "Backpack Stratagem": "SH-20 Ballistic Shield Backpack",
+     "vs Automatons": "B",
+     "vs Terminids": "C",
+     "vs Illuminate": "C",
+     "Source": "Patriotic Administration Center"
+    },
+    {
+     "Backpack Stratagem": "SH-51 Directional Shield",
+     "vs Automatons": "D",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Urban Legends"
+    }
+   ]
+  },
+  "defensive": {
+   "origin": "https://web.archive.org/web/20261006222110id_/https://u.gg/hd2/tier-list/sentry-stratagem-tier-list",
+   "cols": [
+    "Sentries / Emplacements",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Source",
+    "Damage",
+    "AP"
+   ],
+   "rows": [
+    {
+     "Sentries / Emplacements": "E/AT-12 Anti-Tank Emplacement",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Urban Legends",
+     "Damage": "Ballistic",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "A/MG-43 Machine Gun Sentry",
+     "vs Automatons": "S",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Ballistic",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "A/ARC-3 Tesla Tower",
+     "vs Automatons": "B",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Arc",
+     "AP": "4. Heavy"
+    },
+    {
+     "Sentries / Emplacements": "A/G-16 Gatling Sentry",
+     "vs Automatons": "A",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Ballistic",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "A/AC-8 Autocannon Sentry",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Ballistic",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "E/MG-101 HMG Emplacement",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Ballistic",
+     "AP": "4. Heavy"
+    },
+    {
+     "Sentries / Emplacements": "A/FLAM-40 Flame Sentry",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Urban Legends",
+     "Damage": "Fire",
+     "AP": "4. Heavy"
+    },
+    {
+     "Sentries / Emplacements": "A/MLS-4X Rocket Sentry",
+     "vs Automatons": "S+",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Ballistic",
+     "AP": "5. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "MD-I4 Incendiary Mines",
+     "vs Automatons": "B",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Explosion",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "MD-8 Gas Mines",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Gas",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "A/LAS-98 Laser Sentry",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "A",
+     "Source": "Control Group",
+     "Damage": "Laser",
+     "AP": "4. Heavy"
+    },
+    {
+     "Sentries / Emplacements": "A/M-23 EMS Mortar Sentry",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Patriotic Administration Center",
+     "Damage": "None",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "MD-6 Anti-Personnel Minefield",
+     "vs Automatons": "B",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Explosion",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "E/GL-21 Grenadier Battlement",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "A",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Explosion",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "A/GM-17 Gas Mortar Sentry",
+     "vs Automatons": "A",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Entrenched Division",
+     "Damage": "Gas",
+     "AP": "6. Anti-Tank"
+    },
+    {
+     "Sentries / Emplacements": "FX-12 Shield Generator Relay",
+     "vs Automatons": "B",
+     "vs Terminids": "D",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Damage": "N/A",
+     "AP": "N/A"
+    },
+    {
+     "Sentries / Emplacements": "A/M-12 Mortar Sentry",
+     "vs Automatons": "S",
+     "vs Terminids": "D",
+     "vs Illuminate": "D",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Explosive",
+     "AP": "3. Medium"
+    },
+    {
+     "Sentries / Emplacements": "MD-17 Anti-Tank Mines",
+     "vs Automatons": "S",
+     "vs Terminids": "A",
+     "vs Illuminate": "D",
+     "Source": "Patriotic Administration Center",
+     "Damage": "Explosion",
+     "AP": "5. Anti-Tank"
+    }
+   ]
+  },
+  "vehicle": {
+   "origin": "https://web.archive.org/web/20261006222113id_/https://u.gg/hd2/tier-list/helldivers-2-vehicle-tier-list",
+   "cols": [
+    "Vehicle Stratagems",
+    "vs Automatons",
+    "vs Terminids",
+    "vs Illuminate",
+    "Source",
+    "Weapons",
+    "Health",
+    "Crew Cap",
+    "Cooldown"
+   ],
+   "rows": [
+    {
+     "Vehicle Stratagems": "M-102 Gunner FRV",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Weapons": "Rear Mounted 360-Degree HMG Turret (Passenger Operated)",
+     "Health": "2400",
+     "Crew Cap": "4",
+     "Cooldown": "480s"
+    },
+    {
+     "Vehicle Stratagems": "M-104 Incinerator FRV",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Campaign Reward",
+     "Weapons": "Heavy-Pen Flamethrower(Passenger Operated)",
+     "Health": "2900",
+     "Crew Cap": "4",
+     "Cooldown": "480s"
+    },
+    {
+     "Vehicle Stratagems": "M-103 Supply FRV",
+     "vs Automatons": "S+",
+     "vs Terminids": "S+",
+     "vs Illuminate": "S+",
+     "Source": "Campaign Reward",
+     "Weapons": "AR-23P Liberator Penetrator (Auto Turret)",
+     "Health": "2400",
+     "Crew Cap": "4",
+     "Cooldown": "480s"
+    },
+    {
+     "Vehicle Stratagems": "EXO-49 Emancipator Exosuit",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Patriotic Administration Center",
+     "Weapons": "Dual Autocannon Arms",
+     "Health": "1800",
+     "Crew Cap": "1 (Pilot)",
+     "Cooldown": "600s"
+    },
+    {
+     "Vehicle Stratagems": "EXO-55 Breakthrough Exosuit",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "S+",
+     "Source": "Exo Experts",
+     "Weapons": "Heavy-Pen Scattergun (Right Arm)Heavy-Pen Shield Bash (Left Arm)",
+     "Health": "1800",
+     "Crew Cap": "1 (Pilot)",
+     "Cooldown": "600s"
+    },
+    {
+     "Vehicle Stratagems": "EXO-51 Lumberer Exosuit",
+     "vs Automatons": "S",
+     "vs Terminids": "S",
+     "vs Illuminate": "B",
+     "Source": "Exo Experts",
+     "Weapons": "Anti-Tank Cannon (Right Arm)Heavy-Pen Flamethrower (Left Arm)",
+     "Health": "1800",
+     "Crew Cap": "1 (Pilot)",
+     "Cooldown": "600s"
+    },
+    {
+     "Vehicle Stratagems": "EXO-45 Patriot Exosuit",
+     "vs Automatons": "A",
+     "vs Terminids": "A",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Weapons": "Medium-Pen Minigun (Right Arm)AP2 Missile Launcher (Left Arm)",
+     "Health": "1600",
+     "Crew Cap": "1 (Pilot)",
+     "Cooldown": "600s"
+    },
+    {
+     "Vehicle Stratagems": "TD-220 Bastion MK XVI",
+     "vs Automatons": "S+",
+     "vs Terminids": "B",
+     "vs Illuminate": "B",
+     "Source": "Patriotic Administration Center",
+     "Weapons": "Anti-Tank Main Cannon (Gunner Operated)Front-Facing HMG Turret (Gunner Operated)Limited Firing Angle",
+     "Health": "8,000",
+     "Crew Cap": "4",
+     "Cooldown": "780s"
+    },
+    {
+     "Vehicle Stratagems": "TD-110 Maelstrom",
+     "vs Automatons": "C",
+     "vs Terminids": "B",
+     "vs Illuminate": "—",
+     "Source": "Campaign Reward",
+     "Weapons": "Front-Facing Gatling Guns(Gunner Operated)Laser-Guided Missiles(Gunner Operated)",
+     "Health": "??",
+     "Crew Cap": "4",
+     "Cooldown": "780s"
+    }
+   ]
+  }
+ }
+}

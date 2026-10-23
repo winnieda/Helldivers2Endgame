@@ -1,0 +1,30 @@
+{
+  "name": "helldivers2endgame",
+  "version": "1.0.0",
+  "description": "Helldivers 2 Endgame: an unofficial economic endgame mode. Players buy every loadout with Requisition; prices are set by a community-driven market.",
+  "main": "index.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "frontend",
+    "engine",
+    "backend",
+    "infrastructure"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "test": "tsc -p engine && node --test engine/dist/test/",
+    "market": "tsc -p engine && node engine/dist/cli/market.js",
+    "sim": "tsc -p engine && node engine/dist/cli/sim.js",
+    "catalog": "python3 tools/catalog/catalog.py build",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "npm run lint -ws --if-present"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0"
+  }
+}
