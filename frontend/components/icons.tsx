@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { DamageType, Faction, Item } from '@engine';
+import type { Faction, Item } from '@engine';
 import { ARROWS, familyColor } from '@/lib/format';
 
 /*
@@ -311,48 +311,24 @@ export const GAME = '/game';
  * Item icon: the in-game stratagem icon or the wiki's weapon render when we have one, otherwise
  * an original pictogram in the same frame.
  */
+/**
+ * The one item-icon holder used everywhere. Every item gets the same rectangle, whether it's a
+ * stratagem, a weapon, a missing icon or one still loading: the picture is contained inside it.
+ */
+export const TILE_RATIO = 1.5; // width / height of the holder
+
 export function ItemIcon({ item, size = 44, className = '' }: { item: Item; size?: number; className?: string }) {
-  if (item.art && item.category === 'stratagem') {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={`${GAME}/${item.art}`} alt="" width={size} height={size} className={`item-art shrink-0 ${className}`} style={{ width: size, height: size }} draggable={false} />;
-  }
-  // Weapon renders are wide, so their tile is too.
-  const width = item.art ? Math.round(size * 1.7) : size;
+  const width = Math.round(size * TILE_RATIO);
+  const color = familyColor(item);
   return (
-    <span className={`item-icon ${item.art ? 'item-icon-render' : ''} ${className}`} style={{ '--c': familyColor(item), width, height: size } as CSSProperties} aria-hidden>
+    <span className={`item-tile ${item.art ? 'item-tile-art' : ''} ${className}`} style={{ '--c': color, width, height: size } as CSSProperties} aria-hidden>
       {item.art ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${GAME}/${item.art}`} alt="" className="item-render" draggable={false} />
+        <img src={`${GAME}/${item.art}`} alt="" draggable={false} className="item-tile-img" />
       ) : (
-        <svg viewBox="0 0 24 24">{GLYPHS[item.glyph] ?? GLYPHS['g-special']}</svg>
-      )}
-    </span>
-  );
-}
-
-const DAMAGE_LABEL: Record<DamageType, string> = {
-  ballistic: 'Ballistic',
-  explosion: 'Explosive',
-  fire: 'Fire',
-  laser: 'Laser',
-  arc: 'Arc',
-  gas: 'Gas',
-  energy: 'Energy',
-  melee: 'Melee',
-};
-
-/** Damage-type and armor-penetration badges for weapons (game icons). */
-export function WeaponBadges({ item, size = 16 }: { item: Item; size?: number }) {
-  if (item.category === 'stratagem') return null;
-  return (
-    <span className="inline-flex items-center gap-1 shrink-0">
-      {item.damage && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${GAME}/damage/${item.damage}.svg`} alt={`${DAMAGE_LABEL[item.damage]} damage`} title={`${DAMAGE_LABEL[item.damage]} damage`} width={size} height={size} style={{ width: size, height: size }} />
-      )}
-      {item.ap !== undefined && item.ap <= 10 && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${GAME}/ap/${item.ap}.png`} alt={`Armor penetration ${item.ap}`} title={`Armor penetration ${item.ap}`} width={size} height={size} style={{ width: 'auto', height: size }} />
+        <svg viewBox="0 0 24 24" className="item-tile-glyph">
+          {GLYPHS[item.glyph] ?? GLYPHS['g-special']}
+        </svg>
       )}
     </span>
   );
@@ -375,13 +351,10 @@ export function FactionEmblem({ faction, size = 28, className = '' }: { faction:
 }
 
 /** Requisition slip. */
+/** Requisition slip: the game's own icon (public/game/Requisition_Slip.svg). */
 export function ReqIcon({ size = 14, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden style={{ color: 'var(--yellow)', flexShrink: 0 }}>
-      <path {...F} d="M4 5h16v4.2a2.8 2.8 0 0 0 0 5.6V19H4v-4.2a2.8 2.8 0 0 0 0-5.6z" />
-      <path fill="#0a0e12" d="M8 8.5h8v1.6H8zM8 11.2h5v1.6H8zM8 13.9h6.5v1.6H8z" />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`${GAME}/Requisition_Slip.svg`} alt="" width={size} height={size} className={`shrink-0 ${className}`} style={{ width: size, height: size }} draggable={false} />;
 }
 
 /** Super Earth emblem (game art), used as the site mark next to an "unofficial" tag. */

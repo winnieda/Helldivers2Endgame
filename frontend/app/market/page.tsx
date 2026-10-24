@@ -19,7 +19,7 @@ import {
   type StratagemType,
 } from '@engine';
 import { LineChart, Sparkline } from '@/components/charts';
-import { ArrowCode, FactionEmblem, ItemIcon, WeaponBadges } from '@/components/icons';
+import { ArrowCode, FactionEmblem, ItemIcon } from '@/components/icons';
 import { ItemDetail } from '@/components/market/ItemDetail';
 import { openTerminal } from '@/components/terminal';
 import { Delta, PriceTag, Req, SectionTitle, Stat } from '@/components/ui';
@@ -173,7 +173,6 @@ export default function MarketPage() {
                           <div className="text-[12px] text-muted flex items-center gap-2">
                             {v.item.category === 'stratagem' ? STRATAGEM_TYPE_LABEL[v.item.type!] : v.item.source}
                             {v.item.code && <ArrowCode code={v.item.code} size="sm" />}
-                            <WeaponBadges item={v.item} size={14} />
                           </div>
                         </div>
                       </div>

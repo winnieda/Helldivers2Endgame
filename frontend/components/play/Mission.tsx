@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { endRun, feedbackUrl } from "@/lib/feedback";
 import { useState } from "react";
 import {
   activeDivers,
@@ -7,8 +9,7 @@ import {
   beginDebrief,
   blitzRequiredMargin,
   DIFFICULTY_NAMES,
-  endCampaign,
-  FACTION_LABEL,
+    FACTION_LABEL,
   ITEMS,
   OUTCOME_LABEL,
   scoreCampaign,
@@ -20,7 +21,7 @@ import {
 } from "@engine";
 import { DIVER_COLORS, req } from "@/lib/format";
 import { store } from "@/lib/store";
-import { ArrowCode, Emblem, FactionEmblem, ItemIcon } from "../icons";
+import { ArrowCode, Emblem, FactionEmblem, ItemIcon, ReqIcon } from "../icons";
 import { openTerminal } from "../terminal";
 import { Modal, Req, Stepper } from "../ui";
 import { useCampaign } from "./useCampaign";
@@ -51,26 +52,17 @@ export function MissionHeader({ c, title }: { c: Campaign; title: string }) {
 }
 
 export function Deployed() {
-  const { campaign: c, apply, undoDeploy } = useCampaign();
-  const [confirmUndo, setConfirmUndo] = useState(false);
+  const { campaign: c, apply } = useCampaign();
   if (!c) return null;
   return (
     <div>
       <MissionHeader c={c} title="Squad deployed" />
-      <p className="text-text-2 mt-2 max-w-3xl">
-        Play the mission in Helldivers 2 using only the equipment below. Armor
-        and boosters are free. When you’re back on the Super Destroyer, open the
-        debrief and report how it went.
-      </p>
       <div className="mt-5 flex gap-3 flex-wrap">
         <button
           className="btn btn-primary btn-lg"
           onClick={() => apply(beginDebrief)}
         >
           Mission over — debrief →
-        </button>
-        <button className="btn btn-ghost" onClick={() => setConfirmUndo(true)}>
-          Undo deploy
         </button>
       </div>
       <div className="mt-6 grid md:grid-cols-2 gap-4">
@@ -107,35 +99,6 @@ export function Deployed() {
           </div>
         ))}
       </div>
-      <Modal
-        open={confirmUndo}
-        onClose={() => setConfirmUndo(false)}
-        title="Undo deployment?"
-      >
-        <p className="text-text-2">
-          Everyone gets their Requisition back and these loadouts are withdrawn
-          from the market queue. Use this if you deployed by mistake — not to
-          dodge a bad mission.
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            data-autofocus
-            className="btn btn-ghost"
-            onClick={() => setConfirmUndo(false)}
-          >
-            Keep deployment
-          </button>
-          <button
-            className="btn btn-danger"
-            onClick={() => {
-              setConfirmUndo(false);
-              undoDeploy();
-            }}
-          >
-            Undo
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 }
@@ -290,7 +253,10 @@ export function Debrief() {
               </div>
               <div className="text-[14px]">
                 <div className="text-muted">Spent on loadout</div>
-                <Req value={spent} className="font-semibold" />
+                <span className="inline-flex items-center gap-1 tnum font-semibold text-bad">
+                  −<ReqIcon size={14} />
+                  {req(spent)}
+                </span>
               </div>
               <div className="text-[14px]">
                 {c.mode === "operations" ? (
@@ -340,6 +306,7 @@ export function Debrief() {
 }
 
 export function Summary() {
+  const router = useRouter();
   const { campaign: c, apply } = useCampaign();
   const [confirmEnd, setConfirmEnd] = useState(false);
   if (!c) return null;
@@ -395,7 +362,7 @@ export function Summary() {
               </div>
               <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-[14px] tnum">
                 <span className="text-muted">Loadout</span>
-                <span className="text-right">
+                <span className="text-right font-semibold text-bad">
                   {r.total ? `−${req(r.total)}` : "0"}
                 </span>
                 <span className="text-muted">
@@ -442,12 +409,21 @@ export function Summary() {
         })}
       </div>
       <div className="mt-6 flex gap-3 flex-wrap justify-end">
-        <button className="btn btn-ghost" onClick={() => setConfirmEnd(true)}>
-          Stand down (end campaign)
-        </button>
+        {!(opDone && success) && (
+          <button
+            className="btn btn-ghost"
+            onClick={() => setConfirmEnd(true)}
+          >
+            Stand down (end campaign)
+          </button>
+        )}
         <button
           className="btn btn-primary btn-lg"
-          onClick={() => apply(advance)}
+          onClick={() => {
+            // Finishing an operation: feedback first, then the next briefing.
+            apply(advance);
+            if (opDone && success) router.push(feedbackUrl('operation'));
+          }}
         >
           {nextLabel} →
         </button>
@@ -473,7 +449,8 @@ export function Summary() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmEnd(false);
-              apply((x) => endCampaign(x));
+              if (c) endRun(c);
+              router.push(feedbackUrl('standdown'));
             }}
           >
             Stand down

@@ -1,13 +1,16 @@
 'use client';
 import { useState } from 'react';
-import { beginLoadout, blitzRequiredMargin, DIFFICULTY_NAMES, endCampaign, FACTION_LABEL, FACTIONS, ITEMS, setBriefing, typicalLoadoutCost } from '@engine';
+import { beginLoadout, blitzRequiredMargin, DIFFICULTY_NAMES, FACTION_LABEL, FACTIONS, ITEMS, setBriefing, typicalLoadoutCost } from '@engine';
 import { store } from '@/lib/store';
-import { toast } from '@/lib/toast';
+import { saveRoster } from '@/lib/roster';
+import { endRun, feedbackUrl } from '@/lib/feedback';
+import { useRouter } from 'next/navigation';
 import { FactionEmblem, ItemIcon } from '../icons';
 import { Modal, Req } from '../ui';
 import { useCampaign } from './useCampaign';
 
 export function Briefing() {
+  const router = useRouter();
   const { campaign: c, apply, app } = useCampaign();
   const [confirm, setConfirm] = useState(false);
   const [cancel, setCancel] = useState(false);
@@ -98,11 +101,24 @@ export function Briefing() {
       </div>
 
       <div className="mt-6 flex justify-between gap-3 flex-wrap">
-        <button className="btn btn-ghost" onClick={() => setCancel(true)}>
-          {fresh ? 'Cancel operation' : 'Stand down'}
-        </button>
+        {fresh ? (
+          <button
+            className="btn btn-ghost"
+            onClick={() => {
+              // Keep the same Helldivers, in the same order, for the setup screen.
+              saveRoster(c.divers.map((d) => d.name));
+              store.setCampaign(null);
+            }}
+          >
+            Return to Squad Setup
+          </button>
+        ) : (
+          <button className="btn btn-ghost" onClick={() => setCancel(true)}>
+            Stand down
+          </button>
+        )}
         <button className="btn btn-primary btn-lg" onClick={() => setConfirm(true)}>
-          Proceed to the armory →
+          Begin Campaign →
         </button>
       </div>
 
@@ -133,12 +149,8 @@ export function Briefing() {
         </div>
       </Modal>
 
-      <Modal open={cancel} onClose={() => setCancel(false)} title={fresh ? 'Cancel this operation?' : 'Stand down?'}>
-        <p className="text-text-2 text-[15.5px]">
-          {fresh
-            ? 'No missions have been played, so nothing is recorded and nothing is sent to the Galactic Market. You’ll go back to squad setup.'
-            : 'The campaign ends here and goes into the hall of fame as it stands.'}
-        </p>
+      <Modal open={cancel} onClose={() => setCancel(false)} title="Stand down?">
+        <p className="text-text-2 text-[15.5px]">The campaign ends here and goes into the hall of fame as it stands.</p>
         <div className="mt-6 flex justify-end gap-2">
           <button data-autofocus className="btn btn-ghost" onClick={() => setCancel(false)}>
             Keep going
@@ -147,13 +159,11 @@ export function Briefing() {
             className="btn btn-danger"
             onClick={() => {
               setCancel(false);
-              if (fresh) {
-                store.setCampaign(null);
-                toast('Operation cancelled', 'Back to squad setup.', 'info');
-              } else apply((x) => endCampaign(x));
+              endRun(c);
+              router.push(feedbackUrl('standdown'));
             }}
           >
-            {fresh ? 'Cancel operation' : 'Stand down'}
+            Stand down
           </button>
         </div>
       </Modal>

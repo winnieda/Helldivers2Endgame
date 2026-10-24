@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { FactionEmblem } from '@/components/icons';
+import { Pitch } from '@/components/Pitch';
 import { Delta, SectionTitle } from '@/components/ui';
 import { req } from '@/lib/format';
 import { useMovers } from '@/lib/marketView';
@@ -69,10 +70,7 @@ export default function Home() {
         <FitLine>Freedom isn’t free.</FitLine>
         <FitLine className="text-yellow">Neither is your loadout.</FitLine>
         <div className="hazard-thin mt-6 max-w-[420px]" />
-        <p className="mt-6 text-[18px] text-text-2 max-w-[760px] leading-relaxed">
-          Every stratagem, primary, sidearm and grenade costs Requisition. Start with <span className="text-text font-semibold">50,000</span>, buy your kit before each dive, and survive on what you earn.
-          Prices aren’t ours to set: every day the Galactic Market reprices all gear from what the whole community actually brings. Run the meta and pay for it, or find the gear nobody else will touch.
-        </p>
+        <Pitch className="mt-6 text-[18px] max-w-[760px]" />
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link href="/play/" className="btn btn-primary btn-lg">
             {active ? `Resume ${campaign.operationName}` : 'Start an Operation'}

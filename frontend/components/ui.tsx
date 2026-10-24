@@ -93,19 +93,20 @@ export function Verdict({ verdict, label }: { verdict: 'pass' | 'warn' | 'fail' 
   );
 }
 
-/** Budget meter: fill turns amber then red as the loadout approaches the limit. */
+/**
+ * Budget bar: the full bar is what you have. Spending eats in from the right in red, so the
+ * yellow left over is what's still yours.
+ */
 export function Meter({ value, max, className = '' }: { value: number; max: number; className?: string }) {
-  const ratio = max > 0 ? Math.min(1, value / max) : value > 0 ? 1 : 0;
-  const over = value > max;
-  const color = over ? 'var(--bad)' : ratio > 0.8 ? 'var(--warn)' : 'var(--yellow)';
+  const spent = max > 0 ? Math.min(1, Math.max(0, value / max)) : value > 0 ? 1 : 0;
   return (
-    <div className={`h-2 relative overflow-hidden ${className}`} style={{ background: 'rgba(255,232,31,0.12)' }}>
-      <div className="absolute inset-y-0 left-0 transition-[width] duration-200" style={{ width: `${(over ? 1 : ratio) * 100}%`, background: color }} />
+    <div className={`h-2.5 relative overflow-hidden bg-yellow ${className}`} role="meter" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-label="Requisition spent">
+      <div className="absolute inset-y-0 right-0 bg-bad transition-[width] duration-200" style={{ width: `${spent * 100}%` }} />
     </div>
   );
 }
 
-export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; wide?: boolean }) {
+export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title?: ReactNode; children: ReactNode; wide?: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;

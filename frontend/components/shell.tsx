@@ -24,22 +24,18 @@ function Nav() {
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group" aria-label="Helldivers 2 Endgame home">
           <Emblem size={36} />
           <span className="leading-none">
-            <span className="flex items-center gap-1.5">
-              <span className="font-display font-semibold text-[11px] tracking-[0.32em] text-muted group-hover:text-text">HELLDIVERS 2</span>
-              <span className="text-[9px] font-sans font-semibold tracking-normal normal-case px-1 py-px rounded-sm bg-white/10 text-text-2" title="Fan-made; not affiliated with Arrowhead or Sony">
-                Unofficial
-              </span>
-            </span>
+            <span className="font-display font-semibold text-[11px] tracking-[0.32em] text-muted group-hover:text-text">HELLDIVERS 2</span>
             <span className="block h-display text-[22px] text-yellow tracking-[0.12em]">ENDGAME</span>
           </span>
         </Link>
-        <nav className="order-last md:order-none w-full md:w-auto md:flex-1 flex items-center gap-1 overflow-x-auto -mx-3 md:mx-0">
+        <nav className="order-last md:order-none w-full md:w-auto md:flex-1 flex items-center gap-1 overflow-x-auto -mx-3 md:mx-0 select-none">
           {LINKS.map((l) => {
             const on = path.startsWith(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
+                draggable={false}
                 className={`relative px-3 py-2 font-display font-bold uppercase tracking-[0.1em] text-[14.5px] whitespace-nowrap transition-colors ${on ? 'text-yellow' : 'text-muted hover:text-text'}`}
               >
                 {l.label}
@@ -81,8 +77,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Nav />
       <main className="relative z-0">{children}</main>
-      <footer className="mt-24 border-t border-line">
-        <div className="mx-auto max-w-[1400px] px-4 py-8 text-[12.5px] text-dim flex flex-wrap gap-x-6 gap-y-2 justify-between font-sans">
+      <footer className="mt-10 border-t border-line">
+        <div className="mx-auto max-w-[1400px] px-4 py-2 text-[11px] leading-snug text-dim flex flex-wrap gap-x-6 gap-y-1 justify-between font-sans">
           <span>
             Unofficial, non-commercial fan project. Not affiliated with or endorsed by Arrowhead Game Studios or Sony Interactive Entertainment. Helldivers™ and all game art belong to their owners.
           </span>

@@ -6,10 +6,8 @@ import {
   CATEGORY_SINGULAR,
   checkLoadout,
   cheapestLoadout,
-  endCampaign,
-  randomLoadout,
-  FACTION_LABEL,
-  ITEMS,
+    randomLoadout,
+    ITEMS,
   median,
   setLoadout,
   setReady,
@@ -23,9 +21,9 @@ import {
 } from '@engine';
 import { DIVER_COLORS, req } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
-import { ArrowCode, Check, FactionEmblem, ItemIcon, ReqIcon, WeaponBadges } from '../icons';
-import { store } from '@/lib/store';
-import { toast } from '@/lib/toast';
+import { ArrowCode, Check, ItemIcon, ReqIcon } from '../icons';
+import { endRun, feedbackUrl } from '@/lib/feedback';
+import { useRouter } from 'next/navigation';
 import { Meter, Modal, PriceTag, Req } from '../ui';
 import { useCampaign } from './useCampaign';
 
@@ -91,7 +89,6 @@ function ItemCard({ v, median, equipped, affordable, need, warn, squad, onPick }
           <div className="font-semibold leading-tight text-[14.5px] line-clamp-2 pr-2">{it.name}</div>
           <div className="text-[12px] text-muted mt-0.5 flex items-center gap-1.5 min-w-0">
             <span className="truncate">{note ?? subLabel(it)}</span>
-            {!note && <WeaponBadges item={it} size={14} />}
           </div>
         </div>
       </div>
@@ -118,6 +115,7 @@ function ItemCard({ v, median, equipped, affordable, need, warn, squad, onPick }
 }
 
 export function Armory() {
+  const router = useRouter();
   const { campaign: c, apply, app, deploySquad } = useCampaign();
   const divers = useMemo(() => (c ? activeDivers(c) : []), [c]);
   const [diverId, setDiverId] = useState(divers[0]?.id ?? 'd1');
@@ -127,6 +125,7 @@ export function Armory() {
   const [sort, setSort] = useState<Sort>('price-desc');
   const [affordableOnly, setAffordableOnly] = useState(false);
   const [confirmAbandon, setConfirmAbandon] = useState(false);
+  const [confirmDeploy, setConfirmDeploy] = useState(false);
   const faction = c?.faction ?? 'terminids';
   const { byCategory, views } = useMarketView(faction);
   const medians = useMemo(
@@ -220,23 +219,78 @@ export function Armory() {
         <button className="btn btn-danger" onClick={() => setConfirmAbandon(true)}>
           Abandon mission
         </button>
-        <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={deploySquad}>
+        <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={() => setConfirmDeploy(true)}>
           Deploy squad
         </button>
       </div>
 
-      <div className="mt-4 grid xl:grid-cols-[400px_1fr] gap-4 items-start">
+      <div className="mt-4 grid xl:grid-cols-[460px_1fr] gap-4 items-start">
         {/* Loadout */}
         <div className="panel panel-accent xl:sticky xl:top-[140px] xl:max-h-[calc(100vh-160px)] xl:overflow-y-auto">
-          <div className="px-5 pt-4 pb-3 border-b border-line flex items-center justify-between">
-            <div>
-              <div className="eyebrow">Loadout · vs {FACTION_LABEL[faction]}</div>
-              <div className="h-display text-[26px]" style={{ color: DIVER_COLORS[diver.color] }}>
-                {diver.name}
-              </div>
+          <div className="px-5 pt-4 pb-3 border-b border-line">
+            <div className="h-display text-[26px]" style={{ color: DIVER_COLORS[diver.color] }}>
+              {diver.name}
             </div>
-            <FactionEmblem faction={faction} size={32} />
           </div>
+          <div className="px-5 py-4 border-b border-line space-y-2 text-[14px]">
+            <div className="flex justify-between items-center">
+              <span className="text-muted">Loadout cost</span>
+              <span className="inline-flex items-center gap-1 tnum font-semibold text-bad">
+                −<ReqIcon size={14} />
+                {req(check.total)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted">{isOps ? 'Balance Left' : 'Headroom'}</span>
+              <Req value={remaining} className={remaining < 0 ? 'text-bad font-semibold' : 'font-semibold'} />
+            </div>
+            <Meter value={check.total} max={check.limit} />
+            {!isOps && <div className="text-[12.5px] text-muted">To survive this round you must earn more than {req(check.total)}.</div>}
+            {check.problems.filter((p) => !/empty/.test(p.message)).map((p) => (
+              <div key={p.message} className="text-[13px] text-bad">
+                ✖ {p.message}
+              </div>
+            ))}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-2">
+              <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, randomLoadout(faction, app.market, check.limit)))} title="Random equipment that this Helldiver can afford">
+                Random kit
+              </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  const cheap = cheapestLoadout(faction, app.market);
+                  const used = new Set(diver.loadout.filter((v) => v !== null));
+                  const next = diver.loadout.map((v, s) => {
+                    if (v !== null) return v;
+                    if (s < 4) {
+                      const pickFree = byCategory.stratagem.filter((x) => x.q.free && !used.has(x.item.index)).map((x) => x.item.index)[0] ?? cheap[s];
+                      used.add(pickFree);
+                      return pickFree;
+                    }
+                    return cheap[s];
+                  });
+                  apply((x) => setLoadout(x, diver.id, next));
+                }}
+              >
+                Fill empty with free
+              </button>
+              <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, new Array(7).fill(null)))}>
+                Clear
+              </button>
+              <button
+                className={`btn ${diver.ready ? 'btn-ghost' : 'btn-primary'} ml-auto`}
+                disabled={!check.ok}
+                onClick={() => {
+                  apply((x) => setReady(x, diver.id, !diver.ready));
+                  const next = divers.find((d) => d.id !== diver.id && !d.ready);
+                  if (!diver.ready && next) setDiverId(next.id);
+                }}
+              >
+                {diver.ready ? 'Unready' : 'Ready up'}
+              </button>
+            </div>
+          </div>
+
           <div className="p-3 space-y-1.5">
             {SLOT_LABEL.map((label, s) => {
               const idx = diver.loadout[s];
@@ -274,65 +328,6 @@ export function Armory() {
                 </div>
               );
             })}
-          </div>
-          <div className="px-5 py-4 border-t border-line space-y-2 text-[14px]">
-            <div className="flex justify-between">
-              <span className="text-muted">Loadout cost</span>
-              <Req value={check.total} className="font-semibold" />
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted">{isOps ? 'Balance' : 'Round spending cap'}</span>
-              <Req value={check.limit} />
-            </div>
-            <Meter value={check.total} max={check.limit} />
-            <div className="flex justify-between">
-              <span className="text-muted">{isOps ? 'Left after purchase' : 'Headroom'}</span>
-              <Req value={remaining} className={remaining < 0 ? 'text-bad font-semibold' : 'font-semibold'} />
-            </div>
-            {!isOps && <div className="text-[12.5px] text-muted">To survive this round you must earn more than {req(check.total)}.</div>}
-            {check.problems.filter((p) => !/empty/.test(p.message)).map((p) => (
-              <div key={p.message} className="text-[13px] text-bad">
-                ✖ {p.message}
-              </div>
-            ))}
-          </div>
-          <div className="px-5 pb-5 flex flex-wrap gap-2">
-            <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, randomLoadout(faction, app.market, check.limit)))} title="Random equipment that this Helldiver can afford">
-              Random kit
-            </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                const cheap = cheapestLoadout(faction, app.market);
-                const used = new Set(diver.loadout.filter((v) => v !== null));
-                const next = diver.loadout.map((v, s) => {
-                  if (v !== null) return v;
-                  if (s < 4) {
-                    const pickFree = byCategory.stratagem.filter((x) => x.q.free && !used.has(x.item.index)).map((x) => x.item.index)[0] ?? cheap[s];
-                    used.add(pickFree);
-                    return pickFree;
-                  }
-                  return cheap[s];
-                });
-                apply((x) => setLoadout(x, diver.id, next));
-              }}
-            >
-              Fill empty with free
-            </button>
-            <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, new Array(7).fill(null)))}>
-              Clear
-            </button>
-            <button
-              className={`btn ${diver.ready ? 'btn-ghost' : 'btn-primary'} ml-auto`}
-              disabled={!check.ok}
-              onClick={() => {
-                apply((x) => setReady(x, diver.id, !diver.ready));
-                const next = divers.find((d) => d.id !== diver.id && !d.ready);
-                if (!diver.ready && next) setDiverId(next.id);
-              }}
-            >
-              {diver.ready ? 'Unready' : 'Ready up'}
-            </button>
           </div>
         </div>
 
@@ -391,6 +386,42 @@ export function Armory() {
         </div>
       </div>
 
+      <Modal open={confirmDeploy} onClose={() => setConfirmDeploy(false)} wide>
+        <div className="space-y-2.5">
+          {divers.map((d) => {
+            const chk = checkLoadout(c, d, app.market);
+            return (
+              <div key={d.id} className="flex items-center gap-4 px-4 py-3 border border-line bg-black/20 min-h-[80px]">
+                <span className="w-1.5 self-stretch shrink-0" style={{ background: DIVER_COLORS[d.color] }} />
+                <div className="w-[120px] shrink-0 min-w-0 font-display font-bold uppercase tracking-wider text-[17px] truncate" style={{ color: DIVER_COLORS[d.color] }}>
+                  {d.name}
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                  {d.loadout.map((idx, k) => (idx === null ? null : <ItemIcon key={k} item={ITEMS[idx]} size={46} />))}
+                </div>
+                <span className="inline-flex items-center gap-1 tnum font-display font-bold text-[20px] text-bad shrink-0">
+                  −<ReqIcon size={16} />
+                  {req(chk.total)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-6 flex justify-end gap-2">
+          <button data-autofocus className="btn btn-ghost" onClick={() => setConfirmDeploy(false)}>
+            Back to the armory
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setConfirmDeploy(false);
+              deploySquad();
+            }}
+          >
+            Lock in Purchases and Begin Mission!
+          </button>
+        </div>
+      </Modal>
       <Modal open={confirmAbandon} onClose={() => setConfirmAbandon(false)} title="Are you certain?">
         <p className="text-text-2 text-[15.5px]">
           You can’t resume an abandoned operation.{' '}
@@ -404,10 +435,8 @@ export function Armory() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmAbandon(false);
-              if (c.log.length === 0) {
-                store.setCampaign(null);
-                toast('Operation abandoned', 'No missions were played, so nothing was recorded or sent to the market.', 'info');
-              } else apply((x) => endCampaign(x, 'Operation abandoned.'));
+              endRun(c);
+              router.push(feedbackUrl('abandon'));
             }}
           >
             Abandon mission

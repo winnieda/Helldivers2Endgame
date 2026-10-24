@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { Pitch } from '@/components/Pitch';
 import { requireItem } from '@engine';
 import { FactionEmblem, ItemIcon } from '@/components/icons';
 import { SectionTitle } from '@/components/ui';
@@ -44,9 +45,7 @@ export default function BasicTraining() {
       </Link>
       <div className="eyebrow text-yellow mt-4">Field manual · short version</div>
       <h1 className="h-display text-[52px] sm:text-[64px]">Basic Training</h1>
-      <p className="text-text-2 mt-2 max-w-3xl text-[17px]">
-        Endgame turns Helldivers 2’s Requisition into the thing that matters. You pay for your gear before every dive, and the community decides what it costs.
-      </p>
+      <div className="mt-4 max-w-3xl"><Pitch className="text-[17px]" /></div>
 
       <section className="mt-12">
         <SectionTitle eyebrow="The loop" title="Buy · Dive · Get paid · Repeat" />

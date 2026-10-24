@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createCampaign } from '@engine';
 import { DIVER_COLORS } from '@/lib/format';
 import { store } from '@/lib/store';
+import { loadRoster, saveRoster } from '@/lib/roster';
 import { toast } from '@/lib/toast';
 import { Check } from '../icons';
 import { Modal } from '../ui';
@@ -42,6 +43,11 @@ function ShameModal({ open, onKeep, onOptOut }: { open: boolean; onKeep: () => v
 
 export function Setup() {
   const [names, setNames] = useState<string[]>(['']);
+  // Restore the last roster (e.g. after "Return to Squad Setup") once we're on the client.
+  useEffect(() => {
+    const saved = loadRoster();
+    if (saved) setNames(saved);
+  }, []);
   const [share, setShare] = useState(true);
   const [askShame, setAskShame] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -69,6 +75,7 @@ export function Setup() {
     const filled = names.map((n) => n.trim()).filter(Boolean);
     const finalNames = filled.length ? filled : [PLACEHOLDERS[0]];
     try {
+      saveRoster(finalNames);
       const c = createCampaign({ mode: 'operations', names: finalNames, contributeToMarket: share });
       store.setCampaign(c);
       toast(c.operationName, `${finalNames.length} Helldiver${finalNames.length > 1 ? 's' : ''} reporting for duty.`, 'good');

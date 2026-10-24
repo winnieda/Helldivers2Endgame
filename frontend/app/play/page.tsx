@@ -22,11 +22,8 @@ export default function PlayPage() {
   if (campaign.phase === 'loadout')
     return (
       <div className="mx-auto max-w-[1400px] px-4 py-8">
-        <div className="flex items-end justify-between gap-x-8 gap-y-2 flex-wrap mb-5">
-          <MissionHeader c={campaign} title="Armory" />
-          <p className="text-text-2 text-[14px] max-w-[560px] lg:text-right pb-1.5">
-            Each Helldiver buys four stratagems, a primary, a secondary and a throwable. Prices are this front’s market prices for today; they lock in when the squad deploys.
-          </p>
+        <div className="mb-5">
+          <MissionHeader c={campaign} title="Armory - Purchase Equipment for Mission" />
         </div>
         <Armory />
       </div>

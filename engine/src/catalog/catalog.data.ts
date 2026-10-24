@@ -225,6 +225,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "energy",
   "damage": "laser",
+  "art": "weapons/las-12-sai.png",
   "ap": 3,
   "glyph": "p-energy"
  },
@@ -642,6 +643,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "rifle",
   "damage": "ballistic",
+  "art": "weapons/ar-11-arbitrator.png",
   "ap": 2,
   "glyph": "p-rifle"
  },
@@ -660,6 +662,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "explosive",
   "damage": "explosion",
+  "art": "weapons/gl-15-evictor.png",
   "ap": 3,
   "glyph": "p-explosive"
  },
@@ -963,6 +966,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "shotgun",
   "damage": "ballistic",
+  "art": "weapons/sg-225sp-breaker-spray-and-pray.png",
   "ap": 2,
   "glyph": "p-shotgun"
  },
@@ -1058,6 +1062,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "energy",
   "damage": "laser",
+  "art": "weapons/r-40-k-hot-shot-marksman-rifle.png",
   "ap": 3,
   "glyph": "p-energy"
  },
@@ -1114,6 +1119,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "pistol",
   "damage": "ballistic",
+  "art": "weapons/p-40-k-bolt-pistol.png",
   "ap": 4,
   "glyph": "x-pistol"
  },
@@ -1170,6 +1176,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "pistol",
   "damage": "ballistic",
+  "art": "weapons/p-34-breacher.png",
   "ap": 7,
   "glyph": "x-pistol"
  },
@@ -1718,6 +1725,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "fire",
   "damage": "fire",
+  "art": "weapons/g-8-immolation.png",
   "glyph": "g-fire"
  },
  {
@@ -1735,6 +1743,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "special",
   "damage": "explosion",
+  "art": "weapons/g-60-anti-tank-seeker.png",
   "ap": 5,
   "glyph": "g-special"
  },
@@ -1753,6 +1762,7 @@ export const RAW_ITEMS: RawItem[] = [
   },
   "weaponClass": "special",
   "damage": "explosion",
+  "art": "weapons/g-40-k-melta-mine.png",
   "ap": 7,
   "glyph": "g-special"
  },
@@ -2361,6 +2371,7 @@ export const RAW_ITEMS: RawItem[] = [
   "code": "URLR",
   "cooldown": 15,
   "backpack": false,
+  "art": "stratagems/eagle-gas-airstrike.svg",
   "glyph": "e-cloud"
  },
  {
@@ -2611,6 +2622,7 @@ export const RAW_ITEMS: RawItem[] = [
   "code": "DLULLD",
   "cooldown": 480,
   "backpack": false,
+  "art": "stratagems/40-k-meltagun.svg",
   "ap": 7,
   "glyph": "s-flame"
  },
@@ -3869,6 +3881,7 @@ export const RAW_ITEMS: RawItem[] = [
   "code": "LDRDLDULR",
   "cooldown": 780,
   "backpack": false,
+  "art": "stratagems/td-110-maelstrom.svg",
   "glyph": "v-tank"
  }
 ];
