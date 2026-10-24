@@ -317,6 +317,17 @@ export const GAME = '/game';
  */
 export const TILE_RATIO = 1.5; // width / height of the holder
 
+// Largest size a menu draws an item at. Sizes up to this use the weapon thumbnails
+// (weapons/thumb, made by tools/catalog/assets.py thumbs); bigger views keep the full render.
+const THUMB_MAX_SIZE = 46;
+
+function artSrc(art: string, size: number) {
+  if (size <= THUMB_MAX_SIZE && art.startsWith('weapons/') && art.endsWith('.png')) {
+    return `${GAME}/weapons/thumb/${art.slice('weapons/'.length)}`;
+  }
+  return `${GAME}/${art}`;
+}
+
 export function ItemIcon({ item, size = 44, className = '' }: { item: Item; size?: number; className?: string }) {
   // Stratagems are square; equipment keeps the wider rectangle. Both are `size` tall.
   const width = item.category === 'stratagem' ? size : Math.round(size * TILE_RATIO);
@@ -325,7 +336,7 @@ export function ItemIcon({ item, size = 44, className = '' }: { item: Item; size
     <span className={`item-tile ${item.art ? 'item-tile-art' : ''} ${className}`} style={{ '--c': color, width, height: size } as CSSProperties} aria-hidden>
       {item.art ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${GAME}/${item.art}`} alt="" draggable={false} className="item-tile-img" />
+        <img src={artSrc(item.art, size)} alt="" draggable={false} className="item-tile-img" />
       ) : (
         <svg viewBox="0 0 24 24" className="item-tile-glyph">
           {GLYPHS[item.glyph] ?? GLYPHS['g-special']}

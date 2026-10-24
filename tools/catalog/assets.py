@@ -167,6 +167,40 @@ def shrink_png(path):
     return True
 
 
+# Menu thumbnails. Derived from the tile geometry in frontend/components/icons.tsx:
+# the largest menu icon is 46px tall (Armory), the picture fills 90% of its tile
+# (.item-tile-img), and retina screens need 2 device pixels per CSS pixel. Equipment
+# tiles are 1.5 wide for every 1 tall (TILE_RATIO), so the picture box is 1.5x wider.
+THUMB_MENU_SIZE = 46
+THUMB_FILL = 0.9
+THUMB_DPR = 2
+TILE_RATIO = 1.5
+THUMB_BOX = (
+    round(THUMB_FILL * TILE_RATIO * THUMB_MENU_SIZE * THUMB_DPR),  # 124 wide
+    round(THUMB_FILL * THUMB_MENU_SIZE * THUMB_DPR),  # 83 tall
+)
+
+
+def make_thumb(src, dst, box=THUMB_BOX):
+    """Fit a render inside the thumbnail box, keeping its aspect ratio (needs Pillow)."""
+    from PIL import Image
+    im = Image.open(src).convert('RGBA')
+    im.thumbnail(box, Image.LANCZOS)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    im.save(dst, optimize=True)
+
+
+def cmd_thumbs(args):
+    src_dir = os.path.join(PUBLIC, 'weapons')
+    dst_dir = os.path.join(src_dir, 'thumb')
+    n = 0
+    for f in sorted(os.listdir(src_dir)):
+        if f.endswith('.png'):
+            make_thumb(os.path.join(src_dir, f), os.path.join(dst_dir, f))
+            n += 1
+    print('wrote %d thumbnails to %s (box %dx%d)' % (n, dst_dir, *THUMB_BOX))
+
+
 def cmd_shrink(args):
     n = 0
     for root, _, files in os.walk(PUBLIC):
@@ -237,8 +271,9 @@ def main():
     d.add_argument('--force', action='store_true', help='re-download files that already exist')
     d.add_argument('--offline', action='store_true', help='only use --from-dir, never the network')
     sub.add_parser('shrink', help='trim and downscale the PNGs already in frontend/public/game')
+    sub.add_parser('thumbs', help='make menu-sized weapon thumbnails in frontend/public/game/weapons/thumb')
     args = ap.parse_args()
-    {'discover': cmd_discover, 'download': cmd_download, 'shrink': cmd_shrink}[args.cmd](args)
+    {'discover': cmd_discover, 'download': cmd_download, 'shrink': cmd_shrink, 'thumbs': cmd_thumbs}[args.cmd](args)
 
 
 if __name__ == '__main__':
