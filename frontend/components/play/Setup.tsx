@@ -1,53 +1,81 @@
 'use client';
-import { useState } from 'react';
-import { createCampaign, type GameMode } from '@engine';
-import { DIVER_COLORS, req } from '@/lib/format';
+import { useEffect, useRef, useState } from 'react';
+import { createCampaign } from '@engine';
+import { DIVER_COLORS } from '@/lib/format';
 import { store } from '@/lib/store';
 import { toast } from '@/lib/toast';
 import { Check } from '../icons';
+import { Modal } from '../ui';
 
-const DEFAULT_NAMES = ['', '', '', ''];
 const PLACEHOLDERS = ['Helldiver 1', 'Helldiver 2', 'Helldiver 3', 'Helldiver 4'];
 
-export function Setup({ initialMode }: { initialMode: GameMode }) {
-  const [mode, setMode] = useState<GameMode>(initialMode);
-  const [names, setNames] = useState<string[]>(DEFAULT_NAMES.slice(0, 1));
+/** Shown when a player unticks "Contribute to the Galactic Market". Firm, friendly, and their call. */
+function ShameModal({ open, onKeep, onOptOut }: { open: boolean; onKeep: () => void; onOptOut: () => void }) {
+  return (
+    <Modal open={open} onClose={onKeep} title="A message from the Ministry of Truth">
+      <div className="space-y-3 text-text-2 text-[15px] leading-relaxed">
+        <p>
+          Helldiver, Super Earth respects your <span className="text-text font-semibold">absolute right to refuse</span>. It is, after all, a free galaxy. Opting out is allowed, will never be held against your
+          record, and changes nothing about how you play.
+        </p>
+        <p>
+          But know what you’re declining to share: <span className="text-text font-semibold">only the weapons and stratagems you deploy with</span>. Not your name, not your account, not your squad — just your
+          picks, anonymously.
+        </p>
+        <p>
+          Those picks are the whole Galactic Market. Every price exists because Helldivers like you reported what they brought. Without them the market can’t tell the meta from the forgotten, and Endgame stops
+          working for everyone.
+        </p>
+        <p className="text-[13.5px] text-muted italic">A Democracy Officer has been informed and is choosing to look very, very disappointed rather than file a report.</p>
+      </div>
+      <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <button className="btn btn-ghost" onClick={onOptOut}>
+          Opt out anyway
+        </button>
+        <button className="btn btn-primary" onClick={onKeep}>
+          Keep contributing
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+export function Setup() {
+  const [names, setNames] = useState<string[]>(['']);
   const [share, setShare] = useState(true);
-  const [margin, setMargin] = useState(0);
-  const [escalation, setEscalation] = useState(0);
+  const [askShame, setAskShame] = useState(false);
+  const inputs = useRef<(HTMLInputElement | null)[]>([]);
+  const beginRef = useRef<HTMLButtonElement>(null);
+  const [focusIndex, setFocusIndex] = useState<number | null>(0);
+
+  useEffect(() => {
+    if (focusIndex !== null) inputs.current[focusIndex]?.focus();
+  }, [focusIndex, names.length]);
+
+  /** Enter moves down the roster (adding a slot if there's room); it never starts the operation. */
+  const nextField = (i: number) => {
+    if (i < names.length - 1) setFocusIndex(i + 1);
+    else if (names.length < 4 && names[i].trim()) {
+      setNames((ns) => [...ns, '']);
+      setFocusIndex(i + 1);
+    } else {
+      setFocusIndex(null);
+      beginRef.current?.focus();
+    }
+  };
 
   const start = () => {
-    const finalNames = names.map((n, i) => n.trim() || PLACEHOLDERS[i]);
+    // Empty slots (e.g. one added by pressing Enter) are ignored; a squad needs at least one diver.
+    const filled = names.map((n) => n.trim()).filter(Boolean);
+    const finalNames = filled.length ? filled : [PLACEHOLDERS[0]];
     try {
-      const c = createCampaign({
-        mode,
-        names: finalNames,
-        contributeToMarket: share,
-        rules: mode === 'blitz' ? { blitzMargin: margin, blitzMarginStep: escalation } : {},
-      });
+      const c = createCampaign({ mode: 'operations', names: finalNames, contributeToMarket: share });
       store.setCampaign(c);
       toast(c.operationName, `${finalNames.length} Helldiver${finalNames.length > 1 ? 's' : ''} reporting for duty.`, 'good');
     } catch (e) {
       toast('Cannot start', (e as Error).message, 'bad');
     }
   };
-
-  const modes: { id: GameMode; title: string; tag: string; text: string; facts: string[] }[] = [
-    {
-      id: 'operations',
-      title: 'Operations',
-      tag: 'Endurance · co-op',
-      text: 'Back-to-back three-mission operations. Balances carry over (cap 50,000). Reinforcements cost Requisition. Drop below zero and you’re out.',
-      facts: ['Start with 50,000', 'Earnings cap at 50,000', '250 per reinforcement'],
-    },
-    {
-      id: 'blitz',
-      title: 'Budget Blitz',
-      tag: 'Elimination · competitive',
-      text: 'Each round, lock in a loadout and earn more than it cost (plus reinforcements). Anyone who doesn’t is eliminated. Last Helldiver standing wins.',
-      facts: ['Up to 50,000 per round', 'Profit or perish', 'Solo: longest streak'],
-    },
-  ];
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-12 rise">
@@ -58,30 +86,41 @@ export function Setup({ initialMode }: { initialMode: GameMode }) {
       </p>
 
       <div className="mt-8 grid md:grid-cols-2 gap-4">
-        {modes.map((m) => {
-          const on = m.id === mode;
-          return (
-            <button key={m.id} onClick={() => setMode(m.id)} className={`panel text-left p-6 transition-colors ${on ? 'panel-accent bg-yellow/[0.04]' : 'hover:bg-white/[0.02]'}`} aria-pressed={on}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="eyebrow">{m.tag}</div>
-                  <div className={`h-display text-[38px] mt-1 ${on ? 'text-yellow' : ''}`}>{m.title}</div>
-                </div>
-                <span className={`w-7 h-7 grid place-items-center border ${on ? 'bg-yellow text-yellow-ink border-yellow' : 'border-line-2 text-transparent'}`}>
-                  <Check />
-                </span>
-              </div>
-              <p className="text-text-2 mt-2">{m.text}</p>
-              <div className="flex gap-2 flex-wrap mt-4">
-                {m.facts.map((f) => (
-                  <span key={f} className="chip">
-                    {f}
-                  </span>
-                ))}
-              </div>
-            </button>
-          );
-        })}
+        <div className="panel panel-accent bg-yellow/[0.04] p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="eyebrow">Endurance · co-op</div>
+              <div className="h-display text-[38px] mt-1 text-yellow">Operations</div>
+            </div>
+            <span className="w-7 h-7 grid place-items-center border bg-yellow text-yellow-ink border-yellow">
+              <Check />
+            </span>
+          </div>
+          <p className="text-text-2 mt-2">Back-to-back three-mission operations. Balances carry over (cap 50,000). Fail a single mission and the run is over — how many operations can your squad survive?</p>
+          <div className="flex gap-2 flex-wrap mt-4">
+            {['Start with 50,000', 'Earnings cap at 50,000', 'Fail a mission = run over'].map((f) => (
+              <span key={f} className="chip">
+                {f}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="panel p-6 relative overflow-hidden select-none" aria-disabled>
+          <div className="opacity-35">
+            <div className="eyebrow">Elimination · competitive</div>
+            <div className="h-display text-[38px] mt-1">Budget Blitz</div>
+            <p className="text-text-2 mt-2">Each round, lock in a loadout and earn more than it cost. Anyone who doesn’t is eliminated. Last Helldiver standing wins.</p>
+          </div>
+          <div className="absolute inset-0 grid place-items-center">
+            <div className="rotate-[-6deg] w-[115%] text-center">
+              <div className="hazard h-3" />
+              <div className="bg-[#111] py-2.5 h-display text-yellow text-[30px] tracking-[0.12em]">Under construction</div>
+              <div className="hazard h-3" />
+              <div className="mt-2 text-[13px] text-text-2 font-sans normal-case">A hypothetical mode we might build.</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="mt-6 grid lg:grid-cols-[1.3fr_1fr] gap-4">
@@ -95,12 +134,21 @@ export function Setup({ initialMode }: { initialMode: GameMode }) {
               <div key={i} className="flex items-center gap-2">
                 <span className="w-2 self-stretch" style={{ background: DIVER_COLORS[i] }} />
                 <input
+                  ref={(el) => {
+                    inputs.current[i] = el;
+                  }}
                   className="field"
                   value={n}
                   maxLength={24}
                   placeholder={PLACEHOLDERS[i]}
                   onChange={(e) => setNames((ns) => ns.map((x, k) => (k === i ? e.target.value : x)))}
-                  onKeyDown={(e) => e.key === 'Enter' && start()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      nextField(i);
+                    }
+                  }}
+                  onFocus={() => setFocusIndex(i)}
                   aria-label={`Helldiver ${i + 1} name`}
                 />
                 {names.length > 1 && (
@@ -112,7 +160,13 @@ export function Setup({ initialMode }: { initialMode: GameMode }) {
             ))}
           </div>
           {names.length < 4 && (
-            <button className="btn btn-ghost btn-sm mt-3" onClick={() => setNames((ns) => [...ns, ''])}>
+            <button
+              className="btn btn-ghost btn-sm mt-3"
+              onClick={() => {
+                setNames((ns) => [...ns, '']);
+                setFocusIndex(names.length);
+              }}
+            >
               + Add Helldiver
             </button>
           )}
@@ -122,37 +176,34 @@ export function Setup({ initialMode }: { initialMode: GameMode }) {
         <div className="panel p-6 flex flex-col">
           <div className="font-display font-bold uppercase tracking-wider text-[18px]">Rules of engagement</div>
           <label className="mt-4 flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} className="mt-1 accent-[var(--yellow)] w-4 h-4" />
+            <input
+              type="checkbox"
+              checked={share}
+              onChange={(e) => (e.target.checked ? setShare(true) : setAskShame(true))}
+              className="mt-1 accent-[var(--yellow)] w-4 h-4"
+            />
             <span>
               <span className="font-semibold">Contribute to the Galactic Market</span>
-              <span className="block text-[13px] text-muted">Deployed loadouts are counted (anonymously) toward the next price update.</span>
+              <span className="block text-[13px] text-muted">Your deployed weapons and stratagems are counted, anonymously, toward the next daily price update. Nothing else.</span>
             </span>
           </label>
-          {mode === 'blitz' && (
-            <div className="mt-5 space-y-4">
-              <div>
-                <div className="flex justify-between text-[14px]">
-                  <span>Required profit per round</span>
-                  <span className="tnum text-yellow">{req(margin)}</span>
-                </div>
-                <input type="range" min={0} max={5000} step={250} value={margin} onChange={(e) => setMargin(+e.target.value)} aria-label="Required profit per round" />
-              </div>
-              <div>
-                <div className="flex justify-between text-[14px]">
-                  <span>Escalation each round</span>
-                  <span className="tnum text-yellow">+{req(escalation)}</span>
-                </div>
-                <input type="range" min={0} max={3000} step={250} value={escalation} onChange={(e) => setEscalation(+e.target.value)} aria-label="Escalation each round" />
-                <div className="text-[12.5px] text-muted">Raise the bar every round so even all-free loadouts eventually crack.</div>
-              </div>
-            </div>
-          )}
+          {!share && <div className="mt-3 text-[13px] text-warn">You’ve opted out. Your picks won’t move prices — you can opt back in any time before you start.</div>}
           <div className="flex-1" />
-          <button className="btn btn-primary btn-lg mt-6 w-full" onClick={start}>
-            Begin {mode === 'operations' ? 'operation' : 'blitz'}
+          <div className="mt-6 text-[12.5px] text-muted">Enter moves to the next name. Nothing is shared with the market until your squad actually deploys.</div>
+          <button ref={beginRef} className="btn btn-primary btn-lg mt-3 w-full" onClick={start}>
+            Begin operation
           </button>
         </div>
       </div>
+
+      <ShameModal
+        open={askShame}
+        onKeep={() => setAskShame(false)}
+        onOptOut={() => {
+          setShare(false);
+          setAskShame(false);
+        }}
+      />
     </div>
   );
 }

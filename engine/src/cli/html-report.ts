@@ -64,7 +64,7 @@ export function writeHtmlReport(results: SimResult[], file: string): void {
     .map((r) => {
       const level = CATEGORIES.map((c) => ({ label: CATEGORY_LABEL[c], color: CATEGORY_SERIES[c], values: r.days.map((d) => mean(FACTIONS.map((f) => d.median[f][c]))) }));
       const spend = [
-        { label: 'Typical loadout', color: CATEGORY_SERIES.stratagem, values: r.days.map((d) => d.typicalLoadout) },
+        { label: 'Average loadout price', color: CATEGORY_SERIES.stratagem, values: r.days.map((d) => d.typicalLoadout) },
         { label: 'Actually spent', color: CATEGORY_SERIES.primary, values: r.days.map((d) => d.avgSpend) },
       ];
       const checks = r.health.checks

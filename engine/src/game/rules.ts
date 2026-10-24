@@ -4,7 +4,10 @@ export interface EconomyRules {
   startingBalance: number;
   /** Balances above this are lost (the in-game Requisition cap). */
   maxBalance: number;
-  /** Charged per reinforcement (death) during a mission. */
+  /**
+   * Requisition charged per reinforcement. 0 = reinforcements are free (the current rule); kept as
+   * a knob because charging for them is a possible future rule.
+   */
   reinforcementCost: number;
   /** Suggested Requisition for a fully successful mission, by difficulty 1-10. */
   earningsByDifficulty: number[];
@@ -13,7 +16,7 @@ export interface EconomyRules {
   missionsPerOperation: number;
   /** Budget Blitz: most a diver may spend on one round's loadout. */
   blitzSpendCap: number;
-  /** Budget Blitz: profit (earned - spent - reinforcements) must exceed this to survive round 1. */
+  /** Budget Blitz: profit (earned - spent) must exceed this to survive round 1. */
   blitzMargin: number;
   /** Budget Blitz: added to the required margin each round after the first. */
   blitzMarginStep: number;
@@ -43,7 +46,7 @@ export function defaultRules(): EconomyRules {
   return {
     startingBalance: 50000,
     maxBalance: 50000,
-    reinforcementCost: 250,
+    reinforcementCost: 0,
     earningsByDifficulty: [0, 2000, 3000, 4000, 5500, 7000, 8000, 9000, 10000, 11000, 12000],
     outcomeMultiplier: { extracted: 1, completed: 0.6, failed: 0 },
     missionsPerOperation: 3,

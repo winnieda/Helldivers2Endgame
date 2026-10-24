@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { requireItem } from '../catalog/catalog';
 import {
+  randomLoadout,
   advance,
   beginDebrief,
   beginLoadout,
@@ -46,7 +47,7 @@ test('operations: buying, earning, the cap and the three-mission operation', () 
   const cost = kit.reduce((s, i) => s + quote(m, 'automatons', i).price, 0);
   c = playMission(c, m, kit, { outcome: 'extracted', earned: 11000, deaths: 2 });
   assert.equal(c.phase, 'summary');
-  assert.equal(c.divers[0].balance, 50000 - cost - 500 + 11000);
+  assert.equal(c.divers[0].balance, 50000 - cost + 11000);
   assert.equal(pendingCount(m), 2, 'both loadouts reached the market');
   c = advance(c);
   assert.equal(c.phase, 'loadout');
@@ -61,12 +62,15 @@ test('operations: buying, earning, the cap and the three-mission operation', () 
   assert.equal(c.operation, 2);
 });
 
-test('operations: going below zero is bankruptcy; run ends when everyone is out', () => {
+test('operations: one failed mission ends the run; reinforcements cost nothing', () => {
   const m = createMarket('tiers');
-  let c = beginLoadout(createCampaign({ mode: 'operations', names: ['Solo'], faction: 'terminids', seed: 2, rules: { startingBalance: 600 } }));
-  c = playMission(c, m, cheapestLoadout('terminids', m), { outcome: 'failed', deaths: 4 });
-  assert.equal(c.divers[0].status, 'bankrupt');
+  let c = beginLoadout(createCampaign({ mode: 'operations', names: ['Solo'], faction: 'terminids', seed: 2 }));
+  c = playMission(c, m, cheapestLoadout('terminids', m), { outcome: 'extracted', earned: 0, deaths: 6 });
+  assert.equal(c.divers[0].balance, 50000, 'free loadout + 6 reinforcements leaves the balance untouched');
+  assert.equal(c.phase, 'summary');
+  c = playMission(advance(c), m, cheapestLoadout('terminids', m), { outcome: 'failed' });
   assert.equal(c.phase, 'over');
+  assert.match(c.endedReason ?? '', /failed/);
 });
 
 test('cannot deploy unaffordable or invalid loadouts; cancel refunds and withdraws', () => {
@@ -100,4 +104,15 @@ test('budget blitz: earn more than you spend or you are out; last diver standing
   assert.equal(c.divers[1].status, 'eliminated');
   assert.equal(c.phase, 'over');
   assert.equal(c.winnerId, 'd1');
+});
+
+test('random loadouts are valid and always affordable', () => {
+  const m = createMarket('tiers');
+  for (const limit of [0, 3000, 15000, 50000]) {
+    for (let k = 0; k < 40; k++) {
+      const l = randomLoadout('illuminate', m, limit);
+      const c = setLoadout(beginLoadout(createCampaign({ mode: 'operations', names: ['R'], faction: 'illuminate', seed: k, rules: { startingBalance: limit } })), 'd1', l);
+      assert.ok(canDeploy(setReady(c, 'd1', true), m).ok, `limit ${limit}`);
+    }
+  }
 });

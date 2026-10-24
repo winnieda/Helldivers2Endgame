@@ -17,7 +17,7 @@ import { FACTION_SERIES } from '@/lib/palette';
 import { useApp } from '@/lib/store';
 import { LineChart } from '../charts';
 import { ArrowCode, FactionEmblem, ItemIcon } from '../icons';
-import { Delta, Modal, PriceTag, Req, TierBadge } from '../ui';
+import { Delta, Modal, PriceTag, Req } from '../ui';
 
 export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () => void }) {
   const { market, history, version } = useApp();
@@ -47,6 +47,7 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
         <ItemIcon item={item} size={72} />
         <div className="flex-1 min-w-[220px]">
           <div className="text-muted text-[14px]">
+            {item.fullName !== item.name && <span className="text-text-2">{item.fullName} · </span>}
             {item.category === 'stratagem' ? STRATAGEM_TYPE_LABEL[item.type!] + ' stratagem' : CATEGORY_SINGULAR[item.category]} · {item.source}
           </div>
           <div className="text-[13px] text-muted mt-0.5">
@@ -71,7 +72,6 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
                 <span className="inline-flex items-center gap-2 font-display font-bold uppercase tracking-wider">
                   <FactionEmblem faction={f} size={18} /> {FACTION_LABEL[f]}
                 </span>
-                <TierBadge tier={item.tiers[f]} />
               </div>
               {b ? (
                 <>
@@ -101,7 +101,7 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
 
       {charts && charts.days.length > 1 ? (
         <div className="mt-6 grid lg:grid-cols-2 gap-6">
-          <LineChart title="List price" subtitle="By faction market, per cycle" x={charts.days} series={charts.price} height={210} zero />
+          <LineChart title="List price" subtitle="By faction market, per day" x={charts.days} series={charts.price} height={210} zero />
           <LineChart title="Popularity" subtitle="Smoothed share of picks in its category (%)" x={charts.share.length ? charts.days : []} series={charts.share} height={210} yFormat={(v) => `${v.toFixed(1)}%`} zero />
         </div>
       ) : (
@@ -114,7 +114,7 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
           Each faction market measures how often this {item.category === 'stratagem' ? 'stratagem' : 'weapon'} is picked relative to a fair share of its category. An item at exactly a fair share is worth the{' '}
           {CATEGORY_SINGULAR[item.category].toLowerCase()} baseline of <span className="text-text">{req(p.baseline[item.category])}</span>; at 2× fair share its target is{' '}
           <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(2, p))}</span>, at half it’s <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(0.5, p))}</span>. Targets never
-          pass {req(p.baseline[item.category] * p.ceilingMultiple)} or drop under {req(p.baseline[item.category] * p.floorMultiple)}, and prices move at most {Math.round(p.maxStep * 100)}% per cycle toward them.
+          pass {req(p.baseline[item.category] * p.ceilingMultiple)} or drop under {req(p.baseline[item.category] * p.floorMultiple)}, and prices move at most {Math.round(p.maxStep * 100)}% per day toward them.
         </div>
       )}
     </Modal>

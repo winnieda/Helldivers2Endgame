@@ -110,7 +110,7 @@ function printDetail(r: SimResult): void {
     strats.slice(0, 5).forEach((x) => console.log('    ' + row(x)));
     console.log(c.dim('    …'));
     strats.slice(-3).forEach((x) => console.log('    ' + row(x)));
-    const free = r.final.books[f].free.map((i) => ITEMS[i].short).join(', ');
+    const free = r.final.books[f].free.map((i) => ITEMS[i].name).join(', ');
     console.log(c.dim(`    free now: ${free}`));
   }
 }
@@ -123,7 +123,7 @@ function writeCsv(r: SimResult, dir: string): void {
     r.prices[f].forEach((day, d) => lines.push([d, ...ids.map((i) => day[i.index])].join(',')));
     fs.writeFileSync(path.join(dir, `${r.scenario.id}_${r.config.algorithm}_${f}_prices.csv`), lines.join('\n'));
   }
-  const keys = ['day', 'loadouts', 'avgSpend', 'zeroCostShare', 'successRate', 'avgBalance', 'bankruptcies', 'maxPrice', 'floorShare', 'volatility'] as const;
+  const keys = ['day', 'loadouts', 'avgSpend', 'zeroCostShare', 'successRate', 'avgBalance', 'runsEnded', 'maxPrice', 'floorShare', 'volatility'] as const;
   const lines = [keys.join(',') + ',' + CATEGORIES.map((cat) => `diversity_${cat},freeUptake_${cat}`).join(',')];
   for (const d of r.days) lines.push([...keys.map((k) => d[k]), ...CATEGORIES.flatMap((cat) => [d.diversity[cat], d.freeUptake[cat]])].join(','));
   fs.writeFileSync(path.join(dir, `${r.scenario.id}_${r.config.algorithm}_daily.csv`), lines.join('\n'));

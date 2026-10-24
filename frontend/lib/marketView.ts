@@ -6,7 +6,7 @@ import { useApp } from './store';
 export interface ItemView {
   item: Item;
   q: Quote;
-  /** Fractional change of the list price since the previous cycle. */
+  /** Fractional change of the list price since the previous day. */
   change: number;
   share: number;
   /** Popularity relative to a fair share of the category (1 = exactly average). */
@@ -48,7 +48,7 @@ export function useMarketView(faction: Faction, trendLength = 30): { views: Map<
   }, [market, history, version, faction, trendLength]);
 }
 
-/** Biggest movers across all faction markets since the last cycle. */
+/** Biggest movers across all faction markets since yesterday. */
 export function useMovers(limit = 16) {
   const { market, version } = useApp();
   return useMemo(() => {

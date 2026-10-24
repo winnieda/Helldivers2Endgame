@@ -24,11 +24,12 @@ self-hosted and all state lives in the browser's localStorage.
 
 | Page | What it does |
 |---|---|
-| **Deploy** (`/play`) | Start an **Operations** run (three-mission operations, 50k balance and cap, bankrupt = out) or a **Budget Blitz** (earn more than you spend each round or you're eliminated). One to four Helldivers share the device. The flow: briefing (front + difficulty) → armory (buy a loadout per diver) → deploy → debrief (outcome, Requisition earned, reinforcements) → summary. Deployed loadouts are queued, anonymously, for the market. |
-| **Galactic Market** (`/market`) | Per-faction price boards for all 196 items, with change since the last cycle, sparklines, popularity, the price each item is heading toward, and per-item history charts. |
+| **Deploy** (`/play`) | Start an **Operations** run: three-mission operations, a 50k balance and cap, and one failed mission ends the run. **Budget Blitz** is shown but marked under construction. One to four Helldivers share the device. The flow: briefing (front + difficulty) → armory (buy a loadout per diver, random kit, abandon) → deploy → debrief (outcome, Requisition earned) → summary. Deployed loadouts are queued, anonymously, for the market; opting out is allowed (with a pop-up). |
+| **Galactic Market** (`/market`) | Per-faction price boards for all 196 items, with change since yesterday, sparklines, popularity, the price each item is heading toward, and per-item history charts. |
 | **Ship terminal** (press <kbd>`</kbd> anywhere) | The market console. **Prices only change when you run `update` here**; there is no daily timer or per-purchase update. Also `status`, `prices bots strat`, `price railgun`, `sim squads 50`, `sim day 50`, `config set …`, `init <preset>`, `sim run <scenario>`, `export`/`import`. Type `help`. |
 | **Market Lab** (`/lab`) | Runs months of simulated rule-based squads against a copy of the market, then grades the result with automated health checks and charts. Tune every pricing parameter and the player mix, and compare the new algorithm with the original prototype's. You can push tuned parameters, or a matured market, to the live game. |
-| **Field Manual** (`/manual`) | Rules, how pricing works (with a live plot of the price curve), testing tools and command reference. |
+| **Field Manual** (`/manual`) | Choose **Basic Training** (short rules + a market tutorial) or **The Complete Manual** (every rule, the full equations with live parameters, testing, data sources, roadmap, FAQ). |
+| **Credits & Legal** (`/credits`) | Out-of-universe page: disclaimer, credits for every source, removal-request policy, privacy. Linked from the top bar. |
 
 Three items are always free: **R-2124 Constitution, P-2 Peacemaker and G-12 High Explosive**.
 Each front also has four rotating free stratagems, so a zero-cost loadout is always possible.
@@ -44,7 +45,7 @@ npm run market -- sim squads 200             # queue synthetic loadouts (like th
 npm run market -- update                     # run the price update
 npm run market -- prices bots strat --sort share
 npm run market -- config set anchored.elasticityUp 1.1
-npm run market -- export-csv data/csv        # per-front, per-category price CSVs, one row per cycle
+npm run market -- export-csv data/csv        # per-front, per-category price CSVs, one row per market day
 
 npm run sim                                  # the whole scenario suite (anchored algorithm)
 npm run sim -- --compare                     # new algorithm vs the original prototype's, side by side
@@ -68,15 +69,15 @@ Details, parameters and test results: **[docs/PRICING.md](docs/PRICING.md)**.
 2. **Set a target.** `target = baseline × F(share / fairShare)`, where `F` is a power law that bends
    smoothly into a ceiling and a floor. Because `F` is bounded, prices can't run away or
    collapse no matter how people play.
-3. **Step toward it.** At most ±20% per cycle, with ×1.1 / ×0.9 up/down nudges. Cheap items rise
+3. **Step toward it.** At most ±20% per day, with ×1.1 / ×0.9 up/down nudges. Cheap items rise
    slower and expensive items react faster. A category whose spending runs hot rises slower and
    falls faster.
 
 The simulation suite runs 12 scenarios: launch, blank-slate and inverted starts, meta-heavy,
 frugal and niche-loving playerbases, a balance patch, a Major Order, low traffic, a traffic surge
 and brigading. The anchored algorithm passes 9 and warns on 3. The original prototype's algorithm
-fails 11 and warns on the 12th, mostly through steady deflation (25–40% a month) that pins gear at
-the 10 Requisition floor. Under brigading, one of its items reaches the 50,000 hard cap.
+fails 5 and warns on 7, mostly through steady deflation (20–40% a month) that pins gear at the 10
+Requisition floor. Under brigading, one of its items reaches the 50,000 hard cap.
 
 ## Repository layout
 
@@ -84,7 +85,7 @@ the 10 Requisition floor. Under brigading, one of its items reaches the 50,000 h
 engine/                 Economic engine, pure TypeScript (no DOM). Used by the web app, the CLIs and later the price-update Lambda.
   src/catalog/          196-item catalog generated from u.gg tier lists + wiki stratagem codes
   src/market/           market state, anchored + legacy pricing, presets, free rotation, history
-  src/game/             economy rules and the campaign state machine (Operations, Budget Blitz)
+  src/game/             economy rules and the campaign state machine (Operations; Budget Blitz is coded but not offered yet)
   src/sim/              rule-based squad agents, scenarios, simulator, health checks
   src/console/          the shared terminal command set
   src/cli/              `npm run market`, `npm run sim`, HTML reports
@@ -122,13 +123,19 @@ Initialization presets (`init <preset>`) support different kinds of testing:
 - **Price updates** are the `update` command (browser terminal or CLI), per the brief. Deployed
   loadouts wait in a pending queue until then.
 - **Mission results** are entered by the players. The debrief suggests earnings by difficulty
-  (11,000 for a Helldive extraction, 12,000 for Super Helldive). Each reinforcement costs 250, about
-  1,000 for a typical mission.
-- **Bankruptcy** happens when a balance would go below zero after the reinforcement bill. Earnings
-  above the 50,000 cap are lost.
-- **Budget Blitz:** you survive a round with profit above zero (or an optional, escalating
-  margin). The last diver standing wins. If the last divers fall in the same round, the higher
-  total profit wins. Solo, the score is your streak.
+  (11,000 for a Helldive extraction, 12,000 for Super Helldive). Reinforcements are recorded (marked
+  WIP) but cost nothing; `rules.reinforcementCost` defaults to 0 and is kept only as a possible future rule.
+- **Operations end on the first failed mission.** Money only limits what you can afford; a zero-cost
+  loadout is always possible, so there is no bankruptcy. Earnings above the 50,000 cap are lost.
+- **Budget Blitz** is under construction: the engine has a draft (earn more than you spend each round
+  or you're eliminated; last diver standing wins), but the UI doesn't offer it.
+- **Game art.** Faction icons, stratagem icons, weapon renders and damage/armor icons come from the
+  Helldivers Wiki (fetched with `python3 tools/catalog/assets.py discover && … download`; renders are
+  trimmed to 400px with Pillow) into
+  `frontend/public/game/`. Everything is credited on the Credits & Legal page, and removal requests
+  will be honoured immediately. Items without art fall back to original pictograms.
+- **Names** are shown as plain titles ("Punisher", "Exploding Crossbow"); full designations stay
+  searchable and appear in item details.
 - **Multiplayer** is hot-seat on one device for now. The campaign engine is a pure state machine,
   so a future AppSync/DynamoDB lobby can run the same transitions server-side.
 

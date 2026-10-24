@@ -59,7 +59,7 @@ interface LineChartProps {
   className?: string;
 }
 
-export function LineChart({ title, subtitle, x, series, height = 240, yFormat = compact, xFormat = (v) => `#${v}`, zero, yDomain, markers = [], reference, xLabel = 'Cycle', className = '' }: LineChartProps) {
+export function LineChart({ title, subtitle, x, series, height = 240, yFormat = compact, xFormat = (v) => `#${v}`, zero, yDomain, markers = [], reference, xLabel = 'Day', className = '' }: LineChartProps) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const [table, setTable] = useState(false);

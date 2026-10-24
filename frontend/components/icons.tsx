@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { Faction, Item } from '@engine';
+import type { DamageType, Faction, Item } from '@engine';
 import { ARROWS, familyColor } from '@/lib/format';
 
 /*
@@ -304,14 +304,56 @@ const GLYPHS: Record<string, ReactNode> = {
   ),
 };
 
+/** Base URL for game art in /public/game (works under any static host path). */
+export const GAME = '/game';
+
+/**
+ * Item icon: the in-game stratagem icon or the wiki's weapon render when we have one, otherwise
+ * an original pictogram in the same frame.
+ */
 export function ItemIcon({ item, size = 44, className = '' }: { item: Item; size?: number; className?: string }) {
+  if (item.art && item.category === 'stratagem') {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`${GAME}/${item.art}`} alt="" width={size} height={size} className={`item-art shrink-0 ${className}`} style={{ width: size, height: size }} draggable={false} />;
+  }
+  // Weapon renders are wide, so their tile is too.
+  const width = item.art ? Math.round(size * 1.7) : size;
   return (
-    <span
-      className={`item-icon ${className}`}
-      style={{ '--c': familyColor(item), width: size, height: size } as CSSProperties}
-      aria-hidden
-    >
-      <svg viewBox="0 0 24 24">{GLYPHS[item.glyph] ?? GLYPHS['g-special']}</svg>
+    <span className={`item-icon ${item.art ? 'item-icon-render' : ''} ${className}`} style={{ '--c': familyColor(item), width, height: size } as CSSProperties} aria-hidden>
+      {item.art ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`${GAME}/${item.art}`} alt="" className="item-render" draggable={false} />
+      ) : (
+        <svg viewBox="0 0 24 24">{GLYPHS[item.glyph] ?? GLYPHS['g-special']}</svg>
+      )}
+    </span>
+  );
+}
+
+const DAMAGE_LABEL: Record<DamageType, string> = {
+  ballistic: 'Ballistic',
+  explosion: 'Explosive',
+  fire: 'Fire',
+  laser: 'Laser',
+  arc: 'Arc',
+  gas: 'Gas',
+  energy: 'Energy',
+  melee: 'Melee',
+};
+
+/** Damage-type and armor-penetration badges for weapons (game icons). */
+export function WeaponBadges({ item, size = 16 }: { item: Item; size?: number }) {
+  if (item.category === 'stratagem') return null;
+  return (
+    <span className="inline-flex items-center gap-1 shrink-0">
+      {item.damage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`${GAME}/damage/${item.damage}.svg`} alt={`${DAMAGE_LABEL[item.damage]} damage`} title={`${DAMAGE_LABEL[item.damage]} damage`} width={size} height={size} style={{ width: size, height: size }} />
+      )}
+      {item.ap !== undefined && item.ap <= 10 && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`${GAME}/ap/${item.ap}.png`} alt={`Armor penetration ${item.ap}`} title={`Armor penetration ${item.ap}`} width={size} height={size} style={{ width: 'auto', height: size }} />
+      )}
     </span>
   );
 }
@@ -327,38 +369,9 @@ export function ArrowCode({ code, size = 'md', className = '' }: { code?: string
   );
 }
 
-const EMBLEMS: Record<Faction, ReactNode> = {
-  terminids: (
-    <>
-      <path {...F} d="M12 3.5c4.2 0 7.2 3.1 7.2 7.2 0 3-1.5 5.6-4 7.1l-1.1-3.1H9.9l-1.1 3.1c-2.5-1.5-4-4.1-4-7.1 0-4.1 3-7.2 7.2-7.2z" />
-      <path {...S} strokeWidth={1.8} d="M8.7 18.6c-1.6.9-2.2 2.4-1.7 3.6M15.3 18.6c1.6.9 2.2 2.4 1.7 3.6M7 6.5 4.2 3.5M17 6.5l2.8-3" />
-      <circle cx="9.3" cy="10" r="1.3" fill="#0a0e12" />
-      <circle cx="14.7" cy="10" r="1.3" fill="#0a0e12" />
-    </>
-  ),
-  automatons: (
-    <>
-      <path {...F} d="M5 4.5h14v9.5l-3 3v3.5H8V17l-3-3z" />
-      <path fill="#0a0e12" d="M7.5 9h3.5v2.5H7.5zM13 9h3.5v2.5H13z" />
-      <path {...CUT} strokeWidth={1.2} d="M10 17v3.5M12 17v3.5M14 17v3.5" />
-    </>
-  ),
-  illuminate: (
-    <>
-      <path {...S} strokeWidth={1.8} d="M2.5 12c3-4.8 6.4-7 9.5-7s6.5 2.2 9.5 7c-3 4.8-6.4 7-9.5 7s-6.5-2.2-9.5-7z" />
-      <circle {...F} cx="12" cy="12" r="3.6" />
-      <circle cx="12" cy="12" r="1.3" fill="#0a0e12" />
-      <path {...S} d="M12 2v1.6M12 20.4V22M4 4.5l1.2 1.2M20 4.5l-1.2 1.2" />
-    </>
-  ),
-};
-
 export function FactionEmblem({ faction, size = 28, className = '' }: { faction: Faction; size?: number; className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} className={className} style={{ color: `var(--${faction})` }} aria-hidden>
-      {EMBLEMS[faction]}
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`${GAME}/factions/${faction}.svg`} alt="" width={size} height={size} className={`shrink-0 ${className}`} style={{ width: size, height: size }} draggable={false} />;
 }
 
 /** Requisition slip. */
@@ -371,16 +384,10 @@ export function ReqIcon({ size = 14, className = '' }: { size?: number; classNam
   );
 }
 
-/** Original emblem for the companion site (not the Super Earth insignia). */
+/** Super Earth emblem (game art), used as the site mark next to an "unofficial" tag. */
 export function Emblem({ size = 40, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg viewBox="0 0 48 48" width={size} height={size} className={className} aria-hidden>
-      <circle cx="24" cy="24" r="21" fill="none" stroke="var(--yellow)" strokeWidth="2.5" />
-      <circle cx="24" cy="24" r="16" fill="none" stroke="var(--yellow)" strokeWidth="1" opacity="0.5" />
-      <path d="M10 18l14 14 14-14-4-1-10 9.5L14 17z" fill="var(--yellow)" />
-      <path d="M24 7.5l1.6 4.4h4.6l-3.7 2.8 1.4 4.5L24 16.5l-3.9 2.7 1.4-4.5-3.7-2.8h4.6z" fill="var(--yellow)" />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`${GAME}/super-earth.svg`} alt="" width={size} height={size} className={`shrink-0 ${className}`} style={{ width: size, height: size }} draggable={false} />;
 }
 
 export function Check({ size = 14 }: { size?: number }) {

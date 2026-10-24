@@ -45,6 +45,18 @@ WIKI_PAGE = 'helldivers.wiki.gg/wiki/Stratagems'
 
 # These three are permanently free no matter what the market does.
 ALWAYS_FREE = {'R-2124 Constitution', 'P-2 Peacemaker', 'G-12 High Explosive'}
+# u.gg spellings that differ from the in-game names. Item ids still derive from the u.gg name so
+# saved markets keep working.
+NAME_OVERRIDES = {
+    'CB-9 Explosive Crossbow': 'CB-9 Exploding Crossbow',
+    'G-89 Smokecreen': 'G-89 Smokescreen',
+    'SG-225SP Breaker SPRAY & PRAY': 'SG-225SP Breaker Spray & Pray',
+    'M6C-SOCOM': 'M6C/SOCOM Pistol',
+}
+# Plain titles that need help: generic class words keep their designation ("M90A Shotgun"), and
+# names where the designation and title are fused get an explicit title.
+GENERIC_TITLES = {'Shotgun', 'SMG', 'Assault Rifle', 'Pistol', 'Rifle'}
+PLAIN_OVERRIDES = {'M6C/SOCOM Pistol': 'SOCOM Pistol'}
 # Fallbacks for codes an older wiki capture may lack (verified against the 2026-10-11 capture).
 MANUAL_CODES = {'TD-110 Maelstrom': {'code': 'LDRDLDULR', 'cooldown': 780}}
 BASE_SOURCES = {'Patriotic Administration Center', 'Starter Weapon', 'Starter Grenade', 'Helldivers Mobilize'}
@@ -280,7 +292,7 @@ def ap_value(s):
 
 
 def classify(item, row, key):
-    n = item['name'].lower()
+    n = item['fullName'].lower()
     if key == 'primary':
         wt = (row.get('Weapon Type') or '').lower()
         if 'flam' in n or 'torcher' in n:
@@ -344,54 +356,98 @@ GLYPH_RULES = [
 def glyph_for(item):
     if item['category'] != 'stratagem':
         return {'primary': 'p-', 'secondary': 'x-', 'throwable': 'g-'}[item['category']] + item['weaponClass']
-    n = item['name'].lower()
+    n = item['fullName'].lower()
     for t, keys, g in GLYPH_RULES:
         if t == item['type'] and any(k in n for k in keys):
             return g
     return 'o-barrage'
 
 
+def damage_type(item):
+    """
+    Headline damage type for weapons (drives the damage icon). A weapon that adds anything to
+    ballistic damage shows the extra type instead: incendiary shotguns are fire, plasma and
+    explosive rounds are explosion, and so on.
+    """
+    n = item['fullName'].lower()
+    d = (item.get('designation') or '').upper()
+    if any(k in n for k in ('stim', 'smoke', 'shield', 'lure')):
+        return None
+    if any(k in n for k in ('incendiary', 'cookout', 'torcher', 'crisper', 'stoker', 'coyote', 'immolation', 'pyrotech', 'thermite', 'flam')):
+        return 'fire'
+    if 'gas' in n:
+        return 'gas'
+    if d.startswith('LAS') or 'hot-shot' in n:
+        return 'laser'
+    if d.startswith('ARC') or 'arc' in n.split() or 'stun' in n:
+        return 'arc'
+    if d.startswith('CQC') or 'knife' in n:
+        return 'melee'
+    if d.startswith('PLAS') or 'plasma' in n or item.get('weaponClass') in ('explosive', 'frag') or 'urchin' in n or 'seeker' in n or 'melta' in n:
+        return 'explosion'
+    return 'ballistic'
+
+
 def cmd_build(args):
     ugg = json.load(open(os.path.join(SOURCES, 'ugg-tiers.json'), encoding='utf-8'))
     wiki = json.load(open(os.path.join(SOURCES, 'wiki-stratagems.json'), encoding='utf-8'))['codes']
+    manifest_path = os.path.join(SOURCES, 'art-manifest.json')
+    art = json.load(open(manifest_path, encoding='utf-8')) if os.path.exists(manifest_path) else {}
     items, seen, missing_codes = [], set(), []
     for key, page in ugg['pages'].items():
         name_col = page['cols'][0]
         for row in page['rows']:
-            name = row[name_col].strip()
-            designation, short = split_designation(name)
+            ugg_name = row[name_col].strip()
+            full = NAME_OVERRIDES.get(ugg_name, ugg_name)
+            designation, plain = split_designation(full)
+            plain = PLAIN_OVERRIDES.get(full, full if plain in GENERIC_TITLES else plain)
             category = key if key in ('primary', 'secondary', 'throwable') else 'stratagem'
             tiers = {}
             for faction, col in (('automatons', 'vs Automatons'), ('terminids', 'vs Terminids'), ('illuminate', 'vs Illuminate')):
                 tiers[faction] = TIER_MAP.get((row.get(col) or '').strip())
             source = (row.get('Source') or '').strip() or 'Unknown'
+            iid = slug(ugg_name)
             item = {
-                'id': slug(name), 'name': name, 'short': short, 'designation': designation,
+                'id': iid, 'name': plain, 'fullName': full, 'designation': designation,
                 'category': category, 'source': source, 'ownership': ownership(source), 'tiers': tiers,
             }
             if category == 'stratagem':
                 item['type'] = key
-                w = wiki.get(name) or MANUAL_CODES.get(name)
+                w = wiki.get(ugg_name) or wiki.get(full) or MANUAL_CODES.get(ugg_name)
                 if w:
                     item['code'] = w['code']
                     if w.get('cooldown'):
                         item['cooldown'] = w['cooldown']
                 else:
-                    missing_codes.append(name)
+                    missing_codes.append(full)
                 item['backpack'] = key == 'backpack' or (key == 'support' and (row.get('Backpack') or '').lower() == 'yes')
+                if f'stratagems/{iid}.svg' in art:
+                    item['art'] = f'stratagems/{iid}.svg'
             else:
                 item['weaponClass'] = classify(item, row, key)
+                dmg = damage_type(item)
+                if dmg:
+                    item['damage'] = dmg
+                if f'weapons/{iid}.png' in art:
+                    item['art'] = f'weapons/{iid}.png'
             ap = ap_value(row.get('AP') or row.get('Armor Pen'))
             if ap is not None:
                 item['ap'] = ap
-            if name in ALWAYS_FREE:
+            if ugg_name in ALWAYS_FREE:
                 item['alwaysFree'] = True
             item['glyph'] = glyph_for(item)
             if item['id'] in seen:
                 raise SystemExit('duplicate id ' + item['id'])
             seen.add(item['id'])
             items.append(item)
-    free = [i['name'] for i in items if i.get('alwaysFree')]
+    # Plain titles must stay unique; the few true duplicates keep their designation.
+    counts = {}
+    for i in items:
+        counts[i['name']] = counts.get(i['name'], 0) + 1
+    for i in items:
+        if counts[i['name']] > 1:
+            i['name'] = i['fullName']
+    free = [i['fullName'] for i in items if i.get('alwaysFree')]
     if len(free) != len(ALWAYS_FREE):
         raise SystemExit('could not find all always-free items, found: %s' % free)
 
@@ -400,7 +456,7 @@ def cmd_build(args):
     ts = (
         '// AUTO-GENERATED by tools/catalog/catalog.py build -- do not edit by hand.\n'
         '// Tier ratings: u.gg Helldivers 2 tier lists (vs Automatons / Terminids / Illuminate).\n'
-        '// Stratagem codes + cooldowns: helldivers.wiki.gg.\n'
+        '// Stratagem codes, cooldowns and game art: helldivers.wiki.gg. Game art (c) Arrowhead Game Studios / Sony.\n'
         '// u.gg data fetched %s\n' % ugg.get('fetched', '?') +
         "import type { RawItem } from './types';\n\n"
         'export const CATALOG_SOURCES = %s as const;\n\n' % json.dumps({'fetched': ugg.get('fetched'), 'pages': origins}, indent=1) +
@@ -411,7 +467,7 @@ def cmd_build(args):
     by_cat = {}
     for i in items:
         by_cat[i['category']] = by_cat.get(i['category'], 0) + 1
-    print('Wrote %d items %s -> %s' % (len(items), by_cat, os.path.relpath(OUT_TS, ROOT)))
+    print('Wrote %d items %s -> %s (%d with game art)' % (len(items), by_cat, os.path.relpath(OUT_TS, ROOT), sum(1 for i in items if i.get('art'))))
     if missing_codes:
         print('  ! stratagems without wiki codes:', missing_codes)
 

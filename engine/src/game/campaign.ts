@@ -5,14 +5,17 @@
  *
  *   briefing ──► loadout ──► deployed ──► debrief ──► summary ──► (loadout | briefing | over)
  *
- * Operations: each diver has a balance (start 50,000, cap 50,000). Loadouts are bought at lock-in;
- * after the mission, reinforcements are charged and earnings paid. A diver whose balance would
- * go negative is bankrupt and out. Operations are three missions on one front; the run lasts
- * until every diver is bankrupt or the squad stands down.
+ * Operations: each diver has a balance (start 50,000, cap 50,000). Loadouts are bought at lock-in
+ * and earnings are paid after the mission. Operations are three missions on one front. Failing a
+ * single mission ends the run; money only limits what you can afford (a free loadout is always
+ * possible), so you can't go bankrupt.
  *
- * Budget Blitz: no balances. Each round a diver may spend up to the blitz cap; after the mission
- * they must have earned more than they spent (plus reinforcements, plus any required margin) or
+ * Budget Blitz (under construction, not offered in the UI yet): no balances. Each round a diver
+ * may spend up to the blitz cap and must earn more than they spent (plus any required margin) or
  * they're eliminated. Last diver standing wins; solo divers play for the longest streak.
+ *
+ * Reinforcements are recorded but cost nothing: `rules.reinforcementCost` defaults to 0 and is
+ * kept only as a possible future rule.
  */
 import { ITEMS, tierScore } from '../catalog/catalog';
 import { SLOT_CATEGORIES, type Faction } from '../catalog/types';
@@ -25,7 +28,7 @@ import { blitzRequiredMargin, defaultRules, suggestedEarnings, type EconomyRules
 
 export type GameMode = 'operations' | 'blitz';
 export type Phase = 'briefing' | 'loadout' | 'deployed' | 'debrief' | 'summary' | 'over';
-export type DiverStatus = 'active' | 'bankrupt' | 'eliminated';
+export type DiverStatus = 'active' | 'eliminated';
 
 export interface MissionResult {
   outcome: MissionOutcome;
@@ -58,7 +61,7 @@ export interface Diver {
   locked: { items: number[]; paid: number[]; total: number } | null;
   result: MissionResult | null;
   stats: DiverStats;
-  /** Mission number on which they went bankrupt or were eliminated. */
+  /** Mission number on which they were eliminated (Budget Blitz). */
   outAt?: number;
 }
 
@@ -177,7 +180,7 @@ export function createCampaign(opts: NewCampaign): Campaign {
     missionInOp: 1,
     round: 1,
     faction: opts.faction ?? 'terminids',
-    difficulty: opts.difficulty ?? 9,
+    difficulty: opts.difficulty ?? 10,
     log: [],
     contributeToMarket: opts.contributeToMarket ?? true,
     endedReason: null,
@@ -339,7 +342,7 @@ export function setSquadOutcome(c: Campaign, outcome: MissionOutcome): Campaign 
   return activeDivers(c).reduce((acc, d) => setResult(acc, d.id, { outcome }), c);
 }
 
-/** Settles the mission: charges reinforcements, pays out, applies bankruptcy / elimination. */
+/** Settles the mission: pays out, ends an Operations run on failure, applies Blitz elimination. */
 export function finalizeMission(c: Campaign, opts: { marketDay?: number } = {}): Campaign {
   assertPhase(c, 'debrief');
   const r = c.rules;
@@ -357,11 +360,7 @@ export function finalizeMission(c: Campaign, opts: { marketDay?: number } = {}):
     if (c.mode === 'operations') {
       const raw = d.balance - reinforcement + res.earned;
       wasted = Math.max(0, raw - r.maxBalance);
-      balance = Math.min(r.maxBalance, raw);
-      if (balance < 0) {
-        status = 'bankrupt';
-        balance = 0;
-      }
+      balance = Math.max(0, Math.min(r.maxBalance, raw));
     } else if (profit <= margin) status = 'eliminated';
     const stats: DiverStats = {
       missions: d.stats.missions + 1,
@@ -405,7 +404,8 @@ export function finalizeMission(c: Campaign, opts: { marketDay?: number } = {}):
   let next: Campaign = touch({ ...c, divers, phase: 'summary', log: [...c.log, record] });
 
   const alive = activeDivers(next);
-  if (c.mode === 'operations' && alive.length === 0) next = { ...next, phase: 'over', endedReason: 'Every Helldiver went bankrupt.' };
+  if (c.mode === 'operations' && records.some((x) => x.outcome === 'failed'))
+    next = { ...next, phase: 'over', endedReason: `Mission ${c.missionInOp} of operation ${c.operation} failed. The run is over.` };
   if (c.mode === 'blitz') {
     if (c.divers.length > 1 && alive.length <= 1) {
       const winner = alive[0] ?? [...divers].filter((d) => d.outAt === c.missionNumber).sort((a, b) => b.stats.profit - a.stats.profit)[0];
@@ -472,5 +472,28 @@ export function cheapestLoadout(faction: Faction, market: MarketState): number[]
     out.push(best);
     if (cat === 'stratagem') taken.add(best);
   });
+  return out;
+}
+
+/**
+ * A random loadout that fits within `limit` Requisition: each slot draws uniformly from what is
+ * still affordable after reserving enough for the cheapest options in the remaining slots.
+ */
+export function randomLoadout(faction: Faction, market: MarketState, limit: number, rng: Rng = new Rng(now())): number[] {
+  const price = (i: number) => quote(market, faction, i).price;
+  const pools = SLOT_CATEGORIES.map((cat) => ITEMS.filter((it) => it.category === cat && it.tiers[faction]).map((it) => it.index));
+  const cheapest = pools.map((pool) => Math.min(...pool.map(price)));
+  const order = rng.shuffle([...SLOT_CATEGORIES.keys()]);
+  const out = new Array<number>(SLOT_CATEGORIES.length).fill(-1);
+  let budget = limit;
+  for (let k = 0; k < order.length; k++) {
+    const slot = order[k];
+    const reserve = order.slice(k + 1).reduce((s, o) => s + cheapest[o], 0);
+    const taken = new Set(out.filter((i, s) => i >= 0 && SLOT_CATEGORIES[s] === 'stratagem'));
+    const options = pools[slot].filter((i) => !(SLOT_CATEGORIES[slot] === 'stratagem' && taken.has(i)) && price(i) <= budget - reserve);
+    const pick = options.length ? rng.pick(options) : pools[slot].filter((i) => !taken.has(i)).sort((a, b) => price(a) - price(b))[0];
+    out[slot] = pick;
+    budget -= price(pick);
+  }
   return out;
 }

@@ -94,7 +94,7 @@ export function ResultCharts({ results }: { results: SimResult[] }) {
       values: avgFactions(r, (f) => r.days.map((d) => d.median[f].stratagem)),
     }));
     const spend = [
-      { id: 'typical', label: 'Typical loadout', color: CATEGORY_SERIES.stratagem, values: primary.days.map((d) => d.typicalLoadout) },
+      { id: 'typical', label: 'Average loadout price', color: CATEGORY_SERIES.stratagem, values: primary.days.map((d) => d.typicalLoadout) },
       { id: 'spent', label: 'Actually spent', color: CATEGORY_SERIES.primary, values: primary.days.map((d) => d.avgSpend) },
     ];
     const free = CATEGORIES.map((c) => ({ id: c, label: CATEGORY_LABEL[c], color: CATEGORY_SERIES[c], values: primary.days.map((d) => d.freeUptake[c] * 100) }));
@@ -132,8 +132,8 @@ export function ResultCharts({ results }: { results: SimResult[] }) {
         </div>
         <div className="panel p-4">
           <LineChart
-            title="Typical loadout vs what divers spent"
-            subtitle="Typical = community picks at full list price; spent is capped by income"
+            title="Average loadout price vs what divers spent"
+            subtitle="Average = community picks at full list price; spent is capped by income"
             x={x}
             series={charts.spend}
             reference={{ y: 24000, label: '24k design target' }}
@@ -145,7 +145,7 @@ export function ResultCharts({ results }: { results: SimResult[] }) {
           <LineChart title="Free gear uptake" subtitle="Share of picks that cost nothing (%)" x={x} series={charts.free} yFormat={(v) => `${v.toFixed(0)}%`} yDomain={[0, 100]} markers={markers} />
         </div>
         <div className="panel p-4">
-          <LineChart title="Daily price movement" subtitle="Popularity-weighted average move per cycle (%)" x={x} series={charts.vol} yFormat={(v) => `${v.toFixed(1)}%`} markers={markers} zero />
+          <LineChart title="Daily price movement" subtitle="Popularity-weighted average move per day (%)" x={x} series={charts.vol} yFormat={(v) => `${v.toFixed(1)}%`} markers={markers} zero />
         </div>
       </div>
 
@@ -181,7 +181,7 @@ export function ResultCharts({ results }: { results: SimResult[] }) {
                   return (
                     <div key={p.id} className="flex items-center gap-2 py-1 border-t border-line/50">
                       <ItemIcon item={it} size={22} />
-                      <span className="flex-1 truncate">{it.short}</span>
+                      <span className="flex-1 truncate">{it.name}</span>
                       <span className="tnum text-text-2">{compact(p.y)}</span>
                     </div>
                   );
@@ -208,13 +208,13 @@ export function VerdictBanner({ results }: { results: SimResult[] }) {
             </span>
             <div className="flex-1">
               <div className="eyebrow">
-                {r.scenario.name} · {r.config.algorithm === 'anchored' ? 'anchored (new)' : 'legacy (prototype)'} · {r.days.length} cycles · {r.elapsedMs} ms
+                {r.scenario.name} · {r.config.algorithm === 'anchored' ? 'anchored (new)' : 'legacy (prototype)'} · {r.days.length} days · {r.elapsedMs} ms
               </div>
               <div className="h-display text-[30px]" style={{ color: VERDICT_COLOR[v] }}>
                 {v === 'pass' ? 'Market healthy' : v === 'warn' ? 'Healthy with warnings' : 'Something went wrong'}
               </div>
               <div className="text-[13px] text-muted">
-                {counts.pass ?? 0} pass · {counts.warn ?? 0} warn · {counts.fail ?? 0} fail · final typical loadout {req(r.days[r.days.length - 1]?.typicalLoadout ?? 0)}
+                {counts.pass ?? 0} pass · {counts.warn ?? 0} warn · {counts.fail ?? 0} fail · final average loadout price {req(r.days[r.days.length - 1]?.typicalLoadout ?? 0)}
               </div>
             </div>
           </div>

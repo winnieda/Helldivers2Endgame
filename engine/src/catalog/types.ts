@@ -17,11 +17,15 @@ export type Tier = (typeof TIERS)[number];
  */
 export type Ownership = 'base' | 'warbond' | 'superstore' | 'special';
 
+export type DamageType = 'ballistic' | 'explosion' | 'fire' | 'laser' | 'arc' | 'gas' | 'energy' | 'melee';
+
 /** Shape of an entry in the generated catalog.data.ts. */
 export interface RawItem {
   id: string;
+  /** Plain-language title shown everywhere ("Punisher"); unique across the catalog. */
   name: string;
-  short: string;
+  /** Full in-game name with designation ("SG-8 Punisher"). */
+  fullName: string;
   designation: string | null;
   category: Category;
   source: string;
@@ -36,8 +40,13 @@ export interface RawItem {
   backpack?: boolean;
   weaponClass?: string;
   ap?: number;
+  /** Headline damage type for weapons (anything beyond plain ballistic wins). */
+  damage?: DamageType;
   alwaysFree?: boolean;
+  /** In-app pictogram used when there is no game art. */
   glyph: string;
+  /** Game art path relative to the web app's /game/ folder (stratagem icon or weapon render). */
+  art?: string;
 }
 
 export interface Item extends RawItem {

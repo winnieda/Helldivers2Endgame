@@ -77,10 +77,10 @@ interface CommandDef {
 function findItem(query: string): Item | string {
   const hits = searchItems(query);
   if (!hits.length) return `No item matches "${query}".`;
-  if (hits.length > 1 && !hits.some((h) => h.short.toLowerCase() === query.toLowerCase() || h.name.toLowerCase() === query.toLowerCase())) {
+  if (hits.length > 1 && !hits.some((h) => h.name.toLowerCase() === query.toLowerCase() || h.name.toLowerCase() === query.toLowerCase())) {
     return `"${query}" is ambiguous: ${hits.slice(0, 6).map((h) => h.name).join(', ')}${hits.length > 6 ? ', …' : ''}`;
   }
-  return hits.find((h) => h.short.toLowerCase() === query.toLowerCase() || h.name.toLowerCase() === query.toLowerCase()) ?? hits[0];
+  return hits.find((h) => h.name.toLowerCase() === query.toLowerCase() || h.name.toLowerCase() === query.toLowerCase()) ?? hits[0];
 }
 
 function priceCell(state: MarketState, f: Faction, it: Item): [string, Line[number]['c']] {
@@ -134,13 +134,13 @@ function summarizeReport(report: UpdateReport, state: MarketState): Line[] {
       lines.push(
         line(
           seg(`  Free rotation ${FACTION_LABEL[f]}: `, 'muted'),
-          ...added.map((i) => seg(`+${ITEMS[i].short} `, 'good')),
-          ...removed.map((i) => seg(`−${ITEMS[i].short} `, 'muted')),
+          ...added.map((i) => seg(`+${ITEMS[i].name} `, 'good')),
+          ...removed.map((i) => seg(`−${ITEMS[i].name} `, 'muted')),
         ),
       );
   }
   if (total === 0) lines.push(muted('  No submissions were pending, so popularity was unchanged; prices kept easing toward their targets.'));
-  lines.push(muted(`  Typical loadout now ${FACTIONS.map((f) => `${FACTION_LABEL[f]} ${money(typicalLoadoutCost(state, f))}`).join(' · ')}`));
+  lines.push(muted(`  Average loadout price now ${FACTIONS.map((f) => `${FACTION_LABEL[f]} ${money(typicalLoadoutCost(state, f))}`).join(' · ')}`));
   return lines;
 }
 
@@ -178,7 +178,7 @@ const COMMANDS: Record<string, CommandDef> = {
           seg(money(pendingCount(market)), pendingCount(market) ? 'warn' : 'default'),
         ),
         blank(),
-        line(seg(padEnd('  median price', 16), 'muted'), ...CATEGORIES.map((c) => seg(padStart(CATEGORY_LABEL[c], 13), 'muted')), seg(padStart('typical kit', 14), 'muted')),
+        line(seg(padEnd('  median price', 16), 'muted'), ...CATEGORIES.map((c) => seg(padStart(CATEGORY_LABEL[c], 13), 'muted')), seg(padStart('avg loadout', 14), 'muted')),
       ];
       for (const f of FACTIONS) {
         lines.push(
@@ -194,7 +194,7 @@ const COMMANDS: Record<string, CommandDef> = {
         lines.push(
           line(
             seg(padEnd(`  Free vs ${FACTION_LABEL[f]}`, 24), 'muted'),
-            seg(market.books[f].free.map((i) => `${ITEMS[i].short} (${freeCyclesLeft(market, f, i)})`).join(' · '), 'good'),
+            seg(market.books[f].free.map((i) => `${ITEMS[i].name} (${freeCyclesLeft(market, f, i)})`).join(' · '), 'good'),
           ),
         );
       lines.push(muted('  (n) = cycles left free. Always free: R-2124 Constitution, P-2 Peacemaker, G-12 High Explosive.'));
@@ -279,7 +279,7 @@ const COMMANDS: Record<string, CommandDef> = {
         ...FACTIONS.map((f) =>
           line(
             seg(padEnd(`  vs ${FACTION_LABEL[f]}`, 18)),
-            ...market.books[f].free.map((i) => seg(`${ITEMS[i].short} `, 'good')).flatMap((s, k) => [s, seg(`(${freeCyclesLeft(market, f, market.books[f].free[k])}) `, 'muted')]),
+            ...market.books[f].free.map((i) => seg(`${ITEMS[i].name} `, 'good')).flatMap((s, k) => [s, seg(`(${freeCyclesLeft(market, f, market.books[f].free[k])}) `, 'muted')]),
           ),
         ),
         muted(`  Rule: ${market.config.free.rule}, ${market.config.free.count} per faction, ${market.config.free.tenure} cycles each, ${market.config.free.cooldown}-cycle cooldown.`),
@@ -304,7 +304,7 @@ const COMMANDS: Record<string, CommandDef> = {
             seg(padEnd(`  ${FACTION_LABEL[f]}`, 14)),
             seg(padStart(money(market.pending.loadouts[f]), 6), 'accent'),
             seg('  top stratagems: ', 'muted'),
-            seg(top.map((x) => `${x.it.short} ×${x.n}`).join(', ') || '—'),
+            seg(top.map((x) => `${x.it.name} ×${x.n}`).join(', ') || '—'),
           ),
         );
       }
@@ -316,7 +316,7 @@ const COMMANDS: Record<string, CommandDef> = {
             line(
               seg(`   ${s.origin.padEnd(6)} `, 'muted'),
               seg(padEnd(FACTION_LABEL[s.faction], 12)),
-              seg(s.items.map((i) => ITEMS[i].short).join(', ')),
+              seg(s.items.map((i) => ITEMS[i].name).join(', ')),
               seg(`  ${money(s.paid.reduce((a, b) => a + b, 0))} req`, 'accent'),
             ),
           );

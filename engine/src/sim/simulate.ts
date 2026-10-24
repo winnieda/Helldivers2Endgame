@@ -45,7 +45,7 @@ export interface DayStats {
   nicheShare: number;
   successRate: number;
   avgBalance: number;
-  bankruptcies: number;
+  runsEnded: number;
   median: Record<Faction, Record<Category, number>>;
   usageWeighted: Record<Faction, Record<Category, number>>;
   maxPrice: number;
@@ -206,12 +206,12 @@ interface DayTally {
   freePicks: Record<Category, number>;
   picks: Record<Category, number>;
   successes: number;
-  bankruptcies: number;
+  runsEnded: number;
 }
 
 function newTally(): DayTally {
   const z = () => Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<Category, number>;
-  return { loadouts: 0, missions: 0, spend: 0, zeroCost: 0, freePicks: z(), picks: z(), successes: 0, bankruptcies: 0 };
+  return { loadouts: 0, missions: 0, spend: 0, zeroCost: 0, freePicks: z(), picks: z(), successes: 0, runsEnded: 0 };
 }
 
 function diversityOf(batch: Batch): Record<Category, number> {
@@ -312,15 +312,19 @@ function playOperation(
     if (priceBlind) continue;
     for (const agent of squad) {
       const earned = suggestedEarnings(rules, difficulty, outcome) * rng.range(0.9, 1.1);
-      const deaths = rng.poisson(1.2 + 3.5 * (1 - pSuccess));
-      agent.balance = Math.min(rules.maxBalance, agent.balance - deaths * rules.reinforcementCost + earned);
+      const deaths = rules.reinforcementCost ? rng.poisson(1.2 + 3.5 * (1 - pSuccess)) : 0;
+      agent.balance = Math.max(0, Math.min(rules.maxBalance, agent.balance - deaths * rules.reinforcementCost + earned));
       agent.runMissions++;
-      if (agent.balance < 0) {
+    }
+    if (outcome === 'failed') {
+      // A failed mission ends an Operations run; the squad starts fresh next time.
+      for (const agent of squad) {
         runLengths.push(agent.runMissions);
         agent.balance = rules.startingBalance;
         agent.runMissions = 0;
-        tally.bankruptcies++;
+        tally.runsEnded++;
       }
+      return;
     }
   }
 }
@@ -494,7 +498,7 @@ export function simulate(opts: SimOptions): SimResult {
       nicheShare: spread.niche,
       successRate: tally.missions ? tally.successes / tally.missions : 0,
       avgBalance: pop.agents.reduce((s, a) => s + a.balance, 0) / pop.agents.length,
-      bankruptcies: tally.bankruptcies,
+      runsEnded: tally.runsEnded,
       median,
       usageWeighted,
       maxPrice,

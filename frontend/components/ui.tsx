@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import type { Quote, Tier } from '@engine';
 import { req, signedPct } from '@/lib/format';
 import { subscribeToasts, type Toast } from '@/lib/toast';
@@ -49,7 +50,7 @@ export function PriceTag({ q, size = 'md', className = '' }: { q: Quote; size?: 
   return <Req value={q.price} className={`font-semibold ${text} ${className}`} size={size === 'lg' ? 20 : 14} />;
 }
 
-/** Price change since last cycle, from a buyer's point of view: pricier = red ▲, cheaper = green ▼. */
+/** Price change since yesterday, from a buyer's point of view: pricier = red ▲, cheaper = green ▼. */
 export function Delta({ value, className = '' }: { value: number; className?: string }) {
   if (Math.abs(value) < 0.0005) return <span className={`text-dim tnum ${className}`}>—</span>;
   const up = value > 0;
@@ -105,16 +106,44 @@ export function Meter({ value, max, className = '' }: { value: number; max: numb
 }
 
 export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; wide?: boolean }) {
+  const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const prev = document.activeElement as HTMLElement | null;
+    // Focus the safe default ([data-autofocus]) or else the last action; Tab stays inside the dialog.
+    const t = setTimeout(() => {
+      const preferred = box.current?.querySelector<HTMLElement>('[data-autofocus]');
+      const buttons = box.current?.querySelectorAll<HTMLElement>('button, [href], input, select, textarea');
+      (preferred ?? buttons?.[buttons.length - 1] ?? box.current)?.focus();
+    }, 0);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && box.current) {
+        const f = [...box.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea')].filter((el) => !el.hasAttribute('disabled'));
+        if (!f.length) return;
+        const first = f[0];
+        const last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('keydown', onKey);
+      prev?.focus?.();
+    };
   }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-4 overflow-y-auto" style={{ background: 'rgba(3,5,7,0.78)' }} onMouseDown={onClose}>
-      <div className={`panel panel-accent rise w-full ${wide ? 'max-w-4xl' : 'max-w-lg'} my-8`} onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-modal>
+  if (!open || typeof document === 'undefined') return null;
+  // Portalled to <body>: ancestors with transform animations would otherwise trap position:fixed.
+  return createPortal(
+    <div className="fixed inset-0 z-[90] flex items-start sm:items-center justify-center p-4 overflow-y-auto" style={{ background: 'rgba(3,5,7,0.78)' }} onMouseDown={onClose}>
+      <div ref={box} tabIndex={-1} className={`panel panel-accent rise w-full ${wide ? 'max-w-4xl' : 'max-w-lg'} my-8 outline-none`} onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-modal>
         <div className="flex items-center justify-between px-5 py-3 border-b border-line">
           <div className="h-display text-[22px]">{title}</div>
           <button className="text-muted hover:text-yellow text-2xl leading-none px-2" onClick={onClose} aria-label="Close">
@@ -123,7 +152,8 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
         </div>
         <div className="p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

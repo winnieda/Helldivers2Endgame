@@ -6,27 +6,30 @@ import {
   CATEGORY_SINGULAR,
   checkLoadout,
   cheapestLoadout,
+  endCampaign,
+  randomLoadout,
   FACTION_LABEL,
   ITEMS,
+  median,
   setLoadout,
   setReady,
   setSlot,
   SLOT_CATEGORIES,
   STRATAGEM_TYPE_LABEL,
   STRATAGEM_TYPES,
-  tierScore,
-  type Campaign,
   type Diver,
   type Item,
   type StratagemType,
 } from '@engine';
 import { DIVER_COLORS, req } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
-import { ArrowCode, Check, FactionEmblem, ItemIcon } from '../icons';
-import { Delta, Meter, PriceTag, Req, TierBadge } from '../ui';
+import { ArrowCode, Check, FactionEmblem, ItemIcon, ReqIcon, WeaponBadges } from '../icons';
+import { store } from '@/lib/store';
+import { toast } from '@/lib/toast';
+import { Meter, Modal, PriceTag, Req } from '../ui';
 import { useCampaign } from './useCampaign';
 
-type Sort = 'price-desc' | 'price-asc' | 'popular' | 'tier' | 'name';
+type Sort = 'price-desc' | 'price-asc' | 'popular' | 'name';
 const SLOT_LABEL = ['Stratagem 1', 'Stratagem 2', 'Stratagem 3', 'Stratagem 4', 'Primary', 'Secondary', 'Throwable'];
 const WEAPON_CLASS_LABEL: Record<string, string> = {
   rifle: 'Assault rifle',
@@ -60,40 +63,56 @@ function conflicts(item: Item, d: Diver, slot: number): string | null {
   return null;
 }
 
-function ItemCard({ v, equipped, affordable, need, warn, squad, showTier, faction, onPick }: { v: ItemView; equipped: boolean; affordable: boolean; need: number; warn: string | null; squad: number[]; showTier: boolean; faction: Campaign['faction']; onPick: () => void }) {
+/** Where a price sits within its category on this front: a quick read instead of a number. */
+export function priceBand(list: number, median: number): { label: string; color: string } {
+  const r = median > 0 ? list / median : 1;
+  if (r >= 1.6) return { label: 'Premium', color: 'var(--bad)' };
+  if (r >= 1.15) return { label: 'Pricey', color: '#ff9b57' };
+  if (r > 0.85) return { label: 'Average', color: 'var(--text-2)' };
+  if (r > 0.5) return { label: 'Cheap', color: '#9be564' };
+  return { label: 'Bargain', color: 'var(--good)' };
+}
+
+function ItemCard({ v, median, equipped, affordable, need, warn, squad, onPick }: { v: ItemView; median: number; equipped: boolean; affordable: boolean; need: number; warn: string | null; squad: number[]; onPick: () => void }) {
   const it = v.item;
-  const pop = Math.min(1, v.ratio / 3);
+  const band = v.q.free ? { label: v.q.rotating ? `Free · ${v.freeLeft} day${v.freeLeft === 1 ? '' : 's'}` : 'Always free', color: 'var(--good)' } : priceBand(v.q.list, median);
+  const note = warn && !equipped ? <span className="text-warn">⚠ {warn}</span> : !affordable && !equipped ? <span className="text-bad">Need {req(need)} more</span> : null;
   return (
     <button
       onClick={onPick}
       className={`relative text-left p-3 border transition-all group ${equipped ? 'border-yellow bg-yellow/[0.06] shadow-[0_0_0_1px_var(--yellow),0_0_18px_-6px_var(--yellow-glow)]' : 'border-line bg-panel hover:border-line-2 hover:bg-panel-2'} ${affordable || equipped ? '' : 'opacity-50'}`}
       aria-pressed={equipped}
-      title={it.name}
+      title={it.fullName}
     >
       {equipped && <span className="absolute -top-px -right-px bg-yellow text-yellow-ink text-[10.5px] font-display font-bold tracking-wider px-1.5 py-0.5">EQUIPPED</span>}
       <div className="flex gap-3">
         <ItemIcon item={it} size={46} />
         <div className="min-w-0 flex-1">
-          <div className="font-semibold leading-tight text-[14.5px] line-clamp-2">{it.name}</div>
-          <div className="text-[12px] text-muted mt-0.5">{subLabel(it)}</div>
+          <div className="font-semibold leading-tight text-[14.5px] line-clamp-2 pr-2">{it.name}</div>
+          <div className="text-[12px] text-muted mt-0.5 flex items-center gap-1.5 min-w-0">
+            <span className="truncate">{note ?? subLabel(it)}</span>
+            {!note && <WeaponBadges item={it} size={14} />}
+          </div>
         </div>
       </div>
       <div className="mt-2.5 flex items-center justify-between gap-2">
-        <PriceTag q={v.q} size="sm" />
-        <Delta value={v.change} className="text-[12px]" />
+        {v.q.free ? (
+          <span className="h-display text-[26px] leading-none text-good">FREE</span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 font-display font-bold text-[26px] leading-none tnum">
+            <ReqIcon size={24} />
+            {req(v.q.price)}
+          </span>
+        )}
+        <span className="flex items-center gap-1.5">
+          {squad.map((c) => (
+            <span key={c} className="w-2 h-2 rounded-full" style={{ background: DIVER_COLORS[c] }} title="A squadmate has this equipped" />
+          ))}
+          <span className="font-display font-bold uppercase tracking-wider text-[13px]" style={{ color: band.color }} title={v.q.free ? undefined : `Compared with the median ${CATEGORY_SINGULAR[it.category].toLowerCase()} price on this front`}>
+            {band.label}
+          </span>
+        </span>
       </div>
-      <div className="mt-2 flex items-center gap-2">
-        {showTier && <TierBadge tier={it.tiers[faction]} title={`u.gg tier vs ${FACTION_LABEL[faction]}`} />}
-        <div className="flex-1 h-1 bg-white/5" title={`${(v.share * 100).toFixed(1)}% of picks`}>
-          <div className="h-full bg-text-2/60" style={{ width: `${pop * 100}%` }} />
-        </div>
-        {squad.map((c) => (
-          <span key={c} className="w-2 h-2 rounded-full" style={{ background: DIVER_COLORS[c] }} title="A squadmate has this equipped" />
-        ))}
-      </div>
-      {!affordable && !equipped && <div className="mt-1.5 text-[11.5px] text-bad">Need {req(need)} more</div>}
-      {warn && !equipped && <div className="mt-1.5 text-[11.5px] text-warn">⚠ {warn}</div>}
-      {v.q.rotating && <div className="mt-1.5 text-[11.5px] text-good">Free for {v.freeLeft} more cycle{v.freeLeft === 1 ? '' : 's'}</div>}
     </button>
   );
 }
@@ -107,9 +126,13 @@ export function Armory() {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('price-desc');
   const [affordableOnly, setAffordableOnly] = useState(false);
-  const [showTiers, setShowTiers] = useState(true);
+  const [confirmAbandon, setConfirmAbandon] = useState(false);
   const faction = c?.faction ?? 'terminids';
   const { byCategory, views } = useMarketView(faction);
+  const medians = useMemo(
+    () => Object.fromEntries(Object.entries(byCategory).map(([k, l]) => [k, median(l.filter((x) => !x.item.alwaysFree).map((x) => x.q.list))])) as Record<string, number>,
+    [byCategory],
+  );
 
   useEffect(() => {
     if (c && !divers.some((d) => d.id === diverId)) setDiverId(divers[0]?.id ?? 'd1');
@@ -129,11 +152,10 @@ export function Armory() {
       'price-desc': (a, b) => b.q.price - a.q.price || b.q.list - a.q.list,
       'price-asc': (a, b) => a.q.price - b.q.price || a.q.list - b.q.list,
       popular: (a, b) => b.share - a.share,
-      tier: (a, b) => tierScore(b.item.tiers[faction]) - tierScore(a.item.tiers[faction]) || b.q.price - a.q.price,
       name: (a, b) => a.item.name.localeCompare(b.item.name),
     };
     return l.sort(by[sort]);
-  }, [byCategory, category, type, query, sort, faction]);
+  }, [byCategory, category, type, query, sort]);
 
   if (!c || !diver || !check) return null;
 
@@ -167,7 +189,8 @@ export function Armory() {
 
   return (
     <div className="rise">
-      {/* Squad tabs */}
+      {/* Squad row: who's ready on the left, the squad's decisions on the right */}
+      <div className="sticky top-[58px] z-30 -mx-4 px-4 py-2.5 flex items-center gap-3 flex-wrap border-b border-line" style={{ background: 'rgba(7,9,11,0.95)' }}>
       <div className="flex gap-2 flex-wrap">
         {divers.map((d) => {
           const chk = checkLoadout(c, d, app.market);
@@ -193,10 +216,18 @@ export function Armory() {
           );
         })}
       </div>
+        <div className="flex-1 min-w-[160px] text-[13px] text-muted text-right">{deployGate.ok ? 'All Helldivers ready. Prices lock in when you deploy.' : deployGate.reasons[0]}</div>
+        <button className="btn btn-danger" onClick={() => setConfirmAbandon(true)}>
+          Abandon mission
+        </button>
+        <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={deploySquad}>
+          Deploy squad
+        </button>
+      </div>
 
       <div className="mt-4 grid xl:grid-cols-[400px_1fr] gap-4 items-start">
         {/* Loadout */}
-        <div className="panel panel-accent xl:sticky xl:top-[70px] xl:max-h-[calc(100vh-150px)] xl:overflow-y-auto">
+        <div className="panel panel-accent xl:sticky xl:top-[140px] xl:max-h-[calc(100vh-160px)] xl:overflow-y-auto">
           <div className="px-5 pt-4 pb-3 border-b border-line flex items-center justify-between">
             <div>
               <div className="eyebrow">Loadout · vs {FACTION_LABEL[faction]}</div>
@@ -258,7 +289,7 @@ export function Armory() {
               <span className="text-muted">{isOps ? 'Left after purchase' : 'Headroom'}</span>
               <Req value={remaining} className={remaining < 0 ? 'text-bad font-semibold' : 'font-semibold'} />
             </div>
-            {!isOps && <div className="text-[12.5px] text-muted">To survive this round you must earn more than {req(check.total)} plus reinforcements.</div>}
+            {!isOps && <div className="text-[12.5px] text-muted">To survive this round you must earn more than {req(check.total)}.</div>}
             {check.problems.filter((p) => !/empty/.test(p.message)).map((p) => (
               <div key={p.message} className="text-[13px] text-bad">
                 ✖ {p.message}
@@ -266,8 +297,8 @@ export function Armory() {
             ))}
           </div>
           <div className="px-5 pb-5 flex flex-wrap gap-2">
-            <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, cheapestLoadout(faction, app.market)))} title="Fill every slot with the cheapest option (usually completely free)">
-              Cheapest kit
+            <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, randomLoadout(faction, app.market, check.limit)))} title="Random equipment that this Helldiver can afford">
+              Random kit
             </button>
             <button
               className="btn btn-ghost btn-sm"
@@ -318,7 +349,6 @@ export function Armory() {
                 <option value="price-desc">Price ↓</option>
                 <option value="price-asc">Price ↑</option>
                 <option value="popular">Most popular</option>
-                <option value="tier">u.gg tier</option>
                 <option value="name">Name</option>
               </select>
             </div>
@@ -334,9 +364,7 @@ export function Armory() {
             <button className="chip chip-toggle" data-on={affordableOnly} onClick={() => setAffordableOnly((a) => !a)}>
               Affordable only
             </button>
-            <button className="chip chip-toggle" data-on={showTiers} onClick={() => setShowTiers((a) => !a)} title="Show u.gg tier ratings (for reference — prices come from the market, not the tier list)">
-              Tiers
-            </button>
+
           </div>
           <div className="p-5 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-2.5">
             {list
@@ -352,10 +380,9 @@ export function Armory() {
                     equipped={equipped}
                     affordable={need <= 0}
                     need={need}
+                    median={medians[v.item.category]}
                     warn={conflicts(v.item, diver, slot)}
                     squad={squadDots(v.item.index)}
-                    showTier={showTiers}
-                    faction={faction}
                     onPick={() => pick(v.item)}
                   />
                 );
@@ -364,23 +391,29 @@ export function Armory() {
         </div>
       </div>
 
-      {/* Deploy bar */}
-      <div className="sticky bottom-0 z-30 mt-4">
-        <div className="panel panel-accent px-5 py-3 flex items-center gap-4 flex-wrap" style={{ background: 'rgba(12,16,20,0.97)' }}>
-          <div className="flex items-center gap-3 flex-wrap">
-            {divers.map((d) => (
-              <span key={d.id} className="inline-flex items-center gap-1.5 text-[13.5px]">
-                <span className={`w-4 h-4 grid place-items-center border ${d.ready ? 'bg-good border-good text-black' : 'border-line-2'}`}>{d.ready && <Check size={10} />}</span>
-                <span style={{ color: DIVER_COLORS[d.color] }}>{d.name}</span>
-              </span>
-            ))}
-          </div>
-          <div className="flex-1 text-[13px] text-muted truncate">{deployGate.ok ? 'All Helldivers ready. Prices lock in when you deploy.' : deployGate.reasons[0]}</div>
-          <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={deploySquad}>
-            Deploy squad
+      <Modal open={confirmAbandon} onClose={() => setConfirmAbandon(false)} title="Are you certain?">
+        <p className="text-text-2 text-[15.5px]">
+          You can’t resume an abandoned operation.{' '}
+          {c.log.length === 0 ? 'No missions have been played yet, so nothing is recorded and nothing is sent to the Galactic Market.' : 'The campaign ends here and goes into the hall of fame as it stands.'}
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <button data-autofocus className="btn btn-ghost" onClick={() => setConfirmAbandon(false)}>
+            Stay in the fight
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={() => {
+              setConfirmAbandon(false);
+              if (c.log.length === 0) {
+                store.setCampaign(null);
+                toast('Operation abandoned', 'No missions were played, so nothing was recorded or sent to the market.', 'info');
+              } else apply((x) => endCampaign(x, 'Operation abandoned.'));
+            }}
+          >
+            Abandon mission
           </button>
         </div>
-      </div>
+      </Modal>
     </div>
   );
 }

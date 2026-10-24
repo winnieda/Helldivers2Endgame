@@ -63,7 +63,6 @@ export default function LabPage() {
   const [mix, setMix] = useState<Record<ArchetypeId, number>>(() => ({ regular: 40, meta: 20, thrifty: 15, niche: 10, loyalist: 10, chaos: 5 }));
   const [config, setConfig] = useState<MarketConfig>(defaultConfig());
   const [earnScale, setEarnScale] = useState(1);
-  const [reinforce, setReinforce] = useState(250);
   const [showParams, setShowParams] = useState(false);
   const [running, setRunning] = useState<{ done: number; total: number } | null>(null);
   const [results, setResults] = useState<SimResult[] | null>(null);
@@ -89,7 +88,7 @@ export default function LabPage() {
 
   const run = async () => {
     const base = defaultRules();
-    const rules: Partial<EconomyRules> = { reinforcementCost: reinforce, earningsByDifficulty: base.earningsByDifficulty.map((e) => Math.round(e * earnScale)) };
+    const rules: Partial<EconomyRules> = { earningsByDifficulty: base.earningsByDifficulty.map((e) => Math.round(e * earnScale)) };
     const algos: MarketConfig['algorithm'][] = mode === 'compare' ? ['legacy', 'anchored'] : [mode];
     setRunning({ done: 0, total: days * algos.length });
     const progress = new Map<string, number>();
@@ -156,7 +155,7 @@ export default function LabPage() {
                 </button>
               ))}
             </div>
-            <Slider label="Market cycles (days)" value={days} min={20} max={300} step={10} onChange={setDays} />
+            <Slider label="Simulated days" value={days} min={20} max={300} step={10} onChange={setDays} />
             <Slider label="Squads per day" value={squads} min={2} max={300} step={1} onChange={setSquads} format={(v) => `${v} (${v * 12} loadouts)`} />
             <Slider label="Random seed" value={seed} min={1} max={50} step={1} onChange={setSeed} />
             {running ? (
@@ -185,7 +184,6 @@ export default function LabPage() {
             ))}
             <div className="pt-2 border-t border-line space-y-2.5">
               <Slider label="Mission earnings" value={earnScale} min={0.4} max={1.6} step={0.05} onChange={setEarnScale} format={(v) => `${Math.round(v * 11000).toLocaleString()} at D9`} />
-              <Slider label="Reinforcement cost" value={reinforce} min={0} max={1500} step={50} onChange={setReinforce} />
             </div>
           </div>
 
@@ -261,7 +259,7 @@ export default function LabPage() {
 
       <Modal open={confirmApply} onClose={() => setConfirmApply(false)} title="Replace the live market?">
         <p className="text-text-2">
-          The live market and its price history are replaced with the simulation’s end state ({anchoredResult?.days.length} cycles of {anchoredResult?.scenario.name}). Handy for testing the game against a matured
+          The live market and its price history are replaced with the simulation’s end state ({anchoredResult?.days.length} days of {anchoredResult?.scenario.name}). Handy for testing the game against a matured
           market. Your active campaign keeps going.
         </p>
         <div className="mt-5 flex justify-end gap-2">
@@ -273,7 +271,7 @@ export default function LabPage() {
             onClick={() => {
               if (anchoredResult) {
                 store.replaceMarket(structuredClone(anchoredResult.final), historyFromSim(anchoredResult));
-                toast('Market replaced', `Now at cycle #${anchoredResult.final.day}.`, 'good');
+                toast('Market replaced', `Now at day #${anchoredResult.final.day}.`, 'good');
               }
               setConfirmApply(false);
             }}

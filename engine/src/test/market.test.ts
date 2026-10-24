@@ -19,7 +19,8 @@ const cheapestLoadout = (m: ReturnType<typeof createMarket>, f: (typeof FACTIONS
 };
 
 test('catalog: the three permanently free items exist and are the only always-free ones', () => {
-  assert.deepEqual(ALWAYS_FREE.map((i) => i.name).sort(), ['G-12 High Explosive', 'P-2 Peacemaker', 'R-2124 Constitution']);
+  assert.deepEqual(ALWAYS_FREE.map((i) => i.fullName).sort(), ['G-12 High Explosive', 'P-2 Peacemaker', 'R-2124 Constitution']);
+  assert.equal(new Set(ITEMS.map((i) => i.name)).size, ITEMS.length, 'plain names are unique');
   for (const f of FACTIONS) for (const c of CATEGORIES) assert.ok(AVAILABLE[f][c].length > 10, `${f} ${c} has items`);
   assert.equal(new Set(ITEMS.map((i) => i.id)).size, ITEMS.length, 'ids are unique');
   assert.ok(ITEMS.filter((i) => i.category === 'stratagem').every((i) => i.code && /^[UDLR]+$/.test(i.code)), 'every stratagem has a code');

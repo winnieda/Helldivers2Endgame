@@ -19,10 +19,10 @@ import {
   type StratagemType,
 } from '@engine';
 import { LineChart, Sparkline } from '@/components/charts';
-import { ArrowCode, FactionEmblem, ItemIcon } from '@/components/icons';
+import { ArrowCode, FactionEmblem, ItemIcon, WeaponBadges } from '@/components/icons';
 import { ItemDetail } from '@/components/market/ItemDetail';
 import { openTerminal } from '@/components/terminal';
-import { Delta, PriceTag, Req, SectionTitle, Stat, TierBadge } from '@/components/ui';
+import { Delta, PriceTag, Req, SectionTitle, Stat } from '@/components/ui';
 import { req, timeAgo } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
 import { CATEGORY_SERIES } from '@/lib/palette';
@@ -91,20 +91,20 @@ export default function MarketPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-10">
       <SectionTitle
-        eyebrow={`Market cycle #${market.day} · updated ${timeAgo(market.updatedAt)} · ${market.config.algorithm} pricing`}
+        eyebrow={`Market day #${market.day} · updated ${timeAgo(market.updatedAt)}`}
         title="Galactic Market"
         right={
           <div className="flex gap-2 items-center flex-wrap">
-            <span className="text-[13px] text-muted">{pending} loadout{pending === 1 ? '' : 's'} waiting for the next update</span>
-            <button className="btn btn-primary" onClick={() => openTerminal('update')} title="Prices change only when an operator runs the update command">
-              &gt;_ update
+            <span className="text-[13px] text-muted">{pending} loadout{pending === 1 ? '' : 's'} waiting for tomorrow’s update</span>
+            <button className="btn btn-ghost btn-sm font-mono normal-case tracking-normal" onClick={() => openTerminal('update')} title="Prototype only: the live site updates prices automatically once a day">
+              <span className="text-[10px] font-sans font-bold px-1 bg-white/10">PROTOTYPE</span> run today’s update
             </button>
           </div>
         }
       />
       <p className="text-text-2 mt-2 max-w-3xl">
-        Every enemy front has its own market: gear that shreds bugs can be cheap against bots. Prices follow what the community actually deploys — popular gear climbs, ignored gear gets cheap — and only move when
-        someone runs the <span className="font-mono text-yellow">update</span> command in the ship terminal.
+        Every enemy front has its own market: gear that shreds bugs can be cheap against bots. Prices follow what the community actually deploys — popular gear climbs, ignored gear gets cheap — and are updated once a
+        day.
       </p>
 
       <div className="mt-6 flex gap-2 flex-wrap">
@@ -125,10 +125,10 @@ export default function MarketPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label={`Typical loadout vs ${FACTION_LABEL[faction]}`} value={<Req value={typicalLoadoutCost(market, faction)} size={20} />} sub="4 stratagems + 3 weapons at popularity-weighted list prices" accent />
+        <Stat label={`Average loadout price vs ${FACTION_LABEL[faction]}`} value={<Req value={typicalLoadoutCost(market, faction)} size={20} />} sub="What the average loadout deployed on this front costs at today’s prices" accent />
         <Stat label="Median stratagem" value={<Req value={strat.median} size={20} />} sub={`range ${req(strat.min)} – ${req(strat.max)}`} />
-        <Stat label="Free stratagems" value={free.length} sub={free.map((v) => v.item.short).join(' · ')} />
-        <Stat label="Loadouts counted" value={market.books[faction].totalLoadouts.toLocaleString()} sub={`${market.books[faction].lastLoadouts} in the last cycle`} />
+        <Stat label="Free stratagems" value={free.length} sub={free.map((v) => v.item.name).join(' · ')} />
+        <Stat label="Loadouts counted" value={market.books[faction].totalLoadouts.toLocaleString()} sub={`${market.books[faction].lastLoadouts} in the last day`} />
       </div>
 
       <div className="mt-6 grid xl:grid-cols-[1fr_380px] gap-4 items-start">
@@ -155,9 +155,8 @@ export default function MarketPage() {
               <thead className="text-muted border-y border-line bg-black/20">
                 <tr>
                   {header('name', 'Item')}
-                  {header('tier', 'Tier')}
                   {header('price', 'Price', 'right')}
-                  {header('change', 'Last cycle', 'right')}
+                  {header('change', 'Since yesterday', 'right')}
                   <th className="px-3 py-2 font-display uppercase tracking-wider text-[12px] font-semibold text-left">Trend</th>
                   {header('share', 'Popularity')}
                   {market.config.algorithm === 'anchored' && header('target', 'Heading to', 'right')}
@@ -174,16 +173,14 @@ export default function MarketPage() {
                           <div className="text-[12px] text-muted flex items-center gap-2">
                             {v.item.category === 'stratagem' ? STRATAGEM_TYPE_LABEL[v.item.type!] : v.item.source}
                             {v.item.code && <ArrowCode code={v.item.code} size="sm" />}
+                            <WeaponBadges item={v.item} size={14} />
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-2">
-                      <TierBadge tier={v.item.tiers[faction]} />
-                    </td>
                     <td className="px-3 py-2 text-right whitespace-nowrap">
                       <PriceTag q={v.q} />
-                      {v.q.rotating && <div className="text-[11.5px] text-good">{v.freeLeft} cycle{v.freeLeft === 1 ? '' : 's'} left</div>}
+                      {v.q.rotating && <div className="text-[11.5px] text-good">{v.freeLeft} day{v.freeLeft === 1 ? '' : 's'} left</div>}
                     </td>
                     <td className="px-3 py-2 text-right whitespace-nowrap text-[13px]">
                       <Delta value={v.change} />
@@ -212,7 +209,7 @@ export default function MarketPage() {
         <div className="space-y-4 xl:sticky xl:top-[74px] min-w-0">
           <div className="panel p-4">
             {levels.x.length > 1 ? (
-              <LineChart title={`Price levels vs ${FACTION_LABEL[faction]}`} subtitle="Median list price of paid gear, per cycle" x={levels.x} series={levels.series} height={220} zero />
+              <LineChart title={`Price levels vs ${FACTION_LABEL[faction]}`} subtitle="Median list price of paid gear, per day" x={levels.x} series={levels.series} height={220} zero />
             ) : (
               <div>
                 <div className="font-display font-bold uppercase tracking-wider">Price levels</div>
@@ -226,16 +223,13 @@ export default function MarketPage() {
             <div className="font-display font-bold uppercase tracking-wider text-text mb-1">How to read this</div>
             <ul className="space-y-1.5 list-disc pl-4 marker:text-dim">
               <li>
-                <span className="text-text">Tier</span> is u.gg’s rating vs this faction — shown for reference. Prices come only from what players deploy.
-              </li>
-              <li>
                 <span className="text-text">Popularity</span> is the smoothed share of picks; the bar fills at 3× a fair share.
               </li>
               <li>
-                <span className="text-text">Heading to</span> is the price the algorithm is steering toward. Prices move at most {Math.round(market.config.anchored.maxStep * 100)}% per cycle.
+                <span className="text-text">Heading to</span> is the price the algorithm is steering toward. Prices move at most {Math.round(market.config.anchored.maxStep * 100)}% per day.
               </li>
               <li>
-                <span style={{ color: 'var(--bad)' }}>▲</span> pricier · <span style={{ color: 'var(--good)' }}>▼</span> cheaper than last cycle.
+                <span style={{ color: 'var(--bad)' }}>▲</span> pricier · <span style={{ color: 'var(--good)' }}>▼</span> cheaper than yesterday.
               </li>
             </ul>
           </div>

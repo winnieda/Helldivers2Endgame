@@ -13,10 +13,8 @@ import {
 
 export { CATALOG_SOURCES };
 
-const SHORT_COUNTS = RAW_ITEMS.reduce<Record<string, number>>((m, i) => ((m[i.short] = (m[i.short] ?? 0) + 1), m), {});
-
-/** Catalog in index order. Generic short names ("SMG", "Assault Rifle") fall back to the full name. */
-export const ITEMS: readonly Item[] = RAW_ITEMS.map((raw, index) => ({ ...raw, short: SHORT_COUNTS[raw.short] > 1 ? raw.name : raw.short, index }));
+/** Catalog in index order. */
+export const ITEMS: readonly Item[] = RAW_ITEMS.map((raw, index) => ({ ...raw, index }));
 
 const BY_ID = new Map(ITEMS.map((i) => [i.id, i]));
 
@@ -53,12 +51,12 @@ export function searchItems(query: string, category?: Category): Item[] {
   const q = query.trim().toLowerCase();
   const pool = category ? ITEMS_BY_CATEGORY[category] : ITEMS;
   if (!q) return [...pool];
-  const exact = pool.find((i) => i.id === q || i.name.toLowerCase() === q || i.short.toLowerCase() === q);
+  const exact = pool.find((i) => i.id === q || i.name.toLowerCase() === q || i.fullName.toLowerCase() === q);
   if (exact) return [exact];
   return pool.filter(
     (i) =>
       i.id.includes(q.replace(/\s+/g, '-')) ||
-      i.name.toLowerCase().includes(q) ||
+      i.fullName.toLowerCase().includes(q) ||
       (i.designation ?? '').toLowerCase() === q,
   );
 }

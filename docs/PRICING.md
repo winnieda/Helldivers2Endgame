@@ -56,7 +56,7 @@ F(r) = exp(−D · tanh(ε_d · ln(1/r) / D))    for r < 1,  D = ln(1/floorMulti
 ```
 
 `F` is a power law near `r = 1` (`F(r) ≈ r^ε`) that bends smoothly into a ceiling and a floor.
-An item at exactly fair share is worth the baseline. The Field Manual page plots `F` with the
+An item at exactly fair share is worth the baseline. The Complete Manual page plots `F` with the
 live parameters.
 
 **This is the key design decision.** The prototype adjusted prices by an amount
@@ -91,21 +91,21 @@ price ← price · exp( clamp(min(k,1) · gap, ln(1 − maxStep), ln(1 + maxStep
 ### Calibration
 
 Baselines are 5,000 / 3,300 / 2,200 / 1,100 (stratagem / primary / secondary / throwable). With
-these, the **typical loadout** settles near the 24,000 design benchmark in simulation. A typical
+these, the **average loadout price** settles near the 24,000 design benchmark in simulation. That
 loadout is four stratagems and three weapons at popularity-weighted *list* prices, about twice a
 high-difficulty payout.
 
 The algorithm deliberately does **not** force player spending back to 24,000. What players actually
 spend is capped by what they earn, and any controller that targets realized spend gets the sign
 wrong: broke players buy cheap gear, spend drops, and a spend controller would *raise* prices. A
-playerbase that concentrates on the meta makes the typical loadout pricier; one that spreads out
+playerbase that concentrates on the meta makes the average loadout pricier; one that spreads out
 makes it cheaper.
 
 ## Free stratagems
 
 Four stratagems per front are free at any time (`free.count`). Each stays free for `free.tenure`
-cycles (4). Starts are staggered so about one rotates per cycle. A stratagem then sits out a
-`free.cooldown` (12 cycles) before it can be free again. Open slots are filled by `free.rule`:
+days (4). Starts are staggered so about one rotates per day. A stratagem then sits out a
+`free.cooldown` (12 days) before it can be free again. Open slots are filled by `free.rule`:
 `cheapest` (default), `least-popular` or `random-bottom`. The Constitution, Peacemaker and
 High Explosive are always free regardless.
 
@@ -120,9 +120,9 @@ High Explosive are always free regardless.
 | `anchored.elasticityDown` | 1.5 | Exponent below fair share (higher = niche gear gets cheaper) |
 | `anchored.ceilingMultiple` | 3.5 | Soft cap, × baseline |
 | `anchored.floorMultiple` | 0.04 | Soft floor, × baseline |
-| `anchored.adjustRate` | 0.4 | Share of the (log) gap to target closed per cycle |
+| `anchored.adjustRate` | 0.4 | Share of the (log) gap to target closed per day |
 | `anchored.upBias` / `downBias` | 1.1 / 0.9 | Asymmetric nudges |
-| `anchored.maxStep` | 0.2 | Max ±20% per cycle |
+| `anchored.maxStep` | 0.2 | Max ±20% per day |
 | `anchored.speedExponent` / `minSpeed` | 0.5 / 0.35 | Cheap items slower, expensive faster |
 | `anchored.spendPressure` | 0.6 | Effect of hot/cold category spending on speed |
 | `anchored.ownershipFactor.*` | 0.9 | Warbond / Superstore / limited ownership correction |
@@ -138,7 +138,8 @@ Lab's "Pricing equations" panel, or for a whole simulation suite with
 `npm run sim` (and the Market Lab page) run months of simulated play. Squads of four rule-based
 Helldivers (no LLMs) form each day, pick a front and difficulty, and play a three-mission
 operation. They buy a fresh loadout every mission at the current prices, then earn Requisition or
-fail, pay for reinforcements, and go bankrupt if their balance would go negative. The market
+fail. A failed mission ends that squad's Operations run, and its divers start a fresh run at 50,000
+(reinforcements are free under the current rules). The market
 updates after every simulated day.
 
 Each diver has a personality: Regular, Meta Chaser, Penny-Pincher, Niche Enjoyer, Loyalist or
@@ -165,29 +166,29 @@ opinions. Scenarios can change it mid-run with a balance patch.
 | Meta gear is expensive | Spearman ρ(strength, price) ≥ 0.5 | < 0.25 |
 | Niche gear is affordable | weakest quarter ≤ 50% of baseline and top/bottom ≥ 3× | > 90% or < 1.8× |
 | Free defaults don't crush premium gear | strongest paid weapon above its category median on every front | 3+ exceptions |
-| Typical loadout near 24k | 16k–32k | outside 10k–40k |
+| Average loadout near 24k | 16k–32k | outside 10k–40k |
 | Pricing spreads usage | fewer meta picks *and* more niche picks than the same divers with no prices | meta > 1.1× or niche < 0.9× |
-| Free stratagems rotate | enough distinct items, ≤ 2 swaps/cycle | (warn only) |
+| Free stratagems rotate | enough distinct items, ≤ 2 swaps/day | (warn only) |
 | Prices differ by faction | typical cross-front gap ≥ 12% | < 5% |
-| Adapts to balance patches | buffed items above median and nerfed below within 21 cycles | never |
+| Adapts to balance patches | buffed items above median and nerfed below within 21 days | never |
 | Resists brigading | brigaded item peak ≤ 0.9 × ceiling | > 1.2 × ceiling |
 
-### Results (default parameters, 120 cycles, seed 1)
+### Results (default parameters, 120 days, seed 1, current rules)
 
 | Scenario | Anchored (live) | Prototype algorithm |
 |---|---|---|
-| **Launch** (tier-list start, mixed players) | ✓ PASS. Typical loadout 24.1k, max 11.2k, drift 2.8%/mo, ρ = 0.94 | ✗ FAIL. Deflates 41%/mo, 15% of items at the 10 floor, typical loadout 9.7k |
-| **Blank Slate** (all equal) | ✓ PASS. Discovers the meta, ρ = 0.94 | ✗ FAIL. One item hits 24.7k while 15% sit at the floor |
-| **Upside Down** (inverted tiers) | ✓ PASS. Ordering flips itself, ρ = 0.94 | ✗ FAIL. 31%/mo deflation |
-| **Static Noise** (random start) | ✓ PASS | ✗ FAIL |
-| **Meta Rush** (65% meta chasers) | ✓ PASS. Max 10.3k, niche picks 39× the unpriced rate | ✗ FAIL. 21% of items at the floor, a category median at 1% of baseline |
-| **Penny-Pinchers** | ! WARN. Niche/meta spread 2.3× (flat demand) | ✗ FAIL |
-| **Off the Beaten Path** | ! WARN. Spread 2.2×, faction gap 11% | ✗ FAIL |
-| **Balance Patch** (day 60) | ✓ PASS. Fully adapted in 12 cycles | ✗ FAIL. 46 cycles, and collapses meanwhile |
-| **Major Order** (85% one front) | ✓ PASS | ✗ FAIL. 40%/mo deflation |
-| **Quiet Week** (3 squads/day) | ✓ PASS. 0.8% avg daily move | ! WARN. 32%/mo drift, ρ only 0.55 |
-| **Warbond Surge** (6× traffic) | ✓ PASS | ✗ FAIL. A category median at 2% of baseline |
-| **Brigading** (1/6 of traffic) | ! WARN. Brigaded item peaks at 15.7k, under the 17.5k soft ceiling | ✗ FAIL. Brigaded item reaches the 50,000 hard cap |
+| **Launch** (tier-list start, mixed players) | ✓ PASS. Average loadout price 24.7k, max 9.7k, drift 2.6%/mo, ρ = 0.95 | ! WARN. Deflates 35%/mo, 13% of items at the 10 floor, average loadout price 11.9k |
+| **Blank Slate** (all equal) | ✓ PASS. Discovers the meta, ρ = 0.96 | ✗ FAIL. One item hits 24.3k while 12% sit at the floor |
+| **Upside Down** (inverted tiers) | ✓ PASS. Ordering flips itself, ρ = 0.95 | ! WARN. 30%/mo deflation |
+| **Static Noise** (random start) | ✓ PASS | ! WARN |
+| **Meta Rush** (65% meta chasers) | ✓ PASS. Max 10.9k | ✗ FAIL. Max 26k, a category median at 1% of baseline |
+| **Penny-Pinchers** | ! WARN. Niche/meta spread 2.7× (flat demand) | ! WARN |
+| **Off the Beaten Path** | ! WARN. Spread 2.4×, faction gap 12% | ! WARN |
+| **Balance Patch** (day 60) | ✓ PASS. Fully adapted in 18 days | ✗ FAIL. 46 days, and collapses meanwhile |
+| **Major Order** (85% one front) | ✓ PASS | ! WARN. 33%/mo deflation |
+| **Quiet Week** (3 squads/day) | ✓ PASS | ! WARN. 37%/mo drift, ρ only 0.64 |
+| **Warbond Surge** (6× traffic) | ✓ PASS | ✗ FAIL. A category median at 4% of baseline |
+| **Brigading** (1/6 of traffic) | ! WARN. Brigaded item peaks at 15.2k, under the 17.5k soft ceiling | ✗ FAIL. Brigaded item reaches the 50,000 hard cap |
 
 Across seeds 1–3 the anchored algorithm passed or warned on every scenario. It never failed.
 
@@ -203,10 +204,11 @@ What the warnings mean:
 
 ### Known limitations and open questions
 
-- **The simulated economy is tight.** With 10–12k per mission and a 24k typical loadout, simulated
-  divers average around 15k balance. About three quarters of their stratagem picks are free ones.
-  That is the designed "you can't afford your favourite kit every mission" pressure. But the free
-  rotation then carries a lot of weight, which is worth watching with real players. Knobs:
+- **The simulated economy is tight.** With 10–12k per mission and a 24k average loadout price, simulated
+  divers average around 26k balance (runs restart at 50k after a failed mission, median run about 8
+  missions). Over half of their stratagem picks are free ones. That is the designed "you can't afford
+  your favourite kit every mission" pressure, but the free rotation carries a lot of weight, which is
+  worth watching with real players. Knobs:
   `anchored.baseline.stratagem`, the earnings in the Lab, `free.count`.
 - **Agent behaviour is a model.** Real players' price sensitivity is unknown. The suite
   intentionally spans very price-insensitive (Meta Rush) to very sensitive (Penny-Pinchers)

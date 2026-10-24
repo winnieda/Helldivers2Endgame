@@ -140,10 +140,10 @@ export function Terminal() {
         const blob = new Blob([JSON.stringify({ market: JSON.parse(serializeMarket(s.market)), history: s.history })], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `hd2e-market-cycle${s.market.day}.json`;
+        a.download = `hd2e-market-day${s.market.day}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
-        return print([line(seg('✔ ', 'good'), seg(`Exported market cycle #${s.market.day} with ${s.history.points.length} history points.`))]);
+        return print([line(seg('✔ ', 'good'), seg(`Exported market day #${s.market.day} with ${s.history.points.length} history points.`))]);
       }
       if (word === 'import') {
         fileRef.current?.click();
@@ -165,7 +165,7 @@ export function Terminal() {
               seg(`  ${d.name.padEnd(16)}`),
               seg(d.status.padEnd(11), d.status === 'active' ? 'good' : 'bad'),
               seg(c.mode === 'operations' ? `${d.balance.toLocaleString()} req` : `profit ${d.stats.profit.toLocaleString()}`, 'accent'),
-              seg(`  ${d.loadout.filter((i) => i !== null).map((i) => ITEMS[i!].short).join(', ')}`, 'muted'),
+              seg(`  ${d.loadout.filter((i) => i !== null).map((i) => ITEMS[i!].name).join(', ')}`, 'muted'),
             ),
           ),
         ]);
@@ -180,7 +180,7 @@ export function Terminal() {
         try {
           const r = await runSimulation({ scenarioId: id, config: store.get().market.config, days: daysFlag ? +daysFlag[1] : undefined }).promise;
           print([
-            heading(`SIMULATION — ${scenario.name.toUpperCase()} (${r.days.length} cycles, ${r.elapsedMs} ms)`),
+            heading(`SIMULATION — ${scenario.name.toUpperCase()} (${r.days.length} days, ${r.elapsedMs} ms)`),
             ...r.health.checks.map((ch) =>
               line(seg(`  ${ch.verdict.toUpperCase().padEnd(5)}`, ch.verdict === 'pass' ? 'good' : ch.verdict === 'warn' ? 'warn' : ch.verdict === 'fail' ? 'bad' : 'muted'), seg(ch.label.padEnd(40)), seg(ch.value, 'muted')),
             ),
@@ -202,7 +202,7 @@ export function Terminal() {
         store.mutateMarket(() => {});
         if (res.history) store.setHistory(res.history);
       }
-      if (word === 'update' || (word === 'sim' && rest[0] === 'day')) toast('Market updated', `Cycle #${store.get().market.day} prices are live.`, 'good');
+      if (word === 'update' || (word === 'sim' && rest[0] === 'day')) toast('Market updated', `Day #${store.get().market.day} prices are live.`, 'good');
     },
     [print, router],
   );
@@ -213,7 +213,7 @@ export function Terminal() {
       const market = deserializeMarket(raw.market ?? raw);
       const history: MarketHistory | undefined = raw.history ? migrateHistory(raw.history) : undefined;
       store.replaceMarket(market, history);
-      print([line(seg('✔ ', 'good'), seg(`Imported market cycle #${market.day} from ${file.name}.`))]);
+      print([line(seg('✔ ', 'good'), seg(`Imported market day #${market.day} from ${file.name}.`))]);
       toast('Market imported', file.name, 'good');
     } catch (e) {
       print([line(seg(`✖ Import failed: ${(e as Error).message}`, 'bad'))]);

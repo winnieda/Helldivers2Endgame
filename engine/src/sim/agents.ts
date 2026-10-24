@@ -29,7 +29,7 @@ export interface Archetype {
   temperature: number;
   /** Fraction of the current balance this diver is willing to put into one loadout. */
   aggression: number;
-  /** Requisition held back to cover reinforcement bills. */
+  /** Requisition this diver likes to keep in reserve rather than spend. */
   reserve: number;
   difficulty: [number, number];
 }

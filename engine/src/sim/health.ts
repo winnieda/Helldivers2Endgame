@@ -192,7 +192,7 @@ export function evaluateHealth(r: SimData): HealthReport {
       const items = priced(f, c);
       const best = items.reduce((a, b) => (r.strength[f][b.index] > r.strength[f][a.index] ? b : a));
       const med = median(items.map((i) => finalPrices(f)[i.index]));
-      if (finalPrices(f)[best.index] < med) crushed.push(`${best.short} (${FACTION_LABEL[f]})`);
+      if (finalPrices(f)[best.index] < med) crushed.push(`${best.name} (${FACTION_LABEL[f]})`);
     }
   checks.push({
     id: 'premium-survives',
@@ -211,10 +211,10 @@ export function evaluateHealth(r: SimData): HealthReport {
   const spend = mean(last.map((d) => d.avgSpend));
   checks.push({
     id: 'affordability',
-    label: 'Typical loadout near 24k',
+    label: 'Average loadout near 24k',
     verdict: grade(typical, (v) => v >= 16000 && v <= 32000, (v) => v >= 10000 && v <= 40000),
-    value: `${fmt(typical)} typical · ${fmt(spend)} actually spent`,
-    detail: 'A loadout drawn from what the community picks, at full list price, over the last 30 cycles (target ~24,000). "Actually spent" is what budget-limited divers paid on average.',
+    value: `${fmt(typical)} average price · ${fmt(spend)} actually spent`,
+    detail: 'Average loadout price: every slot at the popularity-weighted list price of its category, over the last 30 cycles (target ~24,000). "Actually spent" is what budget-limited divers paid on average.',
   });
 
   // 9. Pricing should push usage off the meta and onto niche gear, compared with the same divers
@@ -325,8 +325,8 @@ export function evaluateHealth(r: SimData): HealthReport {
     id: 'economy',
     label: 'Player economy',
     verdict: 'info',
-    value: `${fmt(mean(last.map((d) => d.avgBalance)))} avg balance · ${fmt((runs.length / Math.max(missions, 1)) * 100, 2)} bankruptcies / 100 dives`,
-    detail: `Median run before bankruptcy: ${runs.length ? fmt(median(runs)) + ' missions' : 'nobody went bankrupt'}. Mission success rate ${pct(mean(last.map((d) => d.successRate)))}. Zero-cost loadouts ${pct(mean(last.map((d) => d.zeroCostShare)))}.`,
+    value: `${fmt(mean(last.map((d) => d.avgBalance)))} avg balance · median run ${runs.length ? fmt(median(runs)) : '—'} missions`,
+    detail: `Operations runs end on the first failed mission (${fmt((runs.length / Math.max(missions, 1)) * 100, 1)} runs ended per 100 dives). Mission success rate ${pct(mean(last.map((d) => d.successRate)))}. Zero-cost loadouts ${pct(mean(last.map((d) => d.zeroCostShare)))}.`,
   });
 
   const verdict = checks.reduce<Exclude<Verdict, 'info'>>((v, c) => (RANK[c.verdict] > RANK[v] ? (c.verdict as Exclude<Verdict, 'info'>) : v), 'pass');
