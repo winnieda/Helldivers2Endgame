@@ -21,7 +21,7 @@ import {
 } from '@engine';
 import { DIVER_COLORS, req } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
-import { ArrowCode, Check, ItemIcon, ReqIcon } from '../icons';
+import { Check, ItemIcon, ReqIcon } from '../icons';
 import { endRun, feedbackUrl } from '@/lib/feedback';
 import { useRouter } from 'next/navigation';
 import { Meter, Modal, PriceTag, Req } from '../ui';
@@ -116,6 +116,10 @@ function ItemCard({ v, median, equipped, affordable, need, warn, squad, onPick }
 
 export function Armory() {
   const router = useRouter();
+  // Warm the feedback page so leaving the run shows it immediately.
+  useEffect(() => {
+    router.prefetch("/feedback/");
+  }, [router]);
   const { campaign: c, apply, app, deploySquad } = useCampaign();
   const divers = useMemo(() => (c ? activeDivers(c) : []), [c]);
   const [diverId, setDiverId] = useState(divers[0]?.id ?? 'd1');
@@ -310,7 +314,6 @@ export function Armory() {
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] uppercase tracking-wider text-muted font-display font-semibold">{label}</div>
                     <div className={`truncate text-[14px] ${it ? 'font-semibold' : 'text-dim'}`}>{it ? it.name : `Choose a ${CATEGORY_SINGULAR[SLOT_CATEGORIES[s]].toLowerCase()}`}</div>
-                    {it?.code && <ArrowCode code={it.code} size="sm" className="mt-0.5" />}
                   </div>
                   {v && <PriceTag q={v.q} size="sm" />}
                   {it && (

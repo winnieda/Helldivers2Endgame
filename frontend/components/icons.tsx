@@ -318,7 +318,8 @@ export const GAME = '/game';
 export const TILE_RATIO = 1.5; // width / height of the holder
 
 export function ItemIcon({ item, size = 44, className = '' }: { item: Item; size?: number; className?: string }) {
-  const width = Math.round(size * TILE_RATIO);
+  // Stratagems are square; equipment keeps the wider rectangle. Both are `size` tall.
+  const width = item.category === 'stratagem' ? size : Math.round(size * TILE_RATIO);
   const color = familyColor(item);
   return (
     <span className={`item-tile ${item.art ? 'item-tile-art' : ''} ${className}`} style={{ '--c': color, width, height: size } as CSSProperties} aria-hidden>

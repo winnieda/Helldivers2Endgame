@@ -394,3 +394,37 @@ input[type='range'] { accent-color: var(--yellow); width: 100%; }
     filter: drop-shadow(0 0 3px color-mix(in srgb, var(--c) 45%, transparent));
   }
 }
+
+/* Feedback choices: real buttons that respond to hover, press and keyboard focus. */
+@layer components {
+  .choice-card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 24px;
+    background: linear-gradient(180deg, rgba(23, 31, 38, 0.94), rgba(14, 19, 24, 0.94));
+    border: 1px solid var(--line-2);
+    cursor: pointer;
+    transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease;
+  }
+  .choice-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--yellow);
+    background: linear-gradient(180deg, rgba(40, 46, 30, 0.9), rgba(20, 22, 16, 0.94));
+    box-shadow: 0 10px 28px -12px var(--yellow-glow);
+  }
+  .choice-card:active { transform: translateY(0) scale(0.99); }
+  .choice-card:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+  .choice-cta {
+    margin-top: 18px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 13px;
+    color: var(--muted);
+    transition: color 0.14s ease;
+  }
+  .choice-card:hover .choice-cta { color: var(--yellow); }
+  @media (prefers-reduced-motion: reduce) { .choice-card { transition: none; } }
+}

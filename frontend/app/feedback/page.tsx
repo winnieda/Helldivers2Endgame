@@ -57,6 +57,10 @@ export default function FeedbackPage() {
     setNext(q.get('next') || '/play/');
   }, []);
 
+  useEffect(() => {
+    router.prefetch(next);
+  }, [router, next]);
+
   const leave = () => router.push(next);
   const submitDetailed = () => {
     saveFeedback({ at: Date.now(), from, kind: 'detailed', payload: answers });
@@ -73,7 +77,7 @@ export default function FeedbackPage() {
     <div className="mx-auto max-w-[900px] px-4 py-14 rise">
       <div className="eyebrow text-yellow">Debrief · feedback</div>
       <h1 className="h-display text-[48px] sm:text-[60px]">
-        {view === 'choose' ? 'How did it go?' : view === 'detailed' ? 'Detailed feedback' : 'Brief feedback'}
+        {view === 'choose' ? 'Would you like to give us feedback?' : view === 'detailed' ? 'Detailed feedback' : 'Brief feedback'}
       </h1>
       <p className="text-[12.5px] text-muted mt-1 mb-6">Placeholder form. Answers are saved on this device only for now.</p>
 
@@ -82,7 +86,7 @@ export default function FeedbackPage() {
           {CHOICES.map((c) => (
             <button
               key={c.id}
-              className="panel p-6 text-left hover:bg-white/[0.02] transition-colors"
+              className="choice-card"
               onClick={() => {
                 if (c.id === 'skip') {
                   saveFeedback({ at: Date.now(), from, kind: 'skipped' });
@@ -92,6 +96,7 @@ export default function FeedbackPage() {
             >
               <div className="h-display text-[26px] leading-tight">{c.title}</div>
               <div className="text-[14px] text-text-2 mt-2">{c.sub}</div>
+              <div className="choice-cta">Choose →</div>
             </button>
           ))}
         </div>

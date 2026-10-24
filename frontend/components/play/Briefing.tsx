@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { beginLoadout, blitzRequiredMargin, DIFFICULTY_NAMES, FACTION_LABEL, FACTIONS, ITEMS, setBriefing, typicalLoadoutCost } from '@engine';
 import { store } from '@/lib/store';
 import { saveRoster } from '@/lib/roster';
@@ -11,6 +11,10 @@ import { useCampaign } from './useCampaign';
 
 export function Briefing() {
   const router = useRouter();
+  // Warm the feedback page so leaving the run shows it immediately.
+  useEffect(() => {
+    router.prefetch("/feedback/");
+  }, [router]);
   const { campaign: c, apply, app } = useCampaign();
   const [confirm, setConfirm] = useState(false);
   const [cancel, setCancel] = useState(false);

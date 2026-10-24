@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { endRun, feedbackUrl } from "@/lib/feedback";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   activeDivers,
   advance,
@@ -307,6 +307,10 @@ export function Debrief() {
 
 export function Summary() {
   const router = useRouter();
+  // Warm the feedback page so leaving the run shows it immediately.
+  useEffect(() => {
+    router.prefetch("/feedback/");
+  }, [router]);
   const { campaign: c, apply } = useCampaign();
   const [confirmEnd, setConfirmEnd] = useState(false);
   if (!c) return null;
