@@ -30,6 +30,13 @@ const HEARD: Question[] = [
   { id: 'heardOther', text: 'Where did you hear about it?', kind: 'line', showIf: (a) => a.heard === HEARD_OTHER },
 ];
 
+const OWNED: Question = {
+  id: 'owned',
+  text: 'Did you find your purchases constrained by not owning stratagems or equipment on your account?',
+  kind: 'choice',
+  options: ['Yes', 'No', 'Not sure', 'N/A: I own all or most equipment'],
+};
+
 const QUESTIONS: Question[] = [
   { id: 'overall', text: 'How much did you enjoy this session overall?', kind: 'scale' },
   { id: 'rules', text: 'How clear were the rules?', kind: 'scale' },
@@ -37,6 +44,7 @@ const QUESTIONS: Question[] = [
   { id: 'motivated', text: 'Did you feel motivated to use gear you haven’t used often or at all before?', kind: 'choice', options: ['Yes', 'Somewhat', 'No'] },
   { id: 'different', text: 'Did you pick gear that’s different to what you normally take in Helldivers?', kind: 'choice', options: ['Yes', 'Somewhat', 'No'] },
   { id: 'loadouts', text: 'Did you enjoy the loadout(s) you created and played?', kind: 'scale' },
+  OWNED,
   { id: 'confusing', text: 'Did you find anything in the UI or navigation confusing?', kind: 'text' },
   { id: 'change', text: 'What is the first thing you would change?', kind: 'text' },
   { id: 'bugs', text: 'Anything broken, confusing or surprising?', kind: 'text' },
@@ -48,6 +56,7 @@ const QUESTIONS: Question[] = [
 const BRIEF_QUESTIONS: Question[] = [
   { id: 'rating', text: 'How much did you enjoy this session? (1 = not at all, 5 = loved it)', kind: 'scale' },
   { id: 'improved', text: 'Did this improve the experience compared to playing normally?', kind: 'choice', options: ['Yes', 'No'] },
+  OWNED,
   ...HEARD,
   { id: 'text', text: 'Other thoughts, or a bug to report', kind: 'text' },
 ];
