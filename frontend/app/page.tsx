@@ -4,6 +4,7 @@ import { FactionEmblem } from '@/components/icons';
 import { Pitch } from '@/components/Pitch';
 import { Delta, SectionTitle } from '@/components/ui';
 import { req } from '@/lib/format';
+import { useLobby } from '@/lib/lobby';
 import { useMovers } from '@/lib/marketView';
 import { useApp } from '@/lib/store';
 
@@ -31,6 +32,7 @@ function Ticker() {
 
 export default function Home() {
   const { campaign, records } = useApp();
+  const { session } = useLobby();
   const active = campaign && campaign.phase !== 'over';
 
   return (
@@ -46,7 +48,7 @@ export default function Home() {
         <Pitch className="mt-3 text-[18px]" />
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link href="/play/" className="btn btn-primary btn-lg">
-            {active ? `Resume ${campaign.operationName}` : 'Start an Operation'}
+            {session ? 'Return to your lobby' : active ? `Resume ${campaign.operationName}` : 'Start an Operation'}
           </Link>
           <Link href="/manual/" className="btn btn-ghost">
             See Game Rules

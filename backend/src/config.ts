@@ -12,6 +12,8 @@ export interface Config {
   dataDir: string;
   /** Contact sent to api.helldivers2.dev in X-Super-Contact, as its maintainers ask. */
   contact: string;
+  /** Where browsers subscribe to lobby notices (AppSync Events). Unset: they poll instead. */
+  events?: { http: string; realtime: string; apiKey: string };
 }
 
 export const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -26,5 +28,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, defaults: Parti
     corsOrigins: list(env.HD2E_CORS_ORIGINS) ?? defaults.corsOrigins ?? LOCAL_ORIGINS,
     dataDir: env.HD2E_DATA_DIR || defaults.dataDir || path.join(REPO_ROOT, 'data', 'server'),
     contact: env.HD2E_CONTACT || defaults.contact || 'helldivers2endgame@gmail.com',
+    events:
+      env.HD2E_EVENTS_HTTP && env.HD2E_EVENTS_REALTIME && env.HD2E_EVENTS_KEY
+        ? { http: env.HD2E_EVENTS_HTTP, realtime: env.HD2E_EVENTS_REALTIME, apiKey: env.HD2E_EVENTS_KEY }
+        : defaults.events,
   };
 }

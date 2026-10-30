@@ -11,6 +11,7 @@ export { popularityMultiple, popularityForMultiple, priceLevelSpeed, spendPressu
 export { legacyElasticity, roundHalfEven } from './market/pricing-legacy';
 export * from './game/rules';
 export * from './game/campaign';
+export * from './game/actions';
 export * from './sim/synthetic';
 export * from './console/format';
 export * from './console/commands';

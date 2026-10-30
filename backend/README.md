@@ -49,6 +49,9 @@ market once it's `HD2E_UPDATE_HOURS` (24) old and syncs live data every `HD2E_LI
 | `POST /api/loadouts` | `{ submissions }`: deployed loadouts, checked with the engine's loadout rules |
 | `POST /api/loadouts/withdraw` | Cancelled deploys. Refused if an update already counted them. |
 | `POST /api/feedback` | `{ kind, from, version?, payload }` from the debrief form (`version` is the site build, shown in the email). Saved as `feedback/<day>/<id>`; detailed and brief entries are also emailed (at most 50 a day), with subjects starting `[H2E Feedback Email]`. Locally the "email" is printed to the console. |
+| `GET /api/config` | Where browsers subscribe to lobby notices (`{ events: { http, realtime, apiKey } }`), or `{ events: null }`: poll instead. |
+| `POST /api/lobbies`, `POST /api/lobbies/join` | `{ name }` / `{ code, name }`: create or join an online lobby (joining with the name of someone who's gone quiet takes their seat back). Returns `{ lobby, session }`. |
+| `GET /api/lobbies/<id>`, `POST /api/lobbies/<id>/act` | For members (`X-Lobby-Member`, `X-Lobby-Token`): the lobby, and `{ action }`, either a campaign action from the engine (`applyAction`) or `lobby.start` · `lobby.kick` · `lobby.lock` · `lobby.newCode` · `lobby.claimHost` · `lobby.leave` · `lobby.reset` · `lobby.share` · `lobby.hello`. Each member edits their own diver in the armory; the rest is the host's. See `src/lobby.ts`. |
 | `POST /api/admin/update` · `/console` · `/sync-live`, `PUT /api/admin/market` | Admin: need `X-Admin-Token: $HD2E_ADMIN_TOKEN` (the local server also takes `Authorization: Bearer`; CloudFront overwrites that header on AWS). With no token set, the local server leaves them open and only listens on 127.0.0.1. In the browser, `token <value>` in the terminal saves the token. |
 
 Writes are read-modify-write with a conditional put on the market's ETag, retried on conflict, so

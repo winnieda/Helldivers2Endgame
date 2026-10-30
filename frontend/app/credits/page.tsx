@@ -90,11 +90,12 @@ export default function CreditsPage() {
             <>
               <p>
                 <strong>What we collect.</strong> When you deploy, the equipment in each loadout, the front, the game mode and the prices paid are sent anonymously to set the prices in the Price Database. You can opt out
-                when starting a campaign. Feedback you choose to send is stored and emailed to the developers. That is all: no accounts, no names, no cookies, no analytics or tracking, and we don&apos;t keep IP
-                addresses or access logs.
+                when starting a campaign. Feedback you choose to send is stored and emailed to the developers. In an online lobby, the names your squad types in and the squad&apos;s campaign are kept on the
+                server so everyone&apos;s devices stay in sync; a lobby nobody has used for 14 days is deleted. That is all: no accounts, no cookies, no analytics or tracking, and we don&apos;t keep IP addresses or
+                access logs.
               </p>
               <p>
-                Your campaigns and records stay in your own browser (localStorage); clearing your browser data erases them. The site is hosted on Amazon Web Services, which, like any host, sees your IP address
+                Your single-device campaigns, your records and your place in a lobby stay in your own browser (localStorage); clearing your browser data erases them. The site is hosted on Amazon Web Services, which, like any host, sees your IP address
                 in order to deliver pages and block abusive traffic. Questions or deletion requests: <Mail />.
               </p>
             </>

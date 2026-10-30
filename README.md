@@ -46,6 +46,20 @@ failure stops the deploy. When you spot something players shouldn't see, add a r
 `npm run preview:release` serves the release build at http://localhost:4173 against the local API,
 so you can look at exactly what the public will get.
 
+### Online lobbies
+
+A squad can play from one shared device or from several, through an online lobby: the host
+creates it on the Deploy page and shares a six-character code (hidden until the host shows it,
+for streams), and up to three squadmates join. The server keeps the squad's campaign and applies
+every change with the same engine actions single-device play uses (`engine/src/game/actions.ts`).
+Each player picks and readies their own loadout; the host gives the orders, deploys, enters the
+Squad Payout and decides what comes next. Changes reach every device in well under a second
+through AppSync Events (or by polling every 2 s when that's unavailable, as on the local server).
+
+Dropped players are covered: a refresh rejoins automatically, joining again with the same name
+takes the seat back, the host can ready an absent player's diver, a quiet host can be replaced,
+and the host can remove players, lock the lobby or change the code.
+
 ## What's in the prototype
 
 | Page | What it does |

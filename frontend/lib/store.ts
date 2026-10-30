@@ -365,7 +365,13 @@ class AppStore {
   }
 
   /** Stores a finished campaign in the hall of fame and clears it. */
+  /** Ends this device's own campaign and puts it in the hall of fame. */
   archiveCampaign(c: Campaign): void {
+    this.recordCampaign(c, true);
+  }
+
+  /** Adds a campaign to the hall of fame (a lobby's, too) without touching this device's own campaign unless asked. */
+  recordCampaign(c: Campaign, clearOwn = false): void {
     const score = scoreCampaign(c);
     const winner = c.winnerId ? c.divers.find((d) => d.id === c.winnerId)?.name ?? null : null;
     const record: CampaignRecord = {
@@ -384,7 +390,8 @@ class AppStore {
       reason: c.endedReason ?? '',
     };
     const records = [record, ...this.get().records.filter((r) => r.id !== c.id)];
-    this.set({ records, campaign: null }, ['records', 'campaign']);
+    if (clearOwn) this.set({ records, campaign: null }, ['records', 'campaign']);
+    else this.set({ records }, ['records']);
   }
 
   /** Wipes everything this prototype saved in the browser (server mode: the cached market too). */

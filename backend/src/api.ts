@@ -9,6 +9,11 @@
  *   POST /api/loadouts                  { submissions }  queue deployed loadouts
  *   POST /api/loadouts/withdraw         { submissions }  take cancelled deploys back out
  *   POST /api/feedback                  { kind, from, version?, questions?, payload }  the feedback form
+ *   GET  /api/config                    where browsers subscribe to lobby notices (or null: poll)
+ *   POST /api/lobbies                   { name }  create a lobby; returns { lobby, session }
+ *   POST /api/lobbies/join              { code, name }  join (or take your seat back)
+ *   GET  /api/lobbies/<id>              the lobby, for a member (X-Lobby-Member, X-Lobby-Token)
+ *   POST /api/lobbies/<id>/act          { action }  a campaign action or a lobby.* action
  *   POST /api/admin/update              run the daily price update now
  *   POST /api/admin/console             { command }  run a ship-terminal market command
  *   PUT  /api/admin/market              { market, history? }  replace the market (import)
@@ -17,10 +22,12 @@
 import { timingSafeEqual } from 'crypto';
 import { deserializeMarket, FACTIONS, ITEMS, migrateHistory, SLOT_CATEGORIES, validateLoadout, type Faction, type Submission } from '@hd2e/engine';
 import type { Config } from './config';
+import { noPublisher, type Publisher } from './publisher';
+import { LobbyError, LobbyService } from './lobby';
 import { consoleNotifier, recordFeedback, type Feedback, type FeedbackKind, type FeedbackQuestion, type FeedbackValue, type Notifier } from './feedback';
 import { LIVE_ENDPOINTS, syncLive } from './live';
 import { HISTORY, MARKET, MarketService } from './market-service';
-import type { Storage, Stored } from './storage';
+import { etagOf, type Storage, type Stored } from './storage';
 
 export interface ApiRequest {
   method: string;
@@ -111,10 +118,12 @@ function parseFeedback(body: Record<string, unknown>, raw: string | undefined): 
   return { ...out, payload };
 }
 
-export function createApi(deps: { storage: Storage; config: Config; service?: MarketService; notifier?: Notifier }): Api {
+export function createApi(deps: { storage: Storage; config: Config; service?: MarketService; notifier?: Notifier; publisher?: Publisher; lobbies?: LobbyService }): Api {
   const { storage, config } = deps;
   const service = deps.service ?? new MarketService(storage);
   const notifier = deps.notifier ?? consoleNotifier;
+  const lobbies = deps.lobbies ?? new LobbyService(storage, service, deps.publisher ?? noPublisher);
+  const member = (req: ApiRequest) => ({ memberId: req.headers['x-lobby-member'], token: req.headers['x-lobby-token'] });
 
   // X-Admin-Token, because CloudFront replaces Authorization when it signs requests to the Lambda.
   // A bearer token still works against the local server.
@@ -155,6 +164,22 @@ export function createApi(deps: { storage: Storage; config: Config; service?: Ma
 
     if (p === '/api/loadouts' && method === 'POST') return json(200, await service.submit(parseSubmissions(parseJson(req.body))));
     if (p === '/api/loadouts/withdraw' && method === 'POST') return json(200, await service.withdraw(parseSubmissions(parseJson(req.body))));
+    if (p === '/api/config' && method === 'GET') return json(200, { events: config.events ?? null });
+    if (p === '/api/lobbies' && method === 'POST') {
+      const { view, session } = await lobbies.create(parseJson(req.body).name);
+      return json(200, { lobby: view, session });
+    }
+    if (p === '/api/lobbies/join' && method === 'POST') {
+      const body = parseJson(req.body);
+      const { view, session } = await lobbies.join(body.code, body.name);
+      return json(200, { lobby: view, session });
+    }
+    const lobby = p.match(/^\/api\/lobbies\/([a-z0-9]+)(\/act)?$/);
+    if (lobby && method === 'GET' && !lobby[2]) {
+      const view = JSON.stringify(await lobbies.view(lobby[1], member(req)));
+      return doc(req, { body: view, etag: etagOf(view) });
+    }
+    if (lobby && method === 'POST' && lobby[2]) return json(200, await lobbies.act(lobby[1], member(req), parseJson(req.body).action));
     if (p === '/api/feedback' && method === 'POST') return json(200, await recordFeedback(storage, notifier, parseFeedback(parseJson(req.body), req.body)));
 
     if (p.startsWith('/api/admin/')) {
@@ -189,7 +214,7 @@ export function createApi(deps: { storage: Storage; config: Config; service?: Ma
       ? {
           'Access-Control-Allow-Origin': origin,
           'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match, X-Admin-Token, X-Amz-Content-Sha256',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, If-None-Match, X-Admin-Token, X-Amz-Content-Sha256, X-Lobby-Member, X-Lobby-Token',
           'Access-Control-Expose-Headers': 'ETag',
           'Access-Control-Max-Age': '600',
           Vary: 'Origin',
@@ -201,6 +226,7 @@ export function createApi(deps: { storage: Storage; config: Config; service?: Ma
       res = await route(req);
     } catch (e) {
       if (e instanceof HttpError) res = json(e.status, { error: e.message });
+      else if (e instanceof LobbyError) res = json(e.status, { error: e.message, ...(e.reason ? { reason: e.reason } : {}) });
       else {
         console.error(e);
         res = json(500, { error: 'Internal error.' });

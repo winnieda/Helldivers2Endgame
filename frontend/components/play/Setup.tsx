@@ -2,44 +2,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { createCampaign } from '@engine';
 import { DIVER_COLORS } from '@/lib/format';
+import { lobby, useLobby } from '@/lib/lobby';
 import { store } from '@/lib/store';
 import { loadRoster, saveRoster } from '@/lib/roster';
 import { toast } from '@/lib/toast';
 import { Check } from '../icons';
-import { Modal } from '../ui';
+import { LobbyChoice } from './Lobby';
+import { ShameModal } from './ShameModal';
 
 const PLACEHOLDERS = ['Helldiver 1', 'Helldiver 2', 'Helldiver 3', 'Helldiver 4'];
-
-/** Shown when a player unticks "Contribute to the Price Database". Firm, friendly, and their call. */
-function ShameModal({ open, onKeep, onOptOut }: { open: boolean; onKeep: () => void; onOptOut: () => void }) {
-  return (
-    <Modal open={open} onClose={onKeep} title="A message from the Ministry of Truth">
-      <div className="space-y-3 text-text-2 text-[15px] leading-relaxed">
-        <p>
-          Helldiver, Super Earth respects your <span className="text-text font-semibold">absolute right to refuse</span>. It is, after all, a free galaxy. Opting out is allowed, will never be held against your
-          record, and changes nothing about how you play.
-        </p>
-        <p>
-          But know what you’re declining to share: <span className="text-text font-semibold">only the weapons and stratagems you deploy with</span>. Not your name, not your account, not your squad. Just your
-          equipment choices will be recorded, completely anonymously.
-        </p>
-        <p>
-          Those picks are the whole Price Database. Every price exists because Helldivers like you reported what they brought. Without them the market can’t tell the meta from the forgotten, and the mode stops
-          working for everyone.
-        </p>
-        <p className="text-[13.5px] text-muted italic">A Democracy Officer has been informed and is choosing to look very, very disappointed rather than file a report.</p>
-      </div>
-      <div className="mt-6 flex flex-wrap justify-end gap-2">
-        <button className="btn btn-ghost" onClick={onOptOut}>
-          Opt out anyway
-        </button>
-        <button className="btn btn-primary" onClick={onKeep}>
-          Keep contributing
-        </button>
-      </div>
-    </Modal>
-  );
-}
 
 export function Setup() {
   const [names, setNames] = useState<string[]>(['']);
@@ -49,6 +20,17 @@ export function Setup() {
     if (saved) setNames(saved);
   }, []);
   const [share, setShare] = useState(true);
+  // Single device or an online lobby. An invite link (/play/?join=CODE) opens the lobby option with the code filled in.
+  const [mode, setMode] = useState<'device' | 'lobby'>('device');
+  const [inviteCode, setInviteCode] = useState('');
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('join');
+    if (code) {
+      setMode('lobby');
+      setInviteCode(code.toUpperCase());
+    }
+  }, []);
+  const { ended } = useLobby();
   const [askShame, setAskShame] = useState(false);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const beginRef = useRef<HTMLButtonElement>(null);
@@ -86,6 +68,14 @@ export function Setup() {
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-12 rise">
+      {ended && (
+        <div className="mb-6 border border-warn/60 bg-warn/10 px-4 py-3 text-[14px] text-warn flex items-center gap-3">
+          <span className="flex-1">{ended}</span>
+          <button className="btn btn-ghost btn-sm" onClick={() => lobby.dismissEnded()}>
+            OK
+          </button>
+        </div>
+      )}
       <h1 className="h-display text-[52px] sm:text-[64px]">Prepare to Deploy</h1>
       <p className="text-text-2 mt-2">Choose your game mode (the second one is still in the works) and how you’d like to play with your teammates.</p>
 
@@ -121,7 +111,23 @@ export function Setup() {
       </div>
 
       <h2 className="mt-10 font-display font-bold uppercase tracking-wider text-[22px] text-yellow">Choose Game Rules:</h2>
-      <div className="mt-3 grid lg:grid-cols-[1.3fr_1fr] gap-4">
+      <div className="mt-3 tabs" role="tablist" aria-label="How your squad plays">
+        <button className="tab" role="tab" data-on={mode === 'device'} aria-selected={mode === 'device'} onClick={() => setMode('device')}>
+          This device
+        </button>
+        <button className="tab" role="tab" data-on={mode === 'lobby'} aria-selected={mode === 'lobby'} onClick={() => setMode('lobby')}>
+          Online lobby
+        </button>
+      </div>
+      <p className="mt-2 mb-3 text-[14px] text-muted">
+        {mode === 'device'
+          ? 'The whole squad shares this screen: pass it around (or sit together), and each Helldiver gets their own balance and loadout.'
+          : 'Each squadmate plays from their own device. The host runs the operation; everyone buys their own loadout in the armory.'}
+      </p>
+      {mode === 'lobby' ? (
+        <LobbyChoice key={inviteCode} initialCode={inviteCode} />
+      ) : (
+      <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4">
         <div className="panel p-6">
           <div className="flex items-center justify-between">
             <div className="font-display font-bold uppercase tracking-wider text-[18px]">Squad roster</div>
@@ -168,7 +174,6 @@ export function Setup() {
               + Add Helldiver
             </button>
           )}
-          <div className="mt-5 text-[13px] text-muted">Squad lobbies with join codes come later; for now the whole squad shares this browser.</div>
         </div>
 
         <div className="panel p-6 flex flex-col">
@@ -192,6 +197,7 @@ export function Setup() {
           </button>
         </div>
       </div>
+      )}
 
       <ShameModal
         open={askShame}

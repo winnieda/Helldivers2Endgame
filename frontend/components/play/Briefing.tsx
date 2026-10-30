@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { beginLoadout, blitzRequiredMargin, DIFFICULTY_NAMES, FACTION_LABEL, FACTIONS, ITEMS, setBriefing, typicalLoadoutCost } from '@engine';
+import { blitzRequiredMargin, DIFFICULTY_NAMES, FACTION_LABEL, FACTIONS, ITEMS, typicalLoadoutCost } from '@engine';
+import { lobby } from '@/lib/lobby';
 import { store } from '@/lib/store';
 import { saveRoster } from '@/lib/roster';
 import { endRun, feedbackUrl } from '@/lib/feedback';
@@ -15,7 +16,7 @@ export function Briefing() {
   useEffect(() => {
     router.prefetch("/feedback/");
   }, [router]);
-  const { campaign: c, apply, app } = useCampaign();
+  const { campaign: c, act, app, inLobby, isHost, lobbyView } = useCampaign();
   const [confirm, setConfirm] = useState(false);
   const [cancel, setCancel] = useState(false);
   if (!c) return null;
@@ -23,13 +24,15 @@ export function Briefing() {
   const isOps = c.mode === 'operations';
   const margin = blitzRequiredMargin(c.rules, c.round);
   const fresh = c.log.length === 0;
+  const hostName = lobbyView?.members.find((m) => m.host)?.name ?? 'the host';
 
   const diffButton = (d: number, big = false) => {
     const on = d === c.difficulty;
     return (
       <button
         key={d}
-        onClick={() => apply((x) => setBriefing(x, { difficulty: d }))}
+        disabled={!isHost}
+        onClick={() => void act({ type: 'setBriefing', difficulty: d })}
         className={`border text-center transition-colors ${big ? 'py-4 px-5 flex items-center justify-between gap-4 text-left w-full' : 'py-2.5 px-1'} ${on ? 'bg-yellow text-yellow-ink border-yellow' : 'border-line-2 hover:border-muted'}`}
         aria-pressed={on}
       >
@@ -68,8 +71,9 @@ export function Briefing() {
           return (
             <button
               key={f}
-              onClick={() => apply((x) => setBriefing(x, { faction: f }))}
-              className="panel p-5 text-left transition-colors hover:bg-white/[0.02] flex flex-col"
+              disabled={!isHost}
+              onClick={() => void act({ type: 'setBriefing', faction: f })}
+              className={`panel p-5 text-left transition-colors flex flex-col ${isHost ? 'hover:bg-white/[0.02]' : 'cursor-default'}`}
               style={on ? { borderColor: `var(--${f})`, background: `color-mix(in srgb, var(--${f}) 7%, transparent)` } : undefined}
               aria-pressed={on}
             >
@@ -104,8 +108,17 @@ export function Briefing() {
         <div className="text-[12.5px] text-muted mt-3">HD2 Galactic Market works on every difficulty, but it’s built and balanced for Super Helldive.</div>
       </div>
 
+      {!isHost ? (
+        <div className="mt-6 panel-flat px-5 py-4 text-text-2">
+          Waiting for <span className="text-text font-semibold">{hostName}</span> (the host) to choose the front and difficulty and give the orders.
+        </div>
+      ) : (
       <div className="mt-6 flex justify-between gap-3 flex-wrap">
-        {fresh ? (
+        {fresh && inLobby ? (
+          <button className="btn btn-ghost" onClick={() => void lobby.lobbyAct({ type: 'lobby.reset' })}>
+            Back to the lobby
+          </button>
+        ) : fresh ? (
           <button
             className="btn btn-ghost"
             onClick={() => {
@@ -125,6 +138,7 @@ export function Briefing() {
           Begin Campaign →
         </button>
       </div>
+      )}
 
       <Modal open={confirm} onClose={() => setConfirm(false)} title="Confirm deployment orders">
         <div className="flex items-center gap-4">
@@ -145,7 +159,7 @@ export function Briefing() {
             className="btn btn-primary"
             onClick={() => {
               setConfirm(false);
-              apply(beginLoadout);
+              void act({ type: 'beginLoadout' });
             }}
           >
             Confirm
@@ -163,7 +177,8 @@ export function Briefing() {
             className="btn btn-danger"
             onClick={() => {
               setCancel(false);
-              endRun(c);
+              if (inLobby) void act({ type: 'standDown' });
+              else endRun(c);
               router.push(feedbackUrl('standdown'));
             }}
           >

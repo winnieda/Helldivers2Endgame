@@ -8,8 +8,16 @@ CloudFront ─┬─ /*      → S3 Site bucket: the static export (frontend/out
             └─ /api/*  → Lambda Api (function URL; only CloudFront can call it)
                             → S3 Data bucket: market, history, feedback (versioned, 30 days)
                             → SNS Feedback topic → email to helldivers2endgame@gmail.com
+                            → AppSync Events "LobbyEvents": "lobby changed" notices
 EventBridge, daily 09:00 UTC → Lambda Jobs → market update (--min-hours 20)
+Browsers ── WebSocket ──→ AppSync Events (subscribe only, with the public API key)
 ```
+
+Online lobbies live in the Data bucket too (`lobbies/<id>`, `lobby-codes/<CODE>`; deleted after 14
+days without use). After every change the Api Lambda publishes `{"v": version}` to
+`/lobbies/<id>`, signed with its own role, and browsers refetch the lobby. The API key browsers use
+can only subscribe; its expiry moves a year out on every deploy, and if it ever lapses, browsers
+fall back to polling every couple of seconds.
 
 ## Commands
 

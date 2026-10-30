@@ -7,6 +7,8 @@
  *                                → S3 "Data": market, history, feedback (versioned)
  *                                → SNS "Feedback" → email
  *   EventBridge (daily) → Lambda "Jobs" → market update
+ *   AppSync Events "LobbyEvents": the Api Lambda publishes "lobby changed" notices; browsers
+ *   subscribe (API key) and refetch the lobby from /api/lobbies/<id>
  *
  * Optional, switched on in cdk.json once they exist: the site's own domain (its Route 53 hosted
  * zone, which lives outside the stack, a free ACM certificate, www → apex redirect) and a
@@ -16,7 +18,8 @@
  * make small AWS bills not small. The site is uploaded by scripts/deploy.sh, not by CDK.
  */
 import * as path from 'path';
-import { Annotations, CfnOutput, Duration, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
+import { Annotations, CfnOutput, Duration, Expiration, RemovalPolicy, Stack, type StackProps } from 'aws-cdk-lib';
+import * as appsync from 'aws-cdk-lib/aws-appsync';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -83,7 +86,12 @@ export class H2eStack extends Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
       versioned: true,
-      lifecycleRules: [{ noncurrentVersionExpiration: Duration.days(30), abortIncompleteMultipartUploadAfter: Duration.days(1) }],
+      lifecycleRules: [
+        { noncurrentVersionExpiration: Duration.days(30), abortIncompleteMultipartUploadAfter: Duration.days(1) },
+        // Lobbies nobody has touched for two weeks, and their join codes, are cleared away.
+        { prefix: 'lobbies/', expiration: Duration.days(14), noncurrentVersionExpiration: Duration.days(1) },
+        { prefix: 'lobby-codes/', expiration: Duration.days(14), noncurrentVersionExpiration: Duration.days(1) },
+      ],
       removalPolicy: RemovalPolicy.RETAIN,
     });
 
@@ -94,6 +102,24 @@ export class H2eStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
+
+    // Lobby notices. Browsers connect and subscribe with the API key (it's public: it can only
+    // listen); only the Api Lambda, with its own credentials, can publish. The key's expiry is
+    // pushed a year out on every deploy; if it ever lapses, browsers fall back to polling.
+    const lobbyEvents = new appsync.EventApi(this, 'LobbyEvents', {
+      apiName: 'h2e-lobby-events',
+      authorizationConfig: {
+        authProviders: [
+          { authorizationType: appsync.AppSyncAuthorizationType.API_KEY, apiKeyConfig: { name: 'browsers', description: 'Browsers subscribing to lobby notices', expires: Expiration.after(Duration.days(364)) } },
+          { authorizationType: appsync.AppSyncAuthorizationType.IAM },
+        ],
+        connectionAuthModeTypes: [appsync.AppSyncAuthorizationType.API_KEY],
+        defaultSubscribeAuthModeTypes: [appsync.AppSyncAuthorizationType.API_KEY],
+        defaultPublishAuthModeTypes: [appsync.AppSyncAuthorizationType.IAM],
+      },
+    });
+    lobbyEvents.addChannelNamespace('Lobbies', { channelNamespaceName: 'lobbies' });
+    const browserKey = Object.values(lobbyEvents.apiKeys)[0];
 
     const feedback = new sns.Topic(this, 'Feedback', { displayName: 'H2E Feedback' });
     feedback.addSubscription(new subscriptions.EmailSubscription(props.feedbackEmail));
@@ -119,7 +145,15 @@ export class H2eStack extends Stack {
         ...extra,
       });
 
-    const api = backend('Api', { description: 'H2E market API, behind CloudFront /api/*', memorySize: 512, timeout: Duration.seconds(15) });
+    const api = backend('Api', {
+      description: 'H2E market and lobby API, behind CloudFront /api/*',
+      memorySize: 512,
+      timeout: Duration.seconds(15),
+    });
+    api.addEnvironment('HD2E_EVENTS_HTTP', lobbyEvents.httpDns);
+    api.addEnvironment('HD2E_EVENTS_REALTIME', lobbyEvents.realtimeDns);
+    api.addEnvironment('HD2E_EVENTS_KEY', browserKey.attrApiKey);
+    lobbyEvents.grantPublish(api);
     const jobs = backend('Jobs', { description: 'H2E jobs: the daily market update, live war sync, console commands', memorySize: 1024, timeout: Duration.minutes(5) });
     data.grantReadWrite(api);
     data.grantReadWrite(jobs);

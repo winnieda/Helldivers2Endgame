@@ -6,6 +6,7 @@ import { pendingCount } from '@engine';
 import { API_URL } from '@/lib/api';
 import { openTerminal } from '@/lib/devtools';
 import { feedbackUrl } from '@/lib/feedback';
+import { useLobby } from '@/lib/lobby';
 import { store, useApp } from '@/lib/store';
 import { Emblem } from './icons';
 import { Toaster } from './ui';
@@ -78,7 +79,9 @@ function SyncChip() {
 
 function Nav() {
   const path = usePathname() ?? '/';
-  const { market, campaign, ready } = useApp();
+  const { market, campaign: own, ready } = useApp();
+  const { view } = useLobby();
+  const campaign = view ? view.campaign : own;
   const pending = ready ? pendingCount(market) : 0;
   return (
     <header className="sticky top-0 z-50 border-b border-line" style={{ background: 'rgba(7,9,11,0.92)' }}>

@@ -16,6 +16,8 @@ export class ApiError extends Error {
     /** HTTP status, or 0 when the server couldn't be reached at all. */
     public status: number,
     message: string,
+    /** The server's machine-readable reason, when it gives one (lobbies: kicked, gone, not-member). */
+    public reason?: string,
   ) {
     super(message);
   }
@@ -64,12 +66,15 @@ async function request(path: string, init: RequestInit & { admin?: boolean; body
   }
   if (!res.ok) {
     let message = `${res.status} ${res.statusText}`;
+    let reason: string | undefined;
     try {
-      message = (await res.json()).error ?? message;
+      const body = await res.json();
+      message = body.error ?? message;
+      reason = body.reason;
     } catch {
       // not JSON
     }
-    throw new ApiError(res.status, message);
+    throw new ApiError(res.status, message, reason);
   }
   return res;
 }
@@ -86,6 +91,21 @@ export async function getDoc(path: '/api/market' | '/api/history'): Promise<{ et
 export const postLoadouts = (submissions: Submission[]) => send<{ accepted: number; pending: number }>('POST', '/api/loadouts', { submissions });
 
 export const postWithdrawals = (submissions: Submission[]) => send<{ withdrawn: number; refused: number; pending: number }>('POST', '/api/loadouts/withdraw', { submissions });
+
+/** Lobby members identify themselves with these two headers. */
+export interface LobbyAuth {
+  memberId: string;
+  token: string;
+}
+
+export const lobbyCall = async <T>(method: string, path: string, body?: unknown, auth?: LobbyAuth): Promise<T> =>
+  (
+    await request(path, {
+      method,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: auth ? { 'X-Lobby-Member': auth.memberId, 'X-Lobby-Token': auth.token } : undefined,
+    })
+  ).json() as Promise<T>;
 
 export const postFeedback = (entry: { from: string; kind: string; version: string; questions?: { id: string; text: string; kind: string }[]; payload?: Record<string, unknown> }) => send<{ saved: boolean; emailed: boolean }>('POST', '/api/feedback', entry);
 

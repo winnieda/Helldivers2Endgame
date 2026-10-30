@@ -10,6 +10,7 @@
 import { gzipSync } from 'zlib';
 import { createApi, type Api } from './api';
 import { loadConfig } from './config';
+import { noPublisher, type Publisher } from './publisher';
 import { consoleNotifier, type Notifier } from './feedback';
 import { runJob } from './jobs';
 import { FileStorage, MemoryStorage, type Storage } from './storage';
@@ -52,6 +53,13 @@ async function makeStorage(kind: string, dataDir: string): Promise<Storage> {
   throw new Error(`HD2E_STORAGE=${kind} has no adapter.`);
 }
 
+async function makePublisher(): Promise<Publisher> {
+  const http = process.env.HD2E_EVENTS_HTTP;
+  if (!http) return noPublisher;
+  const { AppSyncPublisher } = await import('./events');
+  return new AppSyncPublisher(http, process.env.AWS_REGION ?? 'us-east-1');
+}
+
 async function makeNotifier(): Promise<Notifier> {
   const topic = process.env.HD2E_FEEDBACK_TOPIC;
   if (!topic) return consoleNotifier;
@@ -63,7 +71,7 @@ function setup() {
   cached ??= (async () => {
     const config = loadConfig();
     const storage = await makeStorage(process.env.HD2E_STORAGE ?? 'file', config.dataDir);
-    return { storage, config, api: createApi({ storage, config, notifier: await makeNotifier() }) };
+    return { storage, config, api: createApi({ storage, config, notifier: await makeNotifier(), publisher: await makePublisher() }) };
   })();
   return cached;
 }

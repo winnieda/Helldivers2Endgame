@@ -1,23 +1,19 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { endRun, feedbackUrl } from "@/lib/feedback";
+import { endRun, feedbackUrl, markOperationFeedback } from "@/lib/feedback";
+import { lobby } from "@/lib/lobby";
 import { useEffect, useState } from "react";
 import {
   activeDivers,
-  advance,
-  beginDebrief,
   blitzRequiredMargin,
   DIFFICULTY_NAMES,
-  endCampaign,
   FACTION_LABEL,
   ITEMS,
-  nextOperation,
   OUTCOME_LABEL,
   scoreCampaign,
   setResult,
   setSquadOutcome,
-  setSquadPayout,
   suggestedEarnings,
   type Campaign,
   type MissionOutcome,
@@ -54,6 +50,18 @@ export function MissionHeader({ c, title }: { c: Campaign; title: string }) {
   );
 }
 
+/** What a lobby member sees where the host has a decision to make. */
+function WaitingForHost({ what }: { what: string }) {
+  const { lobbyView } = useCampaign();
+  const host = lobbyView?.members.find((m) => m.host)?.name ?? "the host";
+  return (
+    <div className="mt-5 panel-flat px-5 py-4 text-text-2">
+      Waiting for <span className="text-text font-semibold">{host}</span> (the
+      host) {what}.
+    </div>
+  );
+}
+
 /** The small "work in progress" tag used on unfinished features. */
 const WipTag = ({ title }: { title?: string }) => (
   <span
@@ -65,17 +73,18 @@ const WipTag = ({ title }: { title?: string }) => (
 );
 
 export function Deployed() {
-  const { campaign: c, apply, confirmResults } = useCampaign();
+  const { campaign: c, act, isHost } = useCampaign();
   const [confirmFail, setConfirmFail] = useState(false);
   if (!c) return null;
   const isOps = c.mode === "operations";
   return (
     <div>
       <MissionHeader c={c} title="Squad deployed" />
-      <div className="mt-5 flex gap-3 flex-wrap">
+      {!isHost && <WaitingForHost what="to report how the mission went" />}
+      <div className={`mt-5 flex gap-3 flex-wrap ${isHost ? "" : "hidden"}`}>
         <button
           className="btn btn-primary btn-lg"
-          onClick={() => apply(beginDebrief)}
+          onClick={() => void act({ type: "beginDebrief" })}
         >
           {isOps ? "Mission complete — debrief →" : "Mission over — debrief →"}
         </button>
@@ -109,8 +118,7 @@ export function Deployed() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmFail(false);
-              apply((x) => setSquadPayout(beginDebrief(x), 0, "failed"));
-              confirmResults();
+              void act({ type: "reportFailure" });
             }}
           >
             The mission failed
@@ -160,15 +168,21 @@ export function Deployed() {
  * screen. Everyone in the squad earns it. (Failure is reported on the deployed screen.)
  */
 export function Debrief() {
-  const { campaign: c, apply, confirmResults } = useCampaign();
+  const { campaign: c, act, isHost } = useCampaign();
   const [payout, setPayout] = useState("");
   if (!c) return null;
   if (c.mode !== "operations") return <BlitzDebrief />;
+  if (!isHost)
+    return (
+      <div className="rise">
+        <MissionHeader c={c} title="Debrief" />
+        <WaitingForHost what="to enter the Squad Payout from the end-of-mission screen" />
+      </div>
+    );
   const value = payout === "" ? null : Number(payout);
   const finish = () => {
     if (value === null) return;
-    apply((x) => setSquadPayout(x, value));
-    confirmResults();
+    void act({ type: "reportPayout", earned: value });
   };
   return (
     <div className="rise">
@@ -432,7 +446,7 @@ export function Summary() {
   useEffect(() => {
     router.prefetch("/feedback/");
   }, [router]);
-  const { campaign: c, apply } = useCampaign();
+  const { campaign: c, act, inLobby, isHost } = useCampaign();
   const [confirmEnd, setConfirmEnd] = useState(false);
   if (!c) return null;
   const last = c.log[c.log.length - 1];
@@ -533,7 +547,8 @@ export function Summary() {
           );
         })}
       </div>
-      <div className="mt-6 flex gap-3 flex-wrap justify-end">
+      {!isHost && <WaitingForHost what="to move the squad on" />}
+      <div className={`mt-6 flex gap-3 flex-wrap justify-end ${isHost ? "" : "hidden"}`}>
         {!(opDone && success) && (
           <button
             className="btn btn-ghost"
@@ -546,8 +561,11 @@ export function Summary() {
           className="btn btn-primary btn-lg"
           onClick={() => {
             // Finishing an operation: feedback first, then the intermission (keep going or stand down).
-            apply(advance);
-            if (opDone && success) router.push(feedbackUrl('operation'));
+            void act({ type: "advance" });
+            if (opDone && success) {
+              markOperationFeedback(c);
+              router.push(feedbackUrl("operation"));
+            }
           }}
         >
           {nextLabel} →
@@ -574,8 +592,9 @@ export function Summary() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmEnd(false);
-              if (c) endRun(c);
-              router.push(feedbackUrl('standdown'));
+              if (inLobby) void act({ type: "standDown" });
+              else endRun(c);
+              router.push(feedbackUrl("standdown"));
             }}
           >
             Stand down
@@ -591,7 +610,7 @@ export function Summary() {
  * operation or stand down. Shown after the operation's feedback form.
  */
 export function Intermission() {
-  const { campaign: c, apply } = useCampaign();
+  const { campaign: c, act, isHost } = useCampaign();
   const [confirmEnd, setConfirmEnd] = useState(false);
   if (!c) return null;
   const score = scoreCampaign(c);
@@ -615,10 +634,11 @@ export function Intermission() {
         {c.operationName}. Keep the streak going with a new operation, or stand
         down and put this run in the hall of fame.
       </p>
-      <div className="mt-8 grid md:grid-cols-2 gap-4">
+      {!isHost && <WaitingForHost what="to decide whether the squad keeps going" />}
+      <div className={`mt-8 grid md:grid-cols-2 gap-4 ${isHost ? "" : "hidden"}`}>
         <button
           className="choice-card !border-yellow"
-          onClick={() => apply((x) => nextOperation(x))}
+          onClick={() => void act({ type: "nextOperation" })}
         >
           <div className="h-display text-[34px] sm:text-[42px] leading-tight text-yellow">
             Continue to the {ordinal(c.operation + 1)} Operation
@@ -700,9 +720,7 @@ export function Intermission() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmEnd(false);
-              apply((x) =>
-                endCampaign(x, `The squad stood down after ${ops}.`),
-              );
+              void act({ type: "standDown", reason: `The squad stood down after ${ops}.` });
             }}
           >
             Stand down
@@ -714,7 +732,11 @@ export function Intermission() {
 }
 
 export function GameOver() {
-  const { campaign: c } = useCampaign();
+  const { campaign: c, inLobby, isHost } = useCampaign();
+  // A lobby's campaign also goes into every player's own hall of fame.
+  useEffect(() => {
+    if (inLobby && c && c.log.length) store.recordCampaign(c);
+  }, [inLobby, c]);
   if (!c) return null;
   const score = scoreCampaign(c);
   const winner = c.winnerId ? c.divers.find((d) => d.id === c.winnerId) : null;
@@ -758,12 +780,25 @@ export function GameOver() {
         </div>
       )}
       <div className="mt-8 flex gap-3 justify-center flex-wrap">
-        <button
-          className="btn btn-primary btn-lg"
-          onClick={() => store.archiveCampaign(c)}
-        >
-          Record & start a new campaign
-        </button>
+        {!inLobby ? (
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => store.archiveCampaign(c)}
+          >
+            Record & start a new campaign
+          </button>
+        ) : isHost ? (
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => void lobby.lobbyAct({ type: "lobby.reset" })}
+          >
+            Back to the lobby for a new campaign
+          </button>
+        ) : (
+          <span className="self-center text-text-2">
+            The host can start a new campaign from the lobby.
+          </span>
+        )}
         <Link href="/market/" className="btn btn-ghost btn-lg">
           See the market you shaped
         </Link>

@@ -49,3 +49,22 @@ export function endRun(c: Campaign): void {
 export function feedbackUrl(from: string, next = '/play/'): string {
   return `/feedback/?from=${encodeURIComponent(from)}&next=${encodeURIComponent(next)}`;
 }
+
+/** After each completed operation every player gets the feedback form once (in a lobby, each on their own device). */
+const opKey = (c: Campaign) => `hd2e:op-feedback:${c.id}:${c.operation}`;
+
+export function markOperationFeedback(c: Campaign): void {
+  try {
+    localStorage.setItem(opKey(c), '1');
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+export function operationFeedbackDue(c: Campaign): boolean {
+  try {
+    return c.phase === 'intermission' && !localStorage.getItem(opKey(c));
+  } catch {
+    return false;
+  }
+}

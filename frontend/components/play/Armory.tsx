@@ -6,12 +6,9 @@ import {
   CATEGORY_SINGULAR,
   checkLoadout,
   cheapestLoadout,
-    randomLoadout,
-    ITEMS,
+  ITEMS,
   median,
-  setLoadout,
-  setReady,
-  setSlot,
+  randomLoadout,
   SLOT_CATEGORIES,
   STRATAGEM_TYPE_LABEL,
   STRATAGEM_TYPES,
@@ -23,6 +20,7 @@ import { DIVER_COLORS, req } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
 import { Check, ItemIcon, ReqIcon } from '../icons';
 import { endRun, feedbackUrl } from '@/lib/feedback';
+import { lobby } from '@/lib/lobby';
 import { useRouter } from 'next/navigation';
 import { Meter, Modal, PriceTag, Req } from '../ui';
 import { useCampaign } from './useCampaign';
@@ -120,9 +118,11 @@ export function Armory() {
   useEffect(() => {
     router.prefetch("/feedback/");
   }, [router]);
-  const { campaign: c, apply, app, deploySquad } = useCampaign();
+  const { campaign: c, act, app, inLobby, isHost, myDiverId, canControl, lobbyView } = useCampaign();
   const divers = useMemo(() => (c ? activeDivers(c) : []), [c]);
-  const [diverId, setDiverId] = useState(divers[0]?.id ?? 'd1');
+  // In a lobby each player starts on their own Helldiver.
+  const [chosen, setDiverId] = useState<string | null>(null);
+  const diverId = chosen ?? myDiverId ?? divers[0]?.id ?? 'd1';
   const [slot, setActiveSlot] = useState(0);
   const [type, setType] = useState<StratagemType | 'all'>('all');
   const [query, setQuery] = useState('');
@@ -138,8 +138,8 @@ export function Armory() {
   );
 
   useEffect(() => {
-    if (c && !divers.some((d) => d.id === diverId)) setDiverId(divers[0]?.id ?? 'd1');
-  }, [c, divers, diverId]);
+    if (c && chosen && !divers.some((d) => d.id === chosen)) setDiverId(null);
+  }, [c, divers, chosen]);
 
   const diver = divers.find((d) => d.id === diverId) ?? divers[0];
   const category = SLOT_CATEGORIES[slot];
@@ -164,23 +164,28 @@ export function Armory() {
 
   const currentInSlot = diver.loadout[slot];
   const priceOf = (idx: number | null) => (idx === null ? 0 : views.get(idx)?.q.price ?? 0);
+  const editable = canControl(diver.id);
+  const memberOf = (id: string) => lobbyView?.members.find((m) => m.diverId === id);
+  const hostName = lobbyView?.members.find((m) => m.host)?.name ?? 'the host';
+  const setSlot = (s: number, index: number | null) => void act({ type: 'setSlot', diverId: diver.id, slot: s, index });
 
   const pick = (it: Item) => {
+    if (!editable) return;
     if (it.category === 'stratagem') {
       const at = diver.loadout.indexOf(it.index);
       if (at >= 0 && at < 4) {
-        apply((x) => setSlot(x, diver.id, at, null));
+        setSlot(at, null);
         setActiveSlot(at);
         return;
       }
       const target = SLOT_CATEGORIES[slot] === 'stratagem' ? slot : diver.loadout.findIndex((v, s) => s < 4 && v === null);
       const s = target >= 0 ? target : 0;
-      apply((x) => setSlot(x, diver.id, s, it.index));
+      setSlot(s, it.index);
       const nextEmpty = diver.loadout.findIndex((v, k) => k !== s && v === null);
       if (nextEmpty >= 0) setActiveSlot(nextEmpty);
     } else {
       const s = SLOT_CATEGORIES.indexOf(it.category);
-      apply((x) => setSlot(x, diver.id, s, diver.loadout[s] === it.index ? null : it.index));
+      setSlot(s, diver.loadout[s] === it.index ? null : it.index);
       const nextEmpty = diver.loadout.findIndex((v, k) => k !== s && v === null);
       if (nextEmpty >= 0) setActiveSlot(nextEmpty);
     }
@@ -207,7 +212,11 @@ export function Armory() {
             >
               <span className="w-2.5 h-8" style={{ background: DIVER_COLORS[d.color] }} />
               <span className="text-left">
-                <span className="block font-display font-bold uppercase tracking-wider text-[15px] leading-tight">{d.name}</span>
+                <span className="block font-display font-bold uppercase tracking-wider text-[15px] leading-tight">
+                  {d.name}
+                  {inLobby && d.id === myDiverId && <span className="ml-1.5 text-[11px] text-yellow">You</span>}
+                  {inLobby && !memberOf(d.id)?.online && <span className="ml-1.5 text-[11px] text-warn" title="This player has gone quiet or left; the host can ready their Helldiver">Away</span>}
+                </span>
                 <span className="block text-[12px] text-muted tnum">
                   {req(chk.total)} / {isOps ? req(d.balance) : req(chk.limit)}
                 </span>
@@ -219,13 +228,19 @@ export function Armory() {
           );
         })}
       </div>
-        <div className="flex-1 min-w-[160px] text-[13px] text-muted text-right">{deployGate.ok ? 'All Helldivers ready. Prices lock in when you deploy.' : deployGate.reasons[0]}</div>
-        <button className="btn btn-danger" onClick={() => setConfirmAbandon(true)}>
-          Abandon mission
-        </button>
-        <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={() => setConfirmDeploy(true)}>
-          Deploy squad
-        </button>
+        <div className="flex-1 min-w-[160px] text-[13px] text-muted text-right">
+          {deployGate.ok ? (isHost ? 'All Helldivers ready. Prices lock in when you deploy.' : `All Helldivers ready. Waiting for ${hostName} to deploy the squad.`) : deployGate.reasons[0]}
+        </div>
+        {isHost && (
+          <>
+            <button className="btn btn-danger" onClick={() => setConfirmAbandon(true)}>
+              Abandon mission
+            </button>
+            <button className="btn btn-primary btn-lg" disabled={!deployGate.ok} onClick={() => setConfirmDeploy(true)}>
+              Deploy squad
+            </button>
+          </>
+        )}
       </div>
 
       <div className="mt-4 grid xl:grid-cols-[460px_1fr] gap-4 items-start">
@@ -235,6 +250,8 @@ export function Armory() {
             <div className="h-display text-[26px]" style={{ color: DIVER_COLORS[diver.color] }}>
               {diver.name}
             </div>
+            {!editable && <div className="text-[13px] text-muted">Another player’s loadout. You’ll see their picks as they make them.</div>}
+            {inLobby && editable && diver.id !== myDiverId && <div className="text-[13px] text-warn">This player is away, so you can pick and ready for them.</div>}
           </div>
           <div className="px-5 py-4 border-b border-line space-y-2 text-[14px]">
             <div className="flex justify-between items-center">
@@ -256,11 +273,12 @@ export function Armory() {
               </div>
             ))}
                       <div className="flex flex-wrap items-center gap-1.5 pt-2">
-              <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, randomLoadout(faction, app.market, check.limit)))} title="Random equipment that this Helldiver can afford">
+              <button className="btn btn-ghost btn-sm" disabled={!editable} onClick={() => void act({ type: 'setLoadout', diverId: diver.id, items: randomLoadout(faction, app.market, check.limit) })} title="Random equipment that this Helldiver can afford">
                 Random kit
               </button>
               <button
                 className="btn btn-ghost btn-sm"
+                disabled={!editable}
                 onClick={() => {
                   const cheap = cheapestLoadout(faction, app.market);
                   const used = new Set(diver.loadout.filter((v) => v !== null));
@@ -273,21 +291,22 @@ export function Armory() {
                     }
                     return cheap[s];
                   });
-                  apply((x) => setLoadout(x, diver.id, next));
+                  void act({ type: 'setLoadout', diverId: diver.id, items: next });
                 }}
               >
                 Fill empty with free
               </button>
-              <button className="btn btn-ghost btn-sm" onClick={() => apply((x) => setLoadout(x, diver.id, new Array(7).fill(null)))}>
+              <button className="btn btn-ghost btn-sm" disabled={!editable} onClick={() => void act({ type: 'setLoadout', diverId: diver.id, items: new Array(7).fill(null) })}>
                 Clear
               </button>
               <button
                 className={`btn ${diver.ready ? 'btn-ghost' : 'btn-primary'} ml-auto`}
-                disabled={!check.ok}
+                disabled={!check.ok || !editable}
                 onClick={() => {
-                  apply((x) => setReady(x, diver.id, !diver.ready));
+                  void act({ type: 'setReady', diverId: diver.id, ready: !diver.ready });
+                  // On a shared device, move on to the next Helldiver who isn't ready.
                   const next = divers.find((d) => d.id !== diver.id && !d.ready);
-                  if (!diver.ready && next) setDiverId(next.id);
+                  if (!inLobby && !diver.ready && next) setDiverId(next.id);
                 }}
               >
                 {diver.ready ? 'Unready' : 'Ready up'}
@@ -316,12 +335,12 @@ export function Armory() {
                     <div className={`truncate text-[14px] ${it ? 'font-semibold' : 'text-dim'}`}>{it ? it.name : `Choose a ${CATEGORY_SINGULAR[SLOT_CATEGORIES[s]].toLowerCase()}`}</div>
                   </div>
                   {v && <PriceTag q={v.q} size="sm" />}
-                  {it && (
+                  {it && editable && (
                     <button
                       className="text-muted hover:text-bad px-1 text-lg leading-none"
                       onClick={(e) => {
                         e.stopPropagation();
-                        apply((x) => setSlot(x, diver.id, s, null));
+                        setSlot(s, null);
                       }}
                       aria-label={`Remove ${it.name}`}
                     >
@@ -418,7 +437,7 @@ export function Armory() {
             className="btn btn-primary"
             onClick={() => {
               setConfirmDeploy(false);
-              deploySquad();
+              void act({ type: 'deploy' });
             }}
           >
             Lock in Purchases and Begin Mission!
@@ -438,7 +457,9 @@ export function Armory() {
             className="btn btn-danger"
             onClick={() => {
               setConfirmAbandon(false);
-              endRun(c);
+              // In a lobby: back to the lobby room if nothing was played, otherwise the campaign ends for everyone.
+              if (inLobby) void (c.log.length === 0 ? lobby.lobbyAct({ type: 'lobby.reset' }) : act({ type: 'standDown', reason: 'The squad abandoned the operation.' }));
+              else endRun(c);
               router.push(feedbackUrl('abandon'));
             }}
           >

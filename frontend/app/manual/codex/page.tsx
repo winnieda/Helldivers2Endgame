@@ -381,7 +381,6 @@ speed(q) = max(minSpeed, 2qᵞ ÷ (1 + qᵞ))`}
 
         <H id="roadmap">Roadmap</H>
         <ul className="list-disc pl-5 space-y-1.5 marker:text-dim">
-          <li>Squad lobbies with join codes so up to four players can join from their own devices (AWS AppSync + DynamoDB).</li>
           <li>Budget Blitz.</li>
           <li>Possibly charging Requisition for reinforcements.</li>
           <li>Server-side protection against spam submissions (rate limits per lobby).</li>
