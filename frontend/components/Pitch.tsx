@@ -1,12 +1,11 @@
-/** The one-paragraph pitch, shared by the landing page and Basic Training so the words match. */
+/** The landing page's pitch: what makes this a fun way to play with friends, in one short paragraph. */
 export function Pitch({ className = '' }: { className?: string }) {
   return (
     <p className={`text-text-2 leading-relaxed ${className}`}>
-      Helldivers 2 is already the game you love. The Galactic Market adds a reason to think before you pack. Every stratagem, weapon and grenade you bring{' '}
-      <span className="text-text font-semibold">costs Requisition</span>, and the price moves every day with what the whole community is bringing.
-      Take the meta and you pay meta prices. Dig out the gear nobody else runs and it gets <span className="text-text font-semibold">cheap</span>, and stays cheap until enough squads notice.
-      Pool your Requisition with your squad: one Helldiver carries the expensive kit while the others run the bargains, and nobody goes broke.
-      Start with <span className="text-text font-semibold">50,000</span>, make your picks, and every loadout you choose helps set tomorrow’s prices.
+      A <span className="text-text font-semibold">brand-new way to play</span> Helldivers 2 with your friends. Every stratagem, weapon and grenade costs Requisition, so{' '}
+      <span className="text-text font-semibold">get creative</span>: build loadouts you’d never have tried and discover how incredible the gear you’ve overlooked can be.{' '}
+      <span className="text-text font-semibold">Team up</span> to save Requisition and get the most out of every purchase, then{' '}
+      <span className="text-text font-semibold">show off your skills</span> by earning enough to bankroll your favorites.
     </p>
   );
 }
