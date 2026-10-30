@@ -13,6 +13,11 @@ import { deserializeMarket, pendingCount, priceLoadout, serializeMarket, submitL
 import { createMarket, PRESETS } from '../market/presets';
 import { popularityForMultiple, popularityMultiple } from '../market/pricing-anchored';
 
+const setFree = (m: ReturnType<typeof createMarket>, count: number) => {
+  m.config = setParam(m.config, 'free.count', count);
+  for (const f of FACTIONS) m.books[f].free = [];
+};
+
 const cheapestLoadout = (m: ReturnType<typeof createMarket>, f: (typeof FACTIONS)[number]) => {
   const pick = (c: (typeof CATEGORIES)[number], n: number) =>
     [...AVAILABLE[f][c]].sort((a, b) => quote(m, f, a.index).price - quote(m, f, b.index).price).slice(0, n).map((i) => i.index);
@@ -27,17 +32,51 @@ test('catalog: the three permanently free items exist and are the only always-fr
   assert.ok(ITEMS.filter((i) => i.category === 'stratagem').every((i) => i.code && /^[UDLR]+$/.test(i.code)), 'every stratagem has a code');
 });
 
-test('popularity mapping is bounded, monotone and invertible', () => {
+test('popularity mapping is bounded, monotone and invertible in every category', () => {
   const p = defaultConfig().anchored;
-  let prev = 0;
-  for (let lr = -12; lr <= 12; lr += 0.25) {
-    const m = popularityMultiple(Math.exp(lr), p);
-    assert.ok(m > prev, 'monotone');
-    assert.ok(m <= p.ceilingMultiple && m >= p.floorMultiple, 'bounded');
-    if (Math.abs(lr) < 4) assert.ok(Math.abs(Math.log(popularityForMultiple(m, p)) - lr) < 1e-6, 'inverse');
-    prev = m;
+  for (const c of CATEGORIES) {
+    const base = p.baseline[c];
+    let prev = 0;
+    for (let lr = -12; lr <= 12; lr += 0.25) {
+      const m = popularityMultiple(Math.exp(lr), p, base);
+      assert.ok(m > prev, 'monotone');
+      assert.ok(base * m <= p.ceilingPrice && base * m >= p.floorPrice, `${c} bounded by the shared ceiling and floor`);
+      if (Math.abs(lr) < 4) assert.ok(Math.abs(Math.log(popularityForMultiple(m, p, base)) - lr) < 1e-6, 'inverse');
+      prev = m;
+    }
+    assert.ok(Math.abs(popularityMultiple(1, p, base) - 1) < 1e-12, 'fair share costs exactly baseline');
   }
-  assert.ok(Math.abs(popularityMultiple(1, p) - 1) < 1e-12, 'fair share costs exactly baseline');
+});
+
+test('launch prices are at rest: an update with no loadouts changes nothing', () => {
+  const m = createMarket('tiers');
+  const before = FACTIONS.map((f) => m.books[f].items.map((b) => b?.price));
+  updateMarket(m);
+  FACTIONS.forEach((f, k) =>
+    m.books[f].items.forEach((b, i) => b && !ITEMS[i].alwaysFree && !m.books[f].free.includes(i) && assert.ok(Math.abs(b.price / before[k][i]! - 1) < 1e-9, `${ITEMS[i].name} moved with no data`)),
+  );
+});
+
+test('ignored gear sinks to the floor and climbs back within days once it is wanted', () => {
+  const m = createMarket('tiers');
+  setFree(m, 0);
+  const f = 'terminids';
+  const victim = requireItem('tx-41-sterilizer').index;
+  const others = AVAILABLE[f].stratagem.filter((i) => i.index !== victim).map((i) => i.index);
+  const rest = (k: number) => [others[k % others.length], others[(k + 7) % others.length], others[(k + 19) % others.length]];
+  const day = (withVictim: boolean) => {
+    const batch = emptyBatch();
+    for (let k = 0; k < 40; k++) {
+      const l = [...(withVictim && k % 3 === 0 ? [victim] : [others[(k + 31) % others.length]]), ...rest(k), ...cheapestLoadout(m, f).slice(4)];
+      addLoadout(batch, f, l, priceLoadout(m, f, l));
+    }
+    updateMarket(m, batch);
+  };
+  for (let d = 0; d < 90; d++) day(false);
+  const low = m.books[f].items[victim]!.price;
+  assert.ok(low < 15, `unused item reached the 10 floor (got ${low.toFixed(1)})`);
+  for (let d = 0; d < 7; d++) day(true);
+  assert.ok(m.books[f].items[victim]!.price > 1500, 'climbed back past 1,500 within a week of being wanted');
 });
 
 test('permanently free gear stays free through any amount of demand', () => {
@@ -70,8 +109,8 @@ test('anchored prices never leave their soft band, even under extreme one-sided 
       for (const it of AVAILABLE[f][c]) {
         if (it.alwaysFree) continue;
         const price = m.books[f].items[it.index]!.price;
-        assert.ok(price <= p.baseline[c] * p.ceilingMultiple + 1, `${it.name} under ceiling`);
-        assert.ok(price >= p.baseline[c] * p.floorMultiple - 1, `${it.name} over floor`);
+        assert.ok(price <= p.ceilingPrice + 1, `${it.name} under ceiling`);
+        assert.ok(price >= p.floorPrice - 1, `${it.name} over floor`);
       }
   assert.ok(m.books.terminids.items[target]!.price > p.baseline.stratagem * 2, 'spammed item became expensive');
 });

@@ -181,8 +181,8 @@ export default function BasicTraining() {
         </div>
         <div className="mt-6 grid md:grid-cols-3 gap-4 text-[14.5px] text-text-2">
           <div className="panel-flat p-4">
-            <span className="text-text font-semibold">Nothing runs away.</span> Prices have a ceiling and a floor, so the meta gets expensive without becoming unbuyable, and niche gear gets cheap without becoming
-            worthless.
+            <span className="text-text font-semibold">Nothing runs away.</span> Prices have a ceiling, so the meta gets expensive without becoming unbuyable. Gear nobody brings keeps getting cheaper, down to 10
+            Requisition, until someone decides it’s worth a try.
           </div>
           <div className="panel-flat p-4">
             <span className="text-text font-semibold">Free gear still counts.</span> If everyone leans on the free Peacemaker, other sidearms get a little cheaper to compete.

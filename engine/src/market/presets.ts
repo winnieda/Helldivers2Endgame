@@ -5,7 +5,7 @@ import { Rng } from '../util/rng';
 import { emptyBatch } from './batch';
 import { defaultConfig, type MarketConfig } from './config';
 import { rotateFree } from './free';
-import { popularityForMultiple } from './pricing-anchored';
+import { anchoredTarget, popularityForMultiple, softBand } from './pricing-anchored';
 import type { FactionBook, MarketState } from './types';
 
 export type PresetId = 'equal' | 'tiers' | 'tiers-inverted' | 'random' | 'flat';
@@ -66,9 +66,8 @@ function startPrice(item: Item, faction: Faction, preset: PresetId, config: Mark
     case 'tiers-inverted':
       return baseline * TIER_MULTIPLE[TIERS[TIERS.length - 1 - TIERS.indexOf(tier)]];
     case 'random': {
-      const lo = Math.log(baseline * config.anchored.floorMultiple * 2);
-      const hi = Math.log(baseline * config.anchored.ceilingMultiple * 0.85);
-      return Math.exp(rng.range(lo, hi));
+      const band = softBand(baseline, config.anchored);
+      return Math.exp(rng.range(Math.log(baseline) - band.down * 0.6, Math.log(baseline) + band.up * 0.85));
     }
     case 'flat':
       return opts.flatPrice ?? 3000;
@@ -76,10 +75,14 @@ function startPrice(item: Item, faction: Faction, preset: PresetId, config: Mark
 }
 
 /**
- * Seeds smoothed shares to match starting prices, so day one isn't spent "correcting" a price
- * the algorithm can't yet justify. The legacy prototype always began from uniform shares.
+ * Seeds smoothed shares from the starting prices: each item gets the popularity that would
+ * justify its price. Shares must add up to 1, and normalizing them shifts every target, so the
+ * starting prices are then replaced by the targets of the normalized shares. Day one starts at
+ * rest: an update with no loadouts changes nothing. (Without this, the tier list's prices sat
+ * 3-49% above their targets and the market slid down for weeks with nobody playing.) The flat
+ * preset keeps its one price, and the legacy prototype always began from uniform shares.
  */
-function seedShares(state: MarketState, faction: Faction, category: Category): void {
+function seedShares(state: MarketState, faction: Faction, category: Category, preset: PresetId): void {
   const items = AVAILABLE[faction][category];
   const book = state.books[faction];
   if (state.config.algorithm === 'legacy') {
@@ -87,13 +90,20 @@ function seedShares(state: MarketState, faction: Faction, category: Category): v
     return;
   }
   const p = state.config.anchored;
+  const baseline = p.baseline[category];
   const weights = items.map((it) => {
     const b = book.items[it.index]!;
-    const multiple = it.alwaysFree ? TIER_MULTIPLE[it.tiers[faction] ?? 'D'] : b.price / p.baseline[category];
-    return popularityForMultiple(multiple, p);
+    const multiple = it.alwaysFree ? TIER_MULTIPLE[it.tiers[faction] ?? 'D'] : b.price / baseline;
+    return popularityForMultiple(multiple, p, baseline);
   });
   const total = weights.reduce((a, b) => a + b, 0);
   items.forEach((it, k) => (book.items[it.index]!.share = weights[k] / total));
+  if (preset === 'flat') return;
+  for (const it of items) {
+    const b = book.items[it.index]!;
+    if (it.alwaysFree) continue;
+    b.price = b.prevPrice = b.target = anchoredTarget(b.share, 1 / items.length, baseline, state.config);
+  }
 }
 
 export function createMarket(preset: PresetId = 'tiers', opts: PresetOptions = {}, config: MarketConfig = defaultConfig()): MarketState {
@@ -128,7 +138,7 @@ export function createMarket(preset: PresetId = 'tiers', opts: PresetOptions = {
     pending: emptyBatch(),
     recent: [],
   };
-  for (const f of FACTIONS) for (const c of CATEGORIES) seedShares(state, f, c);
+  for (const f of FACTIONS) for (const c of CATEGORIES) seedShares(state, f, c, preset);
   rotateFree(state);
   return state;
 }

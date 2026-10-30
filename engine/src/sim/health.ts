@@ -45,12 +45,13 @@ export function evaluateHealth(r: SimData): HealthReport {
 
   // 1. Ceiling: no single item should become absurdly expensive.
   const maxEver = Math.max(...r.days.map((d) => d.maxPrice), 0);
+  const ceiling = r.config.anchored.ceilingPrice;
   checks.push({
     id: 'ceiling',
     label: 'No runaway prices',
-    verdict: grade(maxEver, (v) => v <= 9750, (v) => v <= 13000),
+    verdict: grade(maxEver, (v) => v <= ceiling * 0.95, (v) => v <= ceiling),
     value: `max ${fmt(maxEver)}`,
-    detail: 'Highest price any item reached. Above 13,000 (4× the stratagem baseline) means the algorithm is failing; above 9,750 (3×) is a warning.',
+    detail: `Highest price any item reached. Above the ${fmt(ceiling)} soft ceiling means the algorithm is failing; within 5% of it is a warning.`,
   });
 
   // 2. Collapse: prices pinned at the hard minimum mean the market has stopped working.
@@ -128,14 +129,15 @@ export function evaluateHealth(r: SimData): HealthReport {
     }
   }
   const zigzag = flipWeight ? flips / flipWeight : 0;
+  // The market is meant to visibly move every day (players should look forward to it), but not thrash.
+  const lively = vol < 0.01 ? 'warn' : grade(vol, (v) => v <= 0.08, (v) => v <= 0.12);
   checks.push({
     id: 'volatility',
-    label: 'Stable day to day',
-    verdict: (['info', 'pass', 'warn', 'fail'] as Verdict[])[
-      Math.max(RANK[grade(vol, (v) => v < 0.03, (v) => v < 0.06)], RANK[grade(zigzag, (v) => v < 0.2, (v) => v < 0.4)])
-    ],
+    label: 'Moves daily without thrashing',
+    verdict: (['info', 'pass', 'warn', 'fail'] as Verdict[])[Math.max(RANK[lively], RANK[grade(zigzag, (v) => v < 0.35, (v) => v < 0.5)])],
     value: `${pct(vol, 1)} avg move · ${pct(zigzag)} zig-zag`,
-    detail: 'Popularity-weighted average daily price move over the last 30 cycles, and how often popular items reverse direction (oscillation).',
+    detail:
+      'Popularity-weighted average daily price move over the last 30 cycles (under 1% = asleep, over 8% = thrashing), and how often popular items reverse direction (over 35% = oscillating).',
   });
 
   // 5. Meta gear expensive: price should track true strength within each faction market.
@@ -305,16 +307,14 @@ export function evaluateHealth(r: SimData): HealthReport {
 
   // 13. Brigading.
   if (r.brigaded.length) {
-    const multiples = r.brigaded.flatMap((i) =>
-      FACTIONS.filter((f) => ITEMS[i].tiers[f]).map((f) => Math.max(...r.prices[f].map((day) => day[i])) / base[ITEMS[i].category]),
-    );
-    const worst = Math.max(...multiples);
+    const peaks = r.brigaded.flatMap((i) => FACTIONS.filter((f) => ITEMS[i].tiers[f]).map((f) => Math.max(...r.prices[f].map((day) => day[i]))));
+    const worst = Math.max(...peaks);
     checks.push({
       id: 'brigade',
       label: 'Resists brigading',
-      verdict: grade(worst, (v) => v <= r.config.anchored.ceilingMultiple * 0.9, (v) => v <= r.config.anchored.ceilingMultiple * 1.2),
-      value: `peak ${fmt(worst, 1)}x baseline`,
-      detail: 'Highest price a brigaded item reached relative to its baseline. Spam can make an item pricey but never past the soft ceiling.',
+      verdict: grade(worst, (v) => v <= ceiling * 0.9, (v) => v <= ceiling),
+      value: `peak ${fmt(worst)} (${pct(worst / ceiling)} of the ceiling)`,
+      detail: 'Highest price a brigaded item reached. Spam can make an item pricey but never past the soft ceiling.',
     });
   }
 

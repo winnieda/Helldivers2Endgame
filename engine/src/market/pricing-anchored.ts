@@ -4,14 +4,19 @@
  *   1. Measure: each category's picks become shares (warbond/superstore picks scaled up by
  *      1/ownership), blended into an EMA whose rate shrinks for small batches.
  *   2. Target: r = share / fairShare. target = baseline × F(r), where F is a power law near
- *      r = 1 that saturates smoothly at ceilingMultiple (popular) and floorMultiple (unused).
+ *      r = 1 that saturates smoothly at ceilingPrice (popular) and floorPrice (unused). The
+ *      ceiling and floor are prices shared by every category, so an outlier in a cheap slot can
+ *      cost as much as a top stratagem, and useless gear can sink to a few Requisition.
  *      Because F is bounded, no amount of demand can push a target past the ceiling, and no
  *      lack of demand can push it under the floor. Free items stay in the shares, so heavy
  *      free-item use gently cheapens the paid alternatives without collapsing them.
  *   3. Move: price steps a fraction of the way (in log space) toward its target. The step is
- *      scaled by the up/down nudges, by a smooth function of the item's price level (cheap
- *      items rise slowly, expensive ones react quickly), and by category spend pressure
- *      (a category running hot rises slower and falls faster). Steps are capped at ±maxStep.
+ *      scaled by the up/down nudges and capped at ±maxStep, except that a rise may always be
+ *      minClimb × baseline (so cheap gear can climb back quickly). Two optional modifiers, off
+ *      by default: a price-level speed and category spend pressure.
+ *
+ * Launch prices are the targets of the seeded popularity (see presets.ts), so an update with no
+ * loadouts changes nothing.
  */
 import { AVAILABLE } from '../catalog/catalog';
 import { CATEGORIES, FACTIONS, SLOTS_PER_CATEGORY, type Category } from '../catalog/types';
@@ -19,26 +24,25 @@ import { clamp, median } from '../util/math';
 import type { AnchoredParams, MarketConfig } from './config';
 import type { Batch, CategoryReport, ItemChange, MarketState } from './types';
 
-/** F(r): price multiple of baseline for an item at r × its fair share of picks. */
-export function popularityMultiple(r: number, p: AnchoredParams): number {
+/** A category's soft band in log space: U = ln(ceilingPrice / baseline) above it, D = ln(baseline / floorPrice) below. */
+export function softBand(baseline: number, p: AnchoredParams): { up: number; down: number } {
+  return { up: Math.log(Math.max(p.ceilingPrice / baseline, 1.01)), down: Math.log(Math.max(baseline / p.floorPrice, 1.01)) };
+}
+
+/** F(r): price multiple of the category baseline for an item at r × its fair share of picks. */
+export function popularityMultiple(r: number, p: AnchoredParams, baseline: number): number {
+  const { up, down } = softBand(baseline, p);
   const lr = Math.log(Math.max(r, 1e-9));
-  if (lr >= 0) {
-    const u = Math.log(p.ceilingMultiple);
-    return Math.exp(u * Math.tanh((p.elasticityUp * lr) / u));
-  }
-  const d = Math.log(1 / p.floorMultiple);
-  return Math.exp(-d * Math.tanh((p.elasticityDown * -lr) / d));
+  if (lr >= 0) return Math.exp(up * Math.tanh((p.elasticityUp * lr) / up));
+  return Math.exp(-down * Math.tanh((p.elasticityDown * -lr) / down));
 }
 
 /** Inverse of popularityMultiple: the popularity ratio that would justify a price multiple. */
-export function popularityForMultiple(m: number, p: AnchoredParams): number {
+export function popularityForMultiple(m: number, p: AnchoredParams, baseline: number): number {
+  const { up, down } = softBand(baseline, p);
   const lm = Math.log(Math.max(m, 1e-9));
-  if (lm >= 0) {
-    const u = Math.log(p.ceilingMultiple);
-    return Math.exp((u * Math.atanh(clamp(lm / u, 0, 0.995))) / p.elasticityUp);
-  }
-  const d = Math.log(1 / p.floorMultiple);
-  return Math.exp((-d * Math.atanh(clamp(-lm / d, 0, 0.995))) / p.elasticityDown);
+  if (lm >= 0) return Math.exp((up * Math.atanh(clamp(lm / up, 0, 0.995))) / p.elasticityUp);
+  return Math.exp((-down * Math.atanh(clamp(-lm / down, 0, 0.995))) / p.elasticityDown);
 }
 
 /** Smooth speed multiplier from relative price q = price/baseline: ~q^γ near 1, bounded to [minSpeed, 2]. */
@@ -53,7 +57,7 @@ export function spendPressureFactors(heat: number, p: AnchoredParams): { up: num
 }
 
 export function anchoredTarget(share: number, fairShare: number, baseline: number, config: MarketConfig): number {
-  const t = baseline * popularityMultiple(share / fairShare, config.anchored);
+  const t = baseline * popularityMultiple(share / fairShare, config.anchored, baseline);
   return clamp(t, config.minPrice, config.maxPrice);
 }
 
@@ -129,7 +133,8 @@ export function anchoredUpdate(state: MarketState, batch: Batch, categories: Cat
         const gap = Math.log(target) - Math.log(Math.max(b.price, 1e-6));
         const speed = priceLevelSpeed(b.price / baseline, p);
         const k = gap > 0 ? p.adjustRate * p.upBias * speed * pressure.up : p.adjustRate * p.downBias * speed * pressure.down;
-        const step = clamp(Math.min(k, 1) * gap, stepDown, stepUp);
+        const climb = Math.max(stepUp, Math.log(1 + (p.minClimb * baseline) / Math.max(b.price, 1e-6)));
+        const step = clamp(Math.min(k, 1) * gap, stepDown, climb);
         const old = b.price;
         b.price = clamp(b.price * Math.exp(step), config.minPrice, config.maxPrice);
         b.target = target;

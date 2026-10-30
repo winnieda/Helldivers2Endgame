@@ -18,10 +18,14 @@ export interface AnchoredParams {
   elasticityUp: number;
   /** How strongly below-fair-share popularity lowers the target. */
   elasticityDown: number;
-  /** Targets approach baseline × this for the most popular items, never exceeding it. */
-  ceilingMultiple: number;
-  /** Targets approach baseline × this for unused items, never going below it. */
-  floorMultiple: number;
+  /**
+   * Soft ceiling in Requisition, the same for every category: targets of the most popular items
+   * approach it but never reach it. One shared ceiling lets an outlier in a cheap slot (the
+   * Ultimatum among secondaries) cost as much as a top stratagem.
+   */
+  ceilingPrice: number;
+  /** Soft floor in Requisition, the same for every category: gear nobody uses keeps getting cheaper toward it. */
+  floorPrice: number;
   /** Fraction of the gap to target closed per update, before modifiers. */
   adjustRate: number;
   /** Multiplier on upward moves (the 1.1 "upward nudge"). */
@@ -30,6 +34,8 @@ export interface AnchoredParams {
   downBias: number;
   /** Largest fractional price change in one update (0.2 = ±20%). */
   maxStep: number;
+  /** A rise may always be at least this fraction of the category baseline, so floor-priced gear can climb back within days. */
+  minClimb: number;
   /** Cheap items move slower and expensive items faster: speed ∝ (price/baseline)^this, smoothed. */
   speedExponent: number;
   /** Lower bound on that speed multiplier so niche items can still climb. */
@@ -87,18 +93,22 @@ export function defaultConfig(): MarketConfig {
       // Tuned so the average loadout price settles near 16,000: about two Super Helldive payouts.
       baseline: { stratagem: 3250, primary: 2150, secondary: 1450, throwable: 700 },
       ema: 0.35,
-      halfSamplePerItem: 8,
+      // Low on purpose: a few squads a day should visibly move the market by the next morning.
+      halfSamplePerItem: 2,
       elasticityUp: 0.8,
       elasticityDown: 1.5,
-      ceilingMultiple: 3.5,
-      floorMultiple: 0.04,
+      ceilingPrice: 11375,
+      floorPrice: 10,
       adjustRate: 0.4,
       upBias: 1.1,
       downBias: 0.9,
       maxStep: 0.2,
-      speedExponent: 0.5,
+      minClimb: 0.1,
+      // Off: every price moves at the same speed, so floor-priced gear isn't stuck there.
+      speedExponent: 0,
       minSpeed: 0.35,
-      spendPressure: 0.6,
+      // Off: it sped up rises when players spent little, the opposite of what an economy needs.
+      spendPressure: 0,
       ownershipFactor: { base: 1, warbond: 0.9, superstore: 0.9, special: 0.9 },
     },
     legacy: {
@@ -138,15 +148,16 @@ export const PARAM_SPECS: ParamSpec[] = [
   { path: 'anchored.halfSamplePerItem', label: 'Half-confidence sample', description: 'Picks per item at which a batch counts half. Protects against tiny, noisy batches.', min: 0, max: 50, step: 0.5, algorithm: 'anchored' },
   { path: 'anchored.elasticityUp', label: 'Popularity → price (up)', description: 'Exponent mapping above-fair popularity to price.', min: 0.1, max: 2, step: 0.05, algorithm: 'anchored' },
   { path: 'anchored.elasticityDown', label: 'Popularity → price (down)', description: 'Exponent mapping below-fair popularity to price. Higher = niche gear gets cheaper faster.', min: 0.1, max: 2.5, step: 0.05, algorithm: 'anchored' },
-  { path: 'anchored.ceilingMultiple', label: 'Ceiling multiple', description: 'Most popular items approach baseline × this (soft cap).', min: 1.5, max: 12, step: 0.1, algorithm: 'anchored' },
-  { path: 'anchored.floorMultiple', label: 'Floor multiple', description: 'Unused items approach baseline × this (soft floor).', min: 0.003, max: 0.5, step: 0.001, algorithm: 'anchored' },
+  { path: 'anchored.ceilingPrice', label: 'Soft ceiling', description: 'The most popular items approach this price, in every category, and never pass it.', min: 2000, max: 40000, step: 125, algorithm: 'anchored' },
+  { path: 'anchored.floorPrice', label: 'Soft floor', description: 'Gear nobody uses keeps getting cheaper toward this price, in every category.', min: 1, max: 1000, step: 1, algorithm: 'anchored' },
   { path: 'anchored.adjustRate', label: 'Adjust rate (η)', description: 'Share of the gap to target closed each update.', min: 0.02, max: 1, step: 0.01, algorithm: 'anchored' },
   { path: 'anchored.upBias', label: 'Upward nudge', description: 'Multiplier on price increases.', min: 0.5, max: 2, step: 0.05, algorithm: 'anchored' },
   { path: 'anchored.downBias', label: 'Downward nudge', description: 'Multiplier on price decreases.', min: 0.5, max: 2, step: 0.05, algorithm: 'anchored' },
   { path: 'anchored.maxStep', label: 'Max step', description: 'Largest fractional change per update.', min: 0.01, max: 0.9, step: 0.01, algorithm: 'anchored' },
-  { path: 'anchored.speedExponent', label: 'Price-level speed exponent', description: 'Cheap items move slower, expensive faster. 0 = everything moves at the same speed.', min: 0, max: 2, step: 0.05, algorithm: 'anchored' },
-  { path: 'anchored.minSpeed', label: 'Minimum speed', description: 'Lower bound for that speed multiplier.', min: 0.05, max: 1, step: 0.05, algorithm: 'anchored' },
-  { path: 'anchored.spendPressure', label: 'Spend pressure', description: 'How much hot category spending slows rises and speeds falls.', min: 0, max: 3, step: 0.05, algorithm: 'anchored' },
+  { path: 'anchored.minClimb', label: 'Minimum climb', description: 'A rise may always be at least this fraction of the category baseline (cheap gear climbs back fast).', min: 0, max: 1, step: 0.01, algorithm: 'anchored' },
+  { path: 'anchored.speedExponent', label: 'Price-level speed exponent', description: 'Above 0, cheap items move slower and expensive ones faster. 0 (default) = everything moves at the same speed.', min: 0, max: 2, step: 0.05, algorithm: 'anchored' },
+  { path: 'anchored.minSpeed', label: 'Minimum speed', description: 'Lower bound for that speed multiplier (unused while the exponent is 0).', min: 0.05, max: 1, step: 0.05, algorithm: 'anchored' },
+  { path: 'anchored.spendPressure', label: 'Spend pressure', description: 'Above 0, hot category spending slows rises and speeds falls. 0 (default) = off.', min: 0, max: 3, step: 0.05, algorithm: 'anchored' },
   { path: 'anchored.ownershipFactor.warbond', label: 'Warbond ownership', description: 'Observed warbond picks are divided by this.', min: 0.3, max: 1, step: 0.01, algorithm: 'anchored' },
   { path: 'anchored.ownershipFactor.superstore', label: 'Superstore ownership', description: 'Observed superstore picks are divided by this.', min: 0.3, max: 1, step: 0.01, algorithm: 'anchored' },
   { path: 'anchored.ownershipFactor.special', label: 'Limited-item ownership', description: 'Observed picks of campaign/edition items are divided by this.', min: 0.3, max: 1, step: 0.01, algorithm: 'anchored' },

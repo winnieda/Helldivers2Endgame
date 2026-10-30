@@ -113,8 +113,9 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
           <div className="font-display font-bold uppercase tracking-wider text-text mb-1">Why this price</div>
           Each faction market measures how often this {item.category === 'stratagem' ? 'stratagem' : 'weapon'} is picked relative to a fair share of its category. An item at exactly a fair share is worth the{' '}
           {CATEGORY_SINGULAR[item.category].toLowerCase()} baseline of <span className="text-text">{req(p.baseline[item.category])}</span>; at 2× fair share its target is{' '}
-          <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(2, p))}</span>, at half it’s <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(0.5, p))}</span>. Targets never
-          pass {req(p.baseline[item.category] * p.ceilingMultiple)} or drop under {req(p.baseline[item.category] * p.floorMultiple)}, and prices move at most {Math.round(p.maxStep * 100)}% per day toward them.
+          <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(2, p, p.baseline[item.category]))}</span>, at half it’s{' '}
+          <span className="text-text">{req(p.baseline[item.category] * popularityMultiple(0.5, p, p.baseline[item.category]))}</span>. Targets never pass {req(p.ceilingPrice)} or drop under {req(p.floorPrice)}, and
+          prices move at most {Math.round(p.maxStep * 100)}% per day toward them.
         </div>
       )}
     </Modal>

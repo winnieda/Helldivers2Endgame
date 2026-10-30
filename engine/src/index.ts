@@ -7,7 +7,7 @@ export * from './market/free';
 export * from './market/presets';
 export * from './market/market';
 export * from './market/history';
-export { popularityMultiple, popularityForMultiple, priceLevelSpeed, spendPressureFactors, anchoredTarget } from './market/pricing-anchored';
+export { popularityMultiple, popularityForMultiple, priceLevelSpeed, softBand, spendPressureFactors, anchoredTarget } from './market/pricing-anchored';
 export { legacyElasticity, roundHalfEven } from './market/pricing-legacy';
 export * from './game/rules';
 export * from './game/campaign';
