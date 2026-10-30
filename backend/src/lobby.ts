@@ -15,7 +15,7 @@
  * with the same name takes the seat back once the old device has gone quiet.
  */
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
-import { applyAction, createCampaign, deserializeMarket, diverOf, parseAction, type Campaign } from '@hd2e/engine';
+import { applyAction, createCampaign, deserializeMarket, diverOf, needsMarket, parseAction, type Campaign } from '@hd2e/engine';
 import type { Publisher } from './publisher';
 import { MARKET, type MarketService } from './market-service';
 import { ConflictError, type Storage } from './storage';
@@ -66,6 +66,8 @@ export interface Lobby {
   members: Member[];
   kicked: string[];
   campaign: Campaign | null;
+  /** After an operation: who still has the feedback form open (the squad waits for them). */
+  feedback?: { key: string; pending: string[] } | null;
 }
 
 export interface Session {
@@ -86,6 +88,8 @@ export interface LobbyView {
   share: boolean;
   members: { id: string; name: string; diverId: string | null; host: boolean; online: boolean }[];
   campaign: Campaign | null;
+  /** Members still giving feedback after the operation that just ended (null: nobody to wait for). */
+  feedbackPending: string[] | null;
 }
 
 export type LobbyAction =
@@ -97,7 +101,11 @@ export type LobbyAction =
   | { type: 'lobby.newCode' }
   | { type: 'lobby.claimHost' }
   | { type: 'lobby.leave' }
-  | { type: 'lobby.reset' };
+  | { type: 'lobby.reset' }
+  /** This member has sent or skipped the post-operation feedback form. */
+  | { type: 'lobby.feedbackDone' }
+  /** Host: stop waiting for the rest of the feedback. */
+  | { type: 'lobby.stopWaiting' };
 
 const lobbyKey = (id: string) => `lobbies/${id}`;
 const codeKey = (code: string) => `lobby-codes/${code}`;
@@ -139,6 +147,7 @@ export class LobbyService {
       share: lobby.share,
       members: lobby.members.map((m) => ({ id: m.id, name: m.name, diverId: m.diverId, host: m.id === lobby.hostId, online: this.online(m, at) })),
       campaign: lobby.campaign,
+      feedbackPending: lobby.feedback?.pending.length ? lobby.feedback.pending : null,
     };
   }
 
@@ -243,15 +252,20 @@ export class LobbyService {
         if (!own && !(isHost && unattended)) throw new LobbyError(403, 'You can only change your own loadout.');
       } else if (!isHost) throw new LobbyError(403, 'Only the host can do that.');
 
-      const marketDoc = await this.market.doc(MARKET);
-      const market = deserializeMarket(marketDoc.body);
+      // Only deploying and settling a mission need the market; skipping it keeps the rest snappy.
+      const market = needsMarket(action) ? deserializeMarket((await this.market.doc(MARKET)).body) : undefined;
+      const before = lobby.campaign.phase;
       let result;
       try {
-        result = applyAction(lobby.campaign, action, { market, marketDay: market.day });
+        result = applyAction(lobby.campaign, action, { market, marketDay: market?.day });
       } catch (e) {
         throw new LobbyError(409, (e as Error).message);
       }
       lobby.campaign = result.campaign;
+      // An operation just ended: everyone gets the feedback form, and the squad waits for them.
+      if (before !== 'intermission' && result.campaign.phase === 'intermission')
+        lobby.feedback = { key: `${result.campaign.id}:${result.campaign.operation}`, pending: lobby.members.map((m) => m.id) };
+      if (result.campaign.phase !== 'intermission') lobby.feedback = null;
       const { submissions, withdrawals } = result;
       // The market hears about it only once the lobby change has been saved.
       after = async () => {
@@ -306,6 +320,7 @@ export class LobbyService {
           if (target.id === me.id) throw new LobbyError(400, 'You can’t remove yourself; leave the lobby instead.');
           lobby.members = lobby.members.filter((m) => m.id !== target.id);
           lobby.kicked = [...lobby.kicked, target.id].slice(-50);
+          if (lobby.feedback) lobby.feedback.pending = lobby.feedback.pending.filter((id) => id !== target.id);
           return { changed: true };
         }
         case 'lobby.lock':
@@ -326,6 +341,7 @@ export class LobbyService {
         }
         case 'lobby.leave': {
           lobby.members = lobby.members.filter((m) => m.id !== me.id);
+          if (lobby.feedback) lobby.feedback.pending = lobby.feedback.pending.filter((id) => id !== me.id);
           if (isHost && lobby.members.length) lobby.hostId = (lobby.members.find((m) => this.online(m)) ?? lobby.members[0]).id;
           return { changed: true, left: true };
         }
@@ -334,7 +350,17 @@ export class LobbyService {
           hostOnly();
           if (lobby.campaign && lobby.campaign.phase !== 'over' && lobby.campaign.log.length > 0) throw new LobbyError(409, 'Finish or stand down from the current campaign first.');
           lobby.campaign = null;
+          lobby.feedback = null;
           lobby.members.forEach((m) => (m.diverId = null));
+          return { changed: true };
+        case 'lobby.feedbackDone':
+          if (!lobby.feedback?.pending.includes(me.id)) return { changed: false };
+          lobby.feedback.pending = lobby.feedback.pending.filter((id) => id !== me.id);
+          return { changed: true };
+        case 'lobby.stopWaiting':
+          hostOnly();
+          if (!lobby.feedback) return { changed: false };
+          lobby.feedback.pending = [];
           return { changed: true };
         default:
           throw new LobbyError(400, 'Unknown lobby action.');

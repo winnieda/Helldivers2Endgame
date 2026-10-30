@@ -90,7 +90,9 @@ export default function CreditsPage() {
             <>
               <p>
                 <strong>What we collect.</strong> When you deploy, the equipment in each loadout, the front, the game mode and the prices paid are sent anonymously to set the prices in the Price Database. You can opt out
-                when starting a campaign. Feedback you choose to send is stored and emailed to the developers. In an online lobby, the names your squad types in and the squad&apos;s campaign are kept on the
+                when starting a campaign. Feedback you choose to send is stored and emailed to the developers, together with some context so we can make sense of it: how your squad was playing
+                (offline or online lobby, squad size, how far the campaign got), your screen size, the kind of device and browser, your language setting, and the country your connection came from
+                (worked out by our host; we never see or keep your IP address, city or anything finer). In an online lobby, the names your squad types in and the squad&apos;s campaign are kept on the
                 server so everyone&apos;s devices stay in sync; a lobby nobody has used for 14 days is deleted. That is all: no accounts, no cookies, no analytics or tracking, and we don&apos;t keep IP addresses or
                 access logs.
               </p>

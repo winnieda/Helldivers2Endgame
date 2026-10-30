@@ -107,7 +107,14 @@ export const lobbyCall = async <T>(method: string, path: string, body?: unknown,
     })
   ).json() as Promise<T>;
 
-export const postFeedback = (entry: { from: string; kind: string; version: string; questions?: { id: string; text: string; kind: string }[]; payload?: Record<string, unknown> }) => send<{ saved: boolean; emailed: boolean }>('POST', '/api/feedback', entry);
+export const postFeedback = (entry: {
+  from: string;
+  kind: string;
+  version: string;
+  questions?: { id: string; text: string; kind: string }[];
+  payload?: Record<string, unknown>;
+  context?: Record<string, string | number | boolean>;
+}) => send<{ saved: boolean; emailed: boolean }>('POST', '/api/feedback', entry);
 
 export const adminConsole = (command: string) => send<{ lines: Line[]; changed: boolean }>('POST', '/api/admin/console', { command }, true);
 

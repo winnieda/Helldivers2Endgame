@@ -609,10 +609,64 @@ export function Summary() {
  * Between operations: the squad finished all three missions and decides whether to start the next
  * operation or stand down. Shown after the operation's feedback form.
  */
+/**
+ * Online lobbies, after an operation: those who've sent or skipped the feedback form wait here
+ * for the rest. Players who are away don't hold anyone up, and the host can move on regardless.
+ */
+function FeedbackHold({ waitingOn, owed }: { waitingOn: { id: string; name: string }[]; owed: boolean }) {
+  const router = useRouter();
+  const { isHost } = useCampaign();
+  return (
+    <div className="rise text-center max-w-3xl mx-auto py-10">
+      <Emblem size={72} className="mx-auto" />
+      <h1 className="h-display text-[44px] sm:text-[56px] mt-4">Stand by, Helldiver</h1>
+      {owed ? (
+        <>
+          <p className="text-text-2 text-[17px] mt-2">The squad is waiting for your feedback on the operation.</p>
+          <button className="btn btn-primary btn-lg mt-6" onClick={() => router.push(feedbackUrl("operation"))}>
+            Give feedback
+          </button>
+        </>
+      ) : (
+        <p className="text-text-2 text-[17px] mt-2">
+          Waiting for other members to finish giving feedback, please stand by.
+        </p>
+      )}
+      {waitingOn.length > 0 && (
+        <div className="mt-6 inline-flex flex-col gap-2 text-left">
+          {waitingOn.map((m) => (
+            <span key={m.id} className="inline-flex items-center gap-2 text-[15px]">
+              <span className="w-2 h-2 rounded-full bg-warn animate-pulse" aria-hidden />
+              <span className="font-display font-bold uppercase tracking-wider">{m.name}</span>
+              <span className="text-muted">is still giving feedback</span>
+            </span>
+          ))}
+        </div>
+      )}
+      {isHost && !owed && (
+        <div className="mt-8">
+          <button
+            className="btn btn-ghost"
+            onClick={() => void lobby.lobbyAct({ type: "lobby.stopWaiting" })}
+          >
+            Continue without them
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Intermission() {
-  const { campaign: c, act, isHost } = useCampaign();
+  const { campaign: c, act, isHost, lobbyView } = useCampaign();
   const [confirmEnd, setConfirmEnd] = useState(false);
   if (!c) return null;
+  if (lobbyView?.feedbackPending) {
+    const pending = lobbyView.members.filter((m) => lobbyView.feedbackPending!.includes(m.id));
+    const owed = pending.some((m) => m.id === lobbyView.you);
+    const waitingOn = pending.filter((m) => m.online && m.id !== lobbyView.you);
+    if (owed || waitingOn.length) return <FeedbackHold waitingOn={waitingOn} owed={owed} />;
+  }
   const score = scoreCampaign(c);
   const done = score.operationsCompleted;
   const ops = `${done} operation${done === 1 ? "" : "s"}`;

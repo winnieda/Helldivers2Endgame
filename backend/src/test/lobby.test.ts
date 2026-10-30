@@ -179,6 +179,42 @@ test('lobbies: kick, lock, a new code, leaving, and starting over after the camp
   assert.notEqual(after.hostId, host.session.memberId);
 });
 
+test('lobbies: after an operation the squad waits for everyone’s feedback', async () => {
+  const { lobbies, market, as } = setup();
+  const host = await lobbies.create('Tomo');
+  const lyra = await lobbies.join(host.view.code!, 'Lyra');
+  const quill = await lobbies.join(host.view.code!, 'Quill');
+  const id = host.session.lobbyId;
+  await lobbies.act(id, as(host.session), { type: 'lobby.share', share: false });
+  await lobbies.act(id, as(host.session), { type: 'lobby.start' });
+  const m = deserializeMarket((await market.doc(MARKET)).body);
+  for (let mission = 1; mission <= 3; mission++) {
+    if (mission === 1) await lobbies.act(id, as(host.session), { type: 'beginLoadout' });
+    for (const s of [host.session, lyra.session, quill.session]) {
+      const d = (await lobbies.view(id, as(s))).members.find((x) => x.id === s.memberId)!.diverId!;
+      await lobbies.act(id, as(s), { type: 'setLoadout', diverId: d, items: kit('terminids', m) });
+      await lobbies.act(id, as(s), { type: 'setReady', diverId: d, ready: true });
+    }
+    await lobbies.act(id, as(host.session), { type: 'deploy' });
+    await lobbies.act(id, as(host.session), { type: 'reportPayout', earned: 6000 });
+    const v = await lobbies.act(id, as(host.session), { type: 'advance' });
+    if (mission < 3) assert.equal(v.feedbackPending, null, 'nobody waits between missions');
+  }
+  let v = await lobbies.view(id, as(host.session));
+  assert.equal(v.campaign?.phase, 'intermission');
+  assert.equal(v.feedbackPending?.length, 3, 'everyone owes feedback once the operation ends');
+  v = await lobbies.act(id, as(lyra.session), { type: 'lobby.feedbackDone' });
+  assert.deepEqual(v.feedbackPending, [host.session.memberId, quill.session.memberId]);
+  await rejects(lobbies.act(id, as(lyra.session), { type: 'lobby.stopWaiting' }), 403);
+  await lobbies.act(id, as(quill.session), { type: 'lobby.leave' });
+  v = await lobbies.act(id, as(host.session), { type: 'lobby.feedbackDone' });
+  assert.equal(v.feedbackPending, null, 'leaving takes you off the list');
+
+  // The next operation clears it; the host can also stop waiting.
+  v = await lobbies.act(id, as(host.session), { type: 'nextOperation' });
+  assert.equal(v.feedbackPending, null);
+});
+
 test('lobby API: routes, member headers, ETags and error reasons', async () => {
   const storage = new MemoryStorage();
   const api = createApi({ storage, config: loadConfig({}, { openAdmin: true }) });

@@ -44,6 +44,8 @@ export interface LobbyView {
   share: boolean;
   members: LobbyMember[];
   campaign: Campaign | null;
+  /** After an operation: members still giving feedback (null: nobody to wait for). */
+  feedbackPending: string[] | null;
 }
 
 export interface LobbyState {
@@ -84,6 +86,9 @@ class LobbyClient {
   private live = false;
   private fetching: Promise<void> | null = null;
   private again = false;
+  /** Actions in flight, and the lowest version that can include them: older views would undo what's on screen. */
+  private pending = 0;
+  private holdBelow = 0;
   static readonly server: LobbyState = { session: null, view: null, link: 'idle', ended: null };
 
   get = (): LobbyState => {
@@ -170,8 +175,8 @@ class LobbyClient {
   }
 
   private apply(view: LobbyView): void {
-    // Responses can arrive out of order; only ever move forward.
-    if (this.state.view && view.version < this.state.view.version && view.id === this.state.view.id) return;
+    // Responses can arrive out of order; only ever move forward, and never back past an optimistic change.
+    if (this.state.view && view.id === this.state.view.id && (view.version < this.state.view.version || (this.pending > 0 && view.version < this.holdBelow))) return;
     this.set({ view: { ...view, code: view.code ?? (view.hostId === view.you ? this.state.view?.code : undefined) } });
   }
 
@@ -225,22 +230,40 @@ class LobbyClient {
     }
   }
 
-  /** A campaign action. Changes to a diver's own loadout show straight away and are confirmed by the server. */
+  /**
+   * A campaign action. It shows on this device straight away (the same engine runs here) and the
+   * server's answer then confirms or corrects it; if the server refuses, a refetch puts it back.
+   */
   act = (action: CampaignAction): Promise<boolean> => {
     const view = this.state.view;
-    if (view?.campaign && (action.type === 'setSlot' || action.type === 'setLoadout' || action.type === 'setReady')) {
+    if (view?.campaign) {
       try {
         const { market } = store.get();
-        this.set({ view: { ...view, campaign: applyAction(view.campaign, action, { market }).campaign } });
+        this.set({ view: { ...view, campaign: applyAction(view.campaign, action, { market, marketDay: market.day }).campaign } });
       } catch {
-        // the server will say why
+        // not allowed here: the server will say why
       }
     }
-    return this.send(action);
+    return this.held(view, this.send(action));
   };
 
-  /** A lobby action: lobby.start, lobby.kick, lobby.lock, lobby.newCode, lobby.claimHost, lobby.reset, lobby.share. */
-  lobbyAct = (action: { type: `lobby.${string}`; [k: string]: unknown }): Promise<boolean> => this.send(action);
+  private async held<T>(view: LobbyView | null, p: Promise<T>): Promise<T> {
+    this.pending++;
+    this.holdBelow = Math.max(this.holdBelow, (view?.version ?? 0) + 1);
+    try {
+      return await p;
+    } finally {
+      if (--this.pending === 0) this.holdBelow = 0;
+    }
+  }
+
+  /** A lobby action (lobby.start, lobby.kick, lobby.lock, ...). Simple toggles show straight away. */
+  lobbyAct = (action: { type: `lobby.${string}`; [k: string]: unknown }): Promise<boolean> => {
+    const view = this.state.view;
+    if (view && action.type === 'lobby.lock') this.set({ view: { ...view, locked: !!action.locked } });
+    if (view && action.type === 'lobby.share') this.set({ view: { ...view, share: !!action.share } });
+    return this.held(view, this.send(action));
+  };
 
   async create(name: string): Promise<boolean> {
     try {

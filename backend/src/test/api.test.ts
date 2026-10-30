@@ -215,8 +215,8 @@ test('feedback is saved, emailed with the subject tag, checked, and capped per d
     },
   };
   const api = createApi({ storage, config: loadConfig({}, { openAdmin: true }), notifier });
-  const post = async (body: unknown) => {
-    const res = await api({ method: 'POST', path: '/api/feedback', headers: {}, body: typeof body === 'string' ? body : JSON.stringify(body) });
+  const post = async (body: unknown, headers: Record<string, string> = {}) => {
+    const res = await api({ method: 'POST', path: '/api/feedback', headers, body: typeof body === 'string' ? body : JSON.stringify(body) });
     return { status: res.status, json: JSON.parse(res.body) };
   };
 
@@ -225,7 +225,19 @@ test('feedback is saved, emailed with the subject tag, checked, and capped per d
     { id: 'improved', text: 'Did this improve the experience compared to playing normally?', kind: 'choice' },
     { id: 'text', text: 'Other thoughts, or a bug to report', kind: 'text' },
   ];
-  const brief = await post({ kind: 'brief', from: 'operation', version: '2026-10-29.abc1234', questions, payload: { rating: 4, improved: null, text: 'Loved the market.\nMore please' } });
+  const brief = await post(
+    { kind: 'brief', from: 'operation', version: '2026-10-29.abc1234', questions, context: { 'Play mode': 'Online lobby', 'Squad size': 3, Contributing: true }, payload: { rating: 4, improved: null, text: 'Loved the market.\nMore please' } },
+    {
+      'cloudfront-viewer-country': 'SE',
+      'cloudfront-viewer-city': 'Stockholm',
+      'cloudfront-viewer-address': '203.0.113.7:51234',
+      'cloudfront-is-mobile-viewer': 'false',
+      'cloudfront-is-tablet-viewer': 'false',
+      'cloudfront-is-desktop-viewer': 'true',
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',
+      'accept-language': 'sv-SE,sv;q=0.9,en;q=0.8',
+    },
+  );
   assert.equal(brief.status, 200);
   assert.deepEqual(brief.json, { saved: true, emailed: true });
   assert.equal(sent[0].subject, '[H2E Feedback Email] Brief - 4/5 - from operation');
@@ -233,6 +245,9 @@ test('feedback is saved, emailed with the subject tag, checked, and capped per d
   assert.match(body, /^BRIEF FEEDBACK FORM$/m);
   assert.match(body, /^Where: after finishing an operation \(all three missions\) \(from=operation\)$/m);
   assert.match(body, /^Build: 2026-10-29\.abc1234$/m);
+  // Context the form didn't ask for: what the site knew, plus country, device, browser and language from the request.
+  assert.match(body, /^CONTEXT \(not on the form; gathered automatically\)\n   Play mode: Online lobby\n   Squad size: 3\n   Contributing: yes\n   Country: Sweden \(SE\)\n   Device: Desktop\n   Browser: Chrome on Windows\n   Language: sv-SE$/m);
+  assert.doesNotMatch(body, /Stockholm|203\.0\.113/, 'nothing finer than the country is used');
   // Every question is spelled out, answered or not, with scales shown out of 5.
   assert.match(body, /^1\. How much did you enjoy this session\? \(1 = not at all, 5 = loved it\)\n   4 \/ 5$/m);
   assert.match(body, /^2\. Did this improve the experience compared to playing normally\?\n   \(no answer\)$/m);

@@ -113,10 +113,10 @@ export function Setup() {
       <h2 className="mt-10 font-display font-bold uppercase tracking-wider text-[22px] text-yellow">Choose Game Rules:</h2>
       <div className="mt-3 tabs" role="tablist" aria-label="How your squad plays">
         <button className="tab" role="tab" data-on={mode === 'device'} aria-selected={mode === 'device'} onClick={() => setMode('device')}>
-          This device
+          Offline Lobby
         </button>
         <button className="tab" role="tab" data-on={mode === 'lobby'} aria-selected={mode === 'lobby'} onClick={() => setMode('lobby')}>
-          Online lobby
+          Online Lobby
         </button>
       </div>
       <p className="mt-2 mb-3 text-[14px] text-muted">

@@ -24,7 +24,7 @@ import { deserializeMarket, FACTIONS, ITEMS, migrateHistory, SLOT_CATEGORIES, va
 import type { Config } from './config';
 import { noPublisher, type Publisher } from './publisher';
 import { LobbyError, LobbyService } from './lobby';
-import { consoleNotifier, recordFeedback, type Feedback, type FeedbackKind, type FeedbackQuestion, type FeedbackValue, type Notifier } from './feedback';
+import { consoleNotifier, recordFeedback, requestMeta, type Feedback, type FeedbackKind, type FeedbackQuestion, type FeedbackValue, type Notifier } from './feedback';
 import { LIVE_ENDPOINTS, syncLive } from './live';
 import { HISTORY, MARKET, MarketService } from './market-service';
 import { etagOf, type Storage, type Stored } from './storage';
@@ -90,12 +90,31 @@ function parseSubmissions(body: Record<string, unknown>): Submission[] {
   });
 }
 
+/** Plain values under short, readable keys: the shape of the feedback form's context. */
+function parseContext(raw: unknown): Record<string, FeedbackValue> | undefined {
+  if (raw === undefined) return undefined;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new HttpError(400, 'context must be an object.');
+  const entries = Object.entries(raw);
+  if (entries.length > 25) throw new HttpError(400, 'context has too many fields.');
+  const out: Record<string, FeedbackValue> = {};
+  for (const [k, v] of entries) {
+    if (!/^[\w ()&.,'/-]{1,40}$/.test(k)) throw new HttpError(400, `context field "${k.slice(0, 40)}" is not allowed.`);
+    if (!(v === null || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'string')) throw new HttpError(400, `context.${k} must be text, a number or true/false.`);
+    out[k] = typeof v === 'string' ? v.slice(0, 160) : v;
+  }
+  return out;
+}
+
 /** Checks the feedback form's fields: short keys, plain values, a bounded size. */
-function parseFeedback(body: Record<string, unknown>, raw: string | undefined): Feedback {
+function parseFeedback(body: Record<string, unknown>, raw: string | undefined, headers: Record<string, string | undefined>): Feedback {
   if ((raw?.length ?? 0) > MAX_FEEDBACK) throw new HttpError(413, 'Feedback is too long.');
   if (!FEEDBACK_KINDS.includes(body.kind as FeedbackKind)) throw new HttpError(400, `kind must be one of ${FEEDBACK_KINDS.join(', ')}.`);
   const out: Feedback = { at: Date.now(), from: typeof body.from === 'string' ? body.from.slice(0, 120) : '', kind: body.kind as FeedbackKind };
   if (typeof body.version === 'string' && body.version) out.version = body.version.slice(0, 80);
+  const context = parseContext(body.context);
+  if (context) out.context = context;
+  const meta = requestMeta(headers);
+  if (Object.keys(meta).length) out.meta = meta;
   if (body.questions !== undefined) {
     if (!Array.isArray(body.questions) || body.questions.length > 40) throw new HttpError(400, 'questions must be a list of up to 40 questions.');
     out.questions = body.questions.map((raw, i): FeedbackQuestion => {
@@ -180,7 +199,7 @@ export function createApi(deps: { storage: Storage; config: Config; service?: Ma
       return doc(req, { body: view, etag: etagOf(view) });
     }
     if (lobby && method === 'POST' && lobby[2]) return json(200, await lobbies.act(lobby[1], member(req), parseJson(req.body).action));
-    if (p === '/api/feedback' && method === 'POST') return json(200, await recordFeedback(storage, notifier, parseFeedback(parseJson(req.body), req.body)));
+    if (p === '/api/feedback' && method === 'POST') return json(200, await recordFeedback(storage, notifier, parseFeedback(parseJson(req.body), req.body, req.headers)));
 
     if (p.startsWith('/api/admin/')) {
       requireAdmin(req);

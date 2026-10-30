@@ -50,8 +50,8 @@ export interface ActionResult {
 }
 
 export interface ActionContext {
-  /** Prices for deploying. */
-  market: MarketState;
+  /** Prices, needed only to deploy. */
+  market?: MarketState;
   /** Recorded with each settled mission. */
   marketDay?: number;
 }
@@ -70,6 +70,7 @@ export function applyAction(c: Campaign, a: CampaignAction, ctx: ActionContext):
     case 'setReady':
       return { campaign: setReady(c, a.diverId, a.ready) };
     case 'deploy': {
+      if (!ctx.market) throw new Error('Prices are needed to deploy.');
       const { campaign, submissions } = deploy(c, ctx.market);
       return { campaign, submissions };
     }
@@ -91,6 +92,9 @@ export function applyAction(c: Campaign, a: CampaignAction, ctx: ActionContext):
       return { campaign: endCampaign(c, a.reason) };
   }
 }
+
+/** Actions that need the market: prices to deploy, the market day to settle a mission. */
+export const needsMarket = (a: CampaignAction): boolean => a.type === 'deploy' || a.type === 'reportPayout' || a.type === 'reportFailure';
 
 /** The diver an action is about, for actions a squad member may take on their own diver. Everything else is the host's call. */
 export function diverOf(a: CampaignAction): string | null {

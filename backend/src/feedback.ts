@@ -27,6 +27,42 @@ export interface Feedback {
   payload?: Record<string, FeedbackValue>;
   /** The form's questions in order, answered or not. */
   questions?: FeedbackQuestion[];
+  /** What the site knew about the session (lobby type, squad size, campaign progress, screen). */
+  context?: Record<string, FeedbackValue>;
+  /** What the request said about the device: country, device type, browser, language. */
+  meta?: Record<string, string>;
+}
+
+const REGIONS = new Intl.DisplayNames(['en'], { type: 'region' });
+
+/**
+ * The little the request itself says that's worth knowing, and nothing finer: the country (from
+ * CloudFront, which works it out from the connection; the city, postcode, coordinates and IP it
+ * also passes along are never read), the kind of device, the browser and system without versions,
+ * and the preferred language.
+ */
+export function requestMeta(headers: Record<string, string | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  const cc = headers['cloudfront-viewer-country'];
+  if (cc && /^[A-Z]{2}$/.test(cc)) {
+    let name = cc;
+    try {
+      name = REGIONS.of(cc) ?? cc;
+    } catch {
+      // unknown code: keep it as is
+    }
+    out.Country = `${name} (${cc})`;
+  }
+  const ua = headers['user-agent'] ?? '';
+  const flag = (h: string) => headers[`cloudfront-is-${h}-viewer`] === 'true';
+  const device = flag('tablet') ? 'Tablet' : flag('mobile') ? 'Phone' : flag('desktop') ? 'Desktop' : ua ? (/iPad|Tablet/.test(ua) ? 'Tablet' : /Mobi|Android|iPhone/.test(ua) ? 'Phone' : 'Desktop') : '';
+  if (device) out.Device = device;
+  const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : '';
+  const os = /Windows/.test(ua) ? 'Windows' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /CrOS/.test(ua) ? 'ChromeOS' : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : '';
+  if (browser || os) out.Browser = [browser, os].filter(Boolean).join(' on ');
+  const lang = (headers['accept-language'] ?? '').split(',')[0].split(';')[0].trim();
+  if (/^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i.test(lang)) out.Language = lang;
+  return out;
 }
 
 export interface Notifier {
@@ -83,6 +119,12 @@ export function textOf(f: Feedback, key: string): string {
     `Build: ${f.version || 'unknown'}`,
     '',
   ];
+  const facts = [...Object.entries(f.context ?? {}), ...Object.entries(f.meta ?? {})].filter(([, v]) => v !== null && v !== '');
+  if (facts.length) {
+    lines.push('CONTEXT (not on the form; gathered automatically)');
+    for (const [k, v] of facts) lines.push(`   ${k}: ${typeof v === 'boolean' ? (v ? 'yes' : 'no') : v}`);
+    lines.push('');
+  }
   const payload = f.payload ?? {};
   const asked = new Set<string>();
   (f.questions ?? []).forEach((q, i) => {
