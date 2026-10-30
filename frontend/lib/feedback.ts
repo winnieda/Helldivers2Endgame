@@ -1,10 +1,11 @@
 'use client';
 import type { Campaign } from '@engine';
+import { postFeedback, serverMode } from './api';
 import { store } from './store';
 
 /**
- * Feedback is kept on this device for now (localStorage). When the backend exists it can
- * replace this with a request; the shape stays the same.
+ * Feedback is kept on this device (localStorage) and, when the site runs against the server, also
+ * sent there, which emails it to the developers.
  */
 const KEY = 'hd2e:feedback:v1';
 
@@ -15,13 +16,21 @@ export interface FeedbackEntry {
   payload?: Record<string, unknown>;
 }
 
-export function saveFeedback(entry: FeedbackEntry): void {
+/** Saves the entry on this device, then sends it to the server. Resolves true if the server got it. */
+export async function saveFeedback(entry: FeedbackEntry): Promise<boolean> {
   try {
     const list = JSON.parse(localStorage.getItem(KEY) ?? '[]') as FeedbackEntry[];
     list.push(entry);
     localStorage.setItem(KEY, JSON.stringify(list.slice(-200)));
   } catch {
-    /* storage unavailable: feedback is dropped quietly */
+    /* storage unavailable: only the server copy is kept */
+  }
+  if (!serverMode) return false;
+  try {
+    await postFeedback({ from: entry.from, kind: entry.kind, version: __BUILD_ID__, payload: entry.payload });
+    return true;
+  } catch {
+    return false;
   }
 }
 

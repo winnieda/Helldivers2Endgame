@@ -19,7 +19,6 @@
  */
 import { ITEMS, tierScore } from '../catalog/catalog';
 import { SLOT_CATEGORIES, type Faction } from '../catalog/types';
-import { addLoadout } from '../market/batch';
 import { quote } from '../market/free';
 import { validateLoadout, type LoadoutProblem } from '../market/market';
 import type { MarketState, Submission } from '../market/types';
@@ -296,21 +295,24 @@ export function deploy(c: Campaign, market: MarketState): { campaign: Campaign; 
   return { campaign: touch({ ...c, divers, phase: 'deployed', missionNumber: c.missionNumber + 1 }), submissions: c.contributeToMarket ? submissions : [] };
 }
 
-/** Undo a deploy (misclick): refunds loadouts and withdraws the submissions from the pending market batch. */
-export function cancelDeploy(c: Campaign, market: MarketState): Campaign {
+/**
+ * Undo a deploy (misclick): refunds the loadouts. The returned withdrawals are the submissions
+ * to take back out of the pending market batch (see withdrawLoadout).
+ */
+export function cancelDeploy(c: Campaign): { campaign: Campaign; withdrawals: Submission[] } {
   assertPhase(c, 'deployed');
+  const withdrawals: Submission[] = [];
   for (const d of c.divers) {
     if (!d.locked || !c.contributeToMarket) continue;
-    addLoadout(market.pending, c.faction, d.locked.items, d.locked.paid, -1);
-    const k = market.recent.map((s) => s.items.join()).lastIndexOf(d.locked.items.join());
-    if (k >= 0) market.recent.splice(k, 1);
+    withdrawals.push({ faction: c.faction, items: d.locked.items, paid: d.locked.paid, origin: 'player', mode: c.mode });
   }
-  return touch({
+  const campaign = touch({
     ...c,
     phase: 'loadout',
     missionNumber: c.missionNumber - 1,
     divers: c.divers.map((d) => (d.locked ? { ...d, balance: c.mode === 'operations' ? d.balance + d.locked.total : d.balance, locked: null, ready: false } : d)),
   });
+  return { campaign, withdrawals };
 }
 
 export function beginDebrief(c: Campaign): Campaign {

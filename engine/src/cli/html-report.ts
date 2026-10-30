@@ -74,7 +74,7 @@ export function writeHtmlReport(results: SimResult[], file: string): void {
     })
     .join('');
 
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Endgame market simulation report</title><style>
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HD2 Galactic Market simulation report</title><style>
 :root{color-scheme:dark}body{margin:0;padding:24px;background:#07090b;color:#e9edf0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 h1{font-size:28px;margin:0 0 4px;letter-spacing:.04em;text-transform:uppercase}h2{font-size:20px;margin:0 0 4px}small,.muted{color:#8b98a5;font-weight:400}
 section{background:#10151a;border:1px solid #24303a;padding:16px;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{padding:4px 8px;text-align:left;border-bottom:1px solid #1f2830;vertical-align:top}
@@ -82,6 +82,6 @@ th{color:#8b98a5;font-weight:600;font-size:12px}.checks td:first-child{white-spa
 .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:12px}figure{margin:0}figcaption{font-weight:600}
 .legend{display:flex;gap:12px;flex-wrap:wrap;color:#b9c3cc;font-size:12px;margin:4px 0}.legend i{display:inline-block;width:14px;height:2px;margin-right:5px;vertical-align:middle}
 svg{width:100%;height:auto}svg text{fill:#8b98a5;font-size:11px;font-variant-numeric:tabular-nums}
-</style></head><body><h1>Endgame market simulation</h1><p class="muted">${results.length} runs · generated ${new Date().toISOString()}</p><section>${matrix}</section>${runs}</body></html>`;
+</style></head><body><h1>HD2 Galactic Market simulation</h1><p class="muted">${results.length} runs · generated ${new Date().toISOString()}</p><section>${matrix}</section>${runs}</body></html>`;
   fs.writeFileSync(file, html);
 }

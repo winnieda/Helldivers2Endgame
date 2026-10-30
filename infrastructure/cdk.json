@@ -1,0 +1,9 @@
+{
+  "app": "../node_modules/.bin/tsc -p . && node dist/app.js",
+  "context": {
+    "schedule": "on",
+    "waf": "on",
+    "domain": "hd2galacticmarket.com",
+    "hostedZoneId": "Z091804027MIKEOIBP968"
+  }
+}

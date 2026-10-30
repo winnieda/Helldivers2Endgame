@@ -51,6 +51,29 @@ export function submitLoadout(state: MarketState, sub: Submission): void {
   if (state.recent.length > RECENT_CAP) state.recent.splice(0, state.recent.length - RECENT_CAP);
 }
 
+/**
+ * Takes a queued loadout back out (a cancelled deploy). Returns false, and changes nothing, if
+ * the pending queue no longer holds it, e.g. because an update already counted it.
+ */
+export function withdrawLoadout(state: MarketState, sub: Pick<Submission, 'faction' | 'items' | 'paid'>): boolean {
+  const p = state.pending;
+  if (p.loadouts[sub.faction] < 1) return false;
+  const need = new Map<number, { all: number; free: number }>();
+  sub.items.forEach((idx, s) => {
+    const n = need.get(idx) ?? { all: 0, free: 0 };
+    n.all++;
+    if (!sub.paid[s] && !ITEMS[idx]?.alwaysFree) n.free++;
+    need.set(idx, n);
+  });
+  for (const [idx, n] of need) {
+    if ((p.counts[sub.faction][idx] ?? 0) < n.all || (p.freeCounts[sub.faction][idx] ?? 0) < n.free) return false;
+  }
+  addLoadout(p, sub.faction, sub.items, sub.paid, -1);
+  const k = state.recent.map((s) => s.items.join()).lastIndexOf(sub.items.join());
+  if (k >= 0) state.recent.splice(k, 1);
+  return true;
+}
+
 export function pendingCount(state: MarketState): number {
   return batchSize(state.pending);
 }
@@ -189,7 +212,7 @@ export function serializeMarket(state: MarketState): string {
  */
 export function deserializeMarket(json: string | object): MarketState {
   const raw = (typeof json === 'string' ? JSON.parse(json) : json) as MarketState;
-  if (!raw || raw.schema !== 1 || !raw.books) throw new Error('Not a Helldivers 2 Endgame market file.');
+  if (!raw || raw.schema !== 1 || !raw.books) throw new Error('Not an HD2 Galactic Market market file.');
   const config = mergeConfig(raw.config);
   const fresh = createMarket('tiers', {}, config);
   const oldIds: string[] = raw.catalogIds ?? ITEMS.map((i) => i.id);

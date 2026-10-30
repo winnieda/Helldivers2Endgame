@@ -66,11 +66,11 @@ export default function Home() {
   return (
     <div>
       <section className="mx-auto max-w-[1400px] px-4 pt-12 pb-14 rise">
-        <div className="eyebrow text-yellow mb-5">Unofficial endgame mode · for veteran Helldivers</div>
+        <div className="eyebrow text-yellow mb-5">Unofficial fan game mode · for veteran Helldivers</div>
         <FitLine>Freedom isn’t free.</FitLine>
         <FitLine className="text-yellow">Neither is your loadout.</FitLine>
         <div className="hazard-thin mt-6 max-w-[420px]" />
-        <Pitch className="mt-6 text-[18px] max-w-[760px]" />
+        <Pitch className="mt-6 text-[18px]" />
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link href="/play/" className="btn btn-primary btn-lg">
             {active ? `Resume ${campaign.operationName}` : 'Start an Operation'}

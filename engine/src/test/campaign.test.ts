@@ -18,7 +18,7 @@ import {
   setSquadOutcome,
   setSlot,
 } from '../game/campaign';
-import { pendingCount, submitLoadout } from '../market/market';
+import { pendingCount, submitLoadout, updateMarket, withdrawLoadout } from '../market/market';
 import { createMarket } from '../market/presets';
 import { quote } from '../market/free';
 
@@ -84,9 +84,15 @@ test('cannot deploy unaffordable or invalid loadouts; cancel refunds and withdra
   const { campaign, submissions } = deploy(c, m);
   submissions.forEach((s) => submitLoadout(m, s));
   assert.equal(pendingCount(m), 1);
-  const back = cancelDeploy(campaign, m);
+  const { campaign: back, withdrawals } = cancelDeploy(campaign);
   assert.equal(back.phase, 'loadout');
   assert.equal(back.divers[0].balance, 1000);
+  assert.ok(withdrawals.every((s) => withdrawLoadout(m, s)));
+  assert.equal(pendingCount(m), 0);
+  // Once an update has counted it, a withdrawal is refused instead of driving the queue negative.
+  submissions.forEach((s) => submitLoadout(m, s));
+  updateMarket(m);
+  assert.equal(withdrawLoadout(m, withdrawals[0]), false);
   assert.equal(pendingCount(m), 0);
 });
 

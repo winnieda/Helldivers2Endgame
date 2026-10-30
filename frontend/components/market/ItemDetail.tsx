@@ -105,7 +105,7 @@ export function ItemDetail({ item, onClose }: { item: Item | null; onClose: () =
           <LineChart title="Popularity" subtitle="Smoothed share of picks in its category (%)" x={charts.share.length ? charts.days : []} series={charts.share} height={210} yFormat={(v) => `${v.toFixed(1)}%`} zero />
         </div>
       ) : (
-        <div className="mt-6 text-muted text-[14px]">No history yet — run a few market updates (`sim day 40` then `update`) to see this item’s price move.</div>
+        <div className="mt-6 text-muted text-[14px]">{__DEV_TOOLS__ ? 'No history yet — run a few market updates (`sim day 40` then `update`) to see this item’s price move.' : 'No history yet. Prices update once a day; this chart fills in after the first update.'}</div>
       )}
 
       {anchored && !item.alwaysFree && (

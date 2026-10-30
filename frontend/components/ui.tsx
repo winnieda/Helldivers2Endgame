@@ -61,11 +61,12 @@ export function Delta({ value, className = '' }: { value: number; className?: st
   );
 }
 
+/** A headline number. `accent` highlights it, in requisition yellow (accent tiles hold Requisition amounts). */
 export function Stat({ label, value, sub, accent }: { label: string; value: ReactNode; sub?: ReactNode; accent?: boolean }) {
   return (
     <div className={`panel px-4 py-3 ${accent ? 'panel-accent' : ''}`}>
       <div className="eyebrow">{label}</div>
-      <div className={`font-display font-bold text-[28px] leading-tight ${accent ? 'text-yellow' : ''}`}>{value}</div>
+      <div className={`font-display font-bold text-[28px] leading-tight ${accent ? 'text-req' : ''}`}>{value}</div>
       {sub && <div className="text-[13px] text-muted">{sub}</div>}
     </div>
   );
@@ -100,7 +101,7 @@ export function Verdict({ verdict, label }: { verdict: 'pass' | 'warn' | 'fail' 
 export function Meter({ value, max, className = '' }: { value: number; max: number; className?: string }) {
   const spent = max > 0 ? Math.min(1, Math.max(0, value / max)) : value > 0 ? 1 : 0;
   return (
-    <div className={`h-2.5 relative overflow-hidden bg-yellow ${className}`} role="meter" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-label="Requisition spent">
+    <div className={`h-2.5 relative overflow-hidden bg-req ${className}`} role="meter" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.min(value, max)} aria-label="Requisition spent">
       <div className="absolute inset-y-0 right-0 bg-bad transition-[width] duration-200" style={{ width: `${spent * 100}%` }} />
     </div>
   );

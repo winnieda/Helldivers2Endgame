@@ -17,20 +17,15 @@ import {
   type Line,
   type MarketHistory,
 } from '@engine';
+import { adminConsole, adminReplaceMarket, adminToken, serverMode, setAdminToken } from '@/lib/api';
+import { onOpenTerminal } from '@/lib/devtools';
 import { store } from '@/lib/store';
 import { runSimulation } from '@/lib/simClient';
 import { toast } from '@/lib/toast';
 
-type Listener = (cmd?: string) => void;
-const openers = new Set<Listener>();
-/** Opens the terminal from anywhere, optionally pre-typing a command. */
-export function openTerminal(cmd?: string): void {
-  openers.forEach((fn) => fn(cmd));
-}
-
 const HISTORY_KEY = 'hd2e:terminal-history';
 const BANNER: Line[] = [
-  heading('SUPER EARTH SHIP MANAGEMENT TERMINAL — ENDGAME MARKET CONSOLE'),
+  heading('SUPER EARTH SHIP MANAGEMENT TERMINAL — GALACTIC MARKET CONSOLE'),
   muted('Prices only move when an operator runs `update`. Every deployed loadout waits in the pending queue until then.'),
   line(seg('Try: ', 'muted'), seg('status', 'accent'), seg(' · ', 'muted'), seg('prices bots strat', 'accent'), seg(' · ', 'muted'), seg('sim squads 50', 'accent'), seg(' · ', 'muted'), seg('update', 'accent'), seg(' · ', 'muted'), seg('help', 'accent')),
 ];
@@ -42,7 +37,8 @@ const EXTRA_HELP: Line[] = [
   line(seg('import'.padEnd(44), 'accent'), seg('Load a market JSON exported here or written by the CLI.', 'muted')),
   line(seg('campaign'.padEnd(44), 'accent'), seg('Status of the active campaign.', 'muted')),
   line(seg('open <play|market|lab|manual>'.padEnd(44), 'accent'), seg('Jump to a page.', 'muted')),
-  line(seg('reset-all --yes'.padEnd(44), 'accent'), seg('Erase everything this prototype saved in the browser.', 'muted')),
+  line(seg('reset-all --yes'.padEnd(44), 'accent'), seg('Erase everything this prototype saved (server mode: the shared market too).', 'muted')),
+  line(seg('token <admin token> | token clear'.padEnd(44), 'accent'), seg('Server mode: the admin token for commands that change the market.', 'muted')),
 ];
 
 const TONE_CLASS: Record<string, string> = {
@@ -76,17 +72,15 @@ export function Terminal() {
     }
   }, []);
 
-  useEffect(() => {
-    const fn: Listener = (cmd) => {
-      setOpen(true);
-      if (cmd !== undefined) setInput(cmd);
-      setTimeout(() => inputRef.current?.focus(), 30);
-    };
-    openers.add(fn);
-    return () => {
-      openers.delete(fn);
-    };
-  }, []);
+  useEffect(
+    () =>
+      onOpenTerminal((cmd) => {
+        setOpen(true);
+        if (cmd !== undefined) setInput(cmd);
+        setTimeout(() => inputRef.current?.focus(), 30);
+      }),
+    [],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -152,7 +146,19 @@ export function Terminal() {
       if (word === 'reset-all') {
         if (rest[0] !== '--yes') return print([line(seg('This erases the market, its history, the active campaign and the hall of fame. Run ', 'warn'), seg('reset-all --yes', 'accent'), seg(' to confirm.', 'warn'))]);
         store.resetAll();
+        if (serverMode) {
+          try {
+            await store.serverChange(() => adminConsole('init tiers'));
+          } catch (e) {
+            return print([line(seg(`✖ Browser data wiped, but the shared market was not reset: ${(e as Error).message}`, 'bad'))]);
+          }
+        }
         return print([line(seg('✔ ', 'good'), seg('Everything wiped. The market is back to the tier-list launch state.'))]);
+      }
+      if (word === 'token') {
+        if (rest[0] === 'clear') setAdminToken(null);
+        else if (rest[0]) setAdminToken(rest[0]);
+        return print([muted(adminToken() ? '  Admin token saved in this browser.' : '  No admin token set.')]);
       }
       if (word === 'campaign') {
         const c = store.get().campaign;
@@ -195,6 +201,22 @@ export function Terminal() {
       }
 
       const s = store.get();
+      if (serverMode) {
+        // Try it on a copy: read-only commands answer from the synced market; changes go to the server.
+        const trial = runCommand(cmd, { market: deserializeMarket(serializeMarket(s.market)), history: s.history });
+        if (!trial.market && !trial.history) return print(trial.lines);
+        setBusy(true);
+        try {
+          const r = await store.serverChange(() => adminConsole(cmd));
+          print(r.lines);
+        } catch (e) {
+          return print([line(seg(`✖ ${(e as Error).message}`, 'bad'))]);
+        } finally {
+          setBusy(false);
+        }
+        if (word === 'update' || (word === 'sim' && rest[0] === 'day')) toast('Market updated', `Day #${store.get().market.day} prices are live.`, 'good');
+        return;
+      }
       const res = runCommand(cmd, { market: s.market, history: s.history });
       print(res.lines);
       if (res.effect === 'market-replaced' && res.market) store.replaceMarket(res.market, res.history);
@@ -212,7 +234,8 @@ export function Terminal() {
       const raw = JSON.parse(await file.text());
       const market = deserializeMarket(raw.market ?? raw);
       const history: MarketHistory | undefined = raw.history ? migrateHistory(raw.history) : undefined;
-      store.replaceMarket(market, history);
+      if (serverMode) await store.serverChange(() => adminReplaceMarket(JSON.parse(serializeMarket(market)), history));
+      else store.replaceMarket(market, history);
       print([line(seg('✔ ', 'good'), seg(`Imported market day #${market.day} from ${file.name}.`))]);
       toast('Market imported', file.name, 'good');
     } catch (e) {

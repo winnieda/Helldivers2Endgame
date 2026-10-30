@@ -1,0 +1,28 @@
+{
+  "about": "Rules for scripts/release-check.mjs, which checks the release build (frontend/out) before npm run aws:deploy publishes it. Whenever you spot something players shouldn't see, add it here so it can never ship again. Text rules match the HTML, the page data (.txt) and the JavaScript bundles. deployOnly rules are skipped by npm run preview:release.",
+  "forbiddenText": [
+    { "text": " Endgame", "why": "The old name (as a word; the GitHub repo URL is still Helldivers2Endgame). The site is HD2 Galactic Market now." },
+    { "text": "ENDGAME", "why": "The old name in the logo or headings. The site is HD2 Galactic Market now." },
+    { "text": "Market Lab", "why": "The Lab is a dev tool: no page, no nav link, no mentions." },
+    { "text": "SHIP MANAGEMENT TERMINAL", "why": "The ship terminal is dev-only." },
+    { "text": "Ship terminal (press", "why": "The terminal button in the header is dev-only." },
+    { "text": "Deployed loadouts waiting for the next daily price update", "why": "The Queue chip in the header is dev-only." },
+    { "text": "Click to sync now", "why": "The Live/sync chip in the header is dev-only." },
+    { "text": "waiting for tomorrow’s update", "why": "The market page's queue count is dev-only." },
+    { "text": "run today’s update", "why": "The market page's update button is dev-only." },
+    { "text": "Development build:", "why": "The DEV badge shipped, so this isn't a release build (was H2E_RELEASE=1 set?)." },
+    { "text": "Dev build notes", "why": "Dev-only section of the Complete Manual." },
+    { "text": "sim day 40", "why": "Terminal instructions shown to players." },
+    { "text": "in the terminal", "why": "Players have no terminal on the public site." },
+    { "text": "winnieda@umich.edu", "why": "Personal email. The project's contact is helldivers2endgame@gmail.com." },
+    { "text": "127.0.0.1", "why": "Points at a developer's machine.", "deployOnly": true },
+    { "text": "localhost:", "why": "Points at a developer's machine.", "deployOnly": true }
+  ],
+  "forbiddenFiles": [
+    { "pattern": "^lab/", "why": "The Market Lab page." },
+    { "pattern": "\\.map$", "why": "Source maps publish the original source code." },
+    { "pattern": "(^|/)\\.env", "why": "Environment files can hold secrets." }
+  ],
+  "secretFiles": ["../infrastructure/.admin-token"],
+  "limits": { "totalMB": 40, "fileMB": 3 }
+}

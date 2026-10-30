@@ -3,7 +3,12 @@ node_modules/
 .next/
 out/
 engine/dist/
+backend/dist/
 /data/
 *.tsbuildinfo
 __pycache__/
 .DS_Store
+infrastructure/dist/
+infrastructure/cdk.out/
+infrastructure/cdk-outputs.json
+infrastructure/.admin-token

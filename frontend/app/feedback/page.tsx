@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveFeedback } from '@/lib/feedback';
+import { serverMode } from '@/lib/api';
+import { saveFeedback, type FeedbackEntry } from '@/lib/feedback';
 import { toast } from '@/lib/toast';
 
 type View = 'choose' | 'detailed' | 'brief';
@@ -62,16 +63,16 @@ export default function FeedbackPage() {
   }, [router, next]);
 
   const leave = () => router.push(next);
-  const submitDetailed = () => {
-    saveFeedback({ at: Date.now(), from, kind: 'detailed', payload: answers });
-    toast('Thank you!', 'Your feedback was saved on this device.', 'good');
+  const [sending, setSending] = useState(false);
+  const submit = async (entry: FeedbackEntry) => {
+    setSending(true);
+    const sent = await saveFeedback(entry);
+    if (sent || !serverMode) toast('Thank you!', sent ? 'Your feedback was sent to the team.' : 'Your feedback was saved on this device.', 'good');
+    else toast('Feedback not sent', 'We couldn’t reach the server, so it was saved on this device only.', 'warn');
     leave();
   };
-  const submitBrief = () => {
-    saveFeedback({ at: Date.now(), from, kind: 'brief', payload: { rating: brief.rating, improved: brief.improved, text: brief.text } });
-    toast('Thank you!', 'Your feedback was saved on this device.', 'good');
-    leave();
-  };
+  const submitDetailed = () => submit({ at: Date.now(), from, kind: 'detailed', payload: answers });
+  const submitBrief = () => submit({ at: Date.now(), from, kind: 'brief', payload: { rating: brief.rating, improved: brief.improved, text: brief.text } });
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-14 rise">
@@ -79,7 +80,9 @@ export default function FeedbackPage() {
       <h1 className="h-display text-[48px] sm:text-[60px]">
         {view === 'choose' ? 'Would you like to give us feedback?' : view === 'detailed' ? 'Detailed feedback' : 'Brief feedback'}
       </h1>
-      <p className="text-[12.5px] text-muted mt-1 mb-6">Placeholder form. Answers are saved on this device only for now.</p>
+      <p className="text-[12.5px] text-muted mt-1 mb-6">
+        {serverMode ? 'Answers go to the developers. Please don’t include personal information.' : 'Answers are saved on this device only.'}
+      </p>
 
       {view === 'choose' && (
         <div className="grid md:grid-cols-3 gap-4">
@@ -89,7 +92,7 @@ export default function FeedbackPage() {
               className="choice-card"
               onClick={() => {
                 if (c.id === 'skip') {
-                  saveFeedback({ at: Date.now(), from, kind: 'skipped' });
+                  void saveFeedback({ at: Date.now(), from, kind: 'skipped' });
                   leave();
                 } else setView(c.id);
               }}
@@ -126,7 +129,7 @@ export default function FeedbackPage() {
             <button className="btn btn-ghost" onClick={() => setView('choose')}>
               Back
             </button>
-            <button className="btn btn-primary" onClick={submitDetailed}>
+            <button className="btn btn-primary" onClick={submitDetailed} disabled={sending}>
               Send feedback
             </button>
           </div>
@@ -157,7 +160,7 @@ export default function FeedbackPage() {
             <button className="btn btn-ghost" onClick={() => setView('choose')}>
               Back
             </button>
-            <button className="btn btn-primary" onClick={submitBrief}>
+            <button className="btn btn-primary" onClick={submitBrief} disabled={sending}>
               Send feedback
             </button>
           </div>

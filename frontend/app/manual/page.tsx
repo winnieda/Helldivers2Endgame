@@ -5,7 +5,7 @@ export default function ManualIndex() {
     <div className="mx-auto max-w-[1100px] px-4 py-14 rise">
       <div className="eyebrow text-yellow">Field manual</div>
       <h1 className="h-display text-[52px] sm:text-[68px]">How much do you want to know?</h1>
-      <p className="text-text-2 mt-2 max-w-2xl text-[17px]">Super Earth offers two editions of the manual. Both cover the same game; one just has a lot more in it.</p>
+      <p className="text-text-2 mt-2 text-[17px]">Super Earth offers two editions of the manual. Both cover the same game; one just has a lot more in it.</p>
       <div className="mt-10 grid md:grid-cols-2 gap-5">
         <Link href="/manual/basic-training/" className="panel panel-accent p-8 group hover:bg-yellow/[0.04] transition-colors">
           <div className="eyebrow">Short version · about 3 minutes</div>

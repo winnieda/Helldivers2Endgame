@@ -1,6 +1,9 @@
-# Helldivers 2 Endgame
+# HD2 Galactic Market
 
-An unofficial endgame mode for Helldivers 2: every stratagem, primary, secondary and throwable
+**[hd2galacticmarket.com](https://hd2galacticmarket.com)**. (It started as "Helldivers 2 Endgame", which
+is still the repo name and the `hd2e` / `H2E` prefix in code, storage keys and AWS resources.)
+
+An unofficial fan game mode for Helldivers 2: every stratagem, primary, secondary and throwable
 costs Requisition. You start with 50,000, buy your loadout before each mission, and survive on what
 you earn. Prices are set by a community-driven market that charges more for the meta and less for
 the gear nobody uses, separately against each enemy faction.
@@ -19,6 +22,29 @@ npm run dev          # http://localhost:3000
 `npm run build` produces a fully static site in `frontend/out/`. Serve it with any static file server,
 e.g. `python3 -m http.server -d frontend/out`. Nothing calls the network at runtime: fonts are
 self-hosted and all state lives in the browser's localStorage.
+
+The live site runs the same code against the shared market API on AWS: `npm run aws:deploy`
+(see [infrastructure/README.md](infrastructure/README.md)).
+
+### Dev and release builds
+
+One codebase builds two versions of the site:
+
+| | Dev (`npm run dev`, `npm run build`) | Release (`npm run build:release`, what `aws:deploy` publishes) |
+|---|---|---|
+| Market Lab, ship terminal (<kbd>`</kbd>), Live and Queue chips, update buttons and hints | yes | removed from the bundle, not just hidden |
+| `DEV` badge next to the logo | yes | no |
+| Footer build ID (also sent with feedback) | `…-dev` | date + commit, `-dirty` if uncommitted changes |
+
+`__DEV_TOOLS__` is a build-time constant (see `frontend/next.config.ts`): write dev-only UI as
+`{__DEV_TOOLS__ && …}` and release builds drop it. Dev-only pages are named `page.dev.tsx`.
+
+Before anything is published, `frontend/scripts/release-check.mjs` scans the release build for
+text and files listed in `frontend/release-check.json` (dev tools, debug hints, a personal email,
+local addresses), the admin token, links to pages that aren't in the build, and size limits. A
+failure stops the deploy. When you spot something players shouldn't see, add a rule there.
+`npm run preview:release` serves the release build at http://localhost:4173 against the local API,
+so you can look at exactly what the public will get.
 
 ## What's in the prototype
 
@@ -91,6 +117,8 @@ engine/                 Economic engine, pure TypeScript (no DOM). Used by the w
   src/cli/              `npm run market`, `npm run sim`, HTML reports
   src/test/             node:test unit tests (including exact parity with the Python prototype)
 frontend/               Next.js 15 + React 19 + Tailwind 4, static export
+backend/                The market API: local server, Lambda entry, S3 storage, feedback email
+infrastructure/         AWS deployment (CDK) and the deploy/job scripts; see infrastructure/README.md
 tools/catalog/          fetch + build the catalog (u.gg via Wayback snapshots, wiki codes)
 tools/legacy_fixture.py runs scratchpad/helper.py to produce the parity test fixture
 docs/PRICING.md         the pricing reference

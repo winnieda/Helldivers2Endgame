@@ -16,7 +16,8 @@ import {
   type Category,
 } from '@engine';
 import { LineChart } from '@/components/charts';
-import { openTerminal } from '@/components/terminal';
+import { serverMode } from '@/lib/api';
+import { openTerminal } from '@/lib/devtools';
 import { req } from '@/lib/format';
 import { useApp } from '@/lib/store';
 
@@ -44,7 +45,7 @@ function Formula({ children }: { children: React.ReactNode }) {
 }
 
 const TOC: [string, string][] = [
-  ['what', 'What Endgame is'],
+  ['what', 'What this mode is'],
   ['rules', 'Rules'],
   ['operations', '· Operations'],
   ['blitz', '· Budget Blitz'],
@@ -56,7 +57,7 @@ const TOC: [string, string][] = [
   ['parameters', '· Parameters'],
   ['testing', 'How we test the economy'],
   ['sources', 'Data sources'],
-  ['prototype', 'Prototype notes'],
+  ...(__DEV_TOOLS__ ? ([['prototype', 'Dev build notes']] as [string, string][]) : []),
   ['roadmap', 'Roadmap'],
   ['code', 'Source code'],
   ['faq', 'FAQ'],
@@ -88,15 +89,15 @@ export default function Codex() {
         ))}
       </nav>
 
-      <article className="max-w-[880px] min-w-0 text-text-2 leading-relaxed text-[15.5px]">
+      <article className="min-w-0 text-text-2 leading-relaxed text-[15.5px]">
         <div className="eyebrow text-yellow">Field manual · long version</div>
         <h1 className="h-display text-[48px] sm:text-[60px]">The Complete Manual</h1>
-        <p className="mt-2">Everything about Helldivers 2 Endgame: the rules, the market, the math, the testing, and what’s coming. Skim the contents on the left, or read it top to bottom.</p>
+        <p className="mt-2">Everything about HD2 Galactic Market: the rules, the market, the math, the testing, and what’s coming. Skim the contents on the left, or read it top to bottom.</p>
 
-        <H id="what">What Endgame is</H>
+        <H id="what">What HD2 Galactic Market is</H>
         <p>
-          Helldivers 2 Endgame is an unofficial, fan-made challenge mode layered on top of normal Helldivers 2. Late in the game most players have unlocked everything and have more Requisition than they can
-          spend, so the economy stops mattering. Endgame brings it back: every piece of gear you bring costs Requisition you have to earn, and prices are set by what the whole community deploys rather than by
+          HD2 Galactic Market is an unofficial, fan-made game mode layered on top of normal Helldivers 2. Late in the game most players have unlocked everything and have more Requisition than they can
+          spend, so the economy stops mattering. HD2 Galactic Market brings it back: every piece of gear you bring costs Requisition you have to earn, and prices are set by what the whole community deploys rather than by
           us.
         </p>
         <p className="mt-3">
@@ -185,7 +186,7 @@ export default function Codex() {
         <H3 id="data">What we collect</H3>
         <p>
           Only the equipment in each deployed loadout, which front it was for, and what it cost — no names, accounts or identifiers. You can opt out when you start a campaign; the market then just doesn’t learn from
-          your picks. In this prototype nothing leaves your browser at all.
+          your picks.{serverMode ? '' : ' In this offline build nothing leaves your browser at all.'}
         </p>
 
         <H id="equations">The pricing equations</H>
@@ -282,7 +283,17 @@ speed(q) = max(minSpeed, 2qᵞ ÷ (1 + qᵞ))`}
 
         <H id="testing">How we test the economy</H>
         <p>
-          The <Link href="/lab/" className="text-yellow hover:underline">Market Lab</Link> simulates months of play with squads of rule-based Helldivers (no AI): regulars, meta chasers, penny-pinchers, niche
+          {__DEV_TOOLS__ ? (
+            <>
+              The{' '}
+              <Link href="/lab/" className="text-yellow hover:underline">
+                Market Lab
+              </Link>
+            </>
+          ) : (
+            'A market simulator'
+          )}{' '}
+          simulates months of play with squads of rule-based Helldivers (no AI): regulars, meta chasers, penny-pinchers, niche
           enjoyers, loyalists and chaos divers. Each scores affordable gear by its true strength against the front (u.gg tier plus hidden noise), personal taste and price, avoids pointless overlaps like two
           backpacks, and spends more when rich. Missions succeed or fail by squad strength and difficulty; a failure ends that squad’s run and they start a fresh one.
         </p>
@@ -335,38 +346,42 @@ speed(q) = max(minSpeed, 2qᵞ ÷ (1 + qᵞ))`}
           ))}
         </div>
 
-        <H id="prototype">Prototype notes</H>
-        <p>
-          This build is an offline prototype: everything, including the “global” market, lives in your browser, and the squad shares one device. In the live version the market updates on its own once a day; here
-          you trigger each day’s update from the ship terminal (press <kbd className="font-mono text-[12px] border border-line-2 px-1">`</kbd>) so the equations can be tuned on demand.
-        </p>
-        <div className="panel-flat mt-4 p-4 font-mono text-[13px] leading-7 overflow-x-auto">
-          {[
-            ['update', 'run the daily market update'],
-            ['status', 'overview: day, queue, price levels, free stratagems'],
-            ['prices bots strat --sort share', 'price board for one front and category'],
-            ['price railgun', 'one item on all three fronts'],
-            ['sim day 50', 'let 50 simulated squads play, then update'],
-            ['config set anchored.elasticityUp 1.1', 'tune an equation live'],
-            ['init tiers', 're-initialize prices from a preset'],
-            ['export / import', 'move a market to or from the command line'],
-          ].map(([c, d]) => (
-            <div key={c}>
-              <button className="text-yellow hover:underline" onClick={() => openTerminal(c.split(' / ')[0])}>
-                {c}
-              </button>
-              <span className="text-dim"> — {d}</span>
+        {__DEV_TOOLS__ && (
+          <>
+            <H id="prototype">Dev build notes</H>
+            <p>
+              This is the developer build. It has tools the public site leaves out: the Market Lab and the ship terminal (press <kbd className="font-mono text-[12px] border border-line-2 px-1">`</kbd>), where
+              you trigger market updates yourself so the equations can be tuned on demand. Without the local market API everything, including the “global” market, lives in your browser. The public site updates
+              its market on its own once a day.
+            </p>
+            <div className="panel-flat mt-4 p-4 font-mono text-[13px] leading-7 overflow-x-auto">
+              {[
+                ['update', 'run the daily market update'],
+                ['status', 'overview: day, queue, price levels, free stratagems'],
+                ['prices bots strat --sort share', 'price board for one front and category'],
+                ['price railgun', 'one item on all three fronts'],
+                ['sim day 50', 'let 50 simulated squads play, then update'],
+                ['config set anchored.elasticityUp 1.1', 'tune an equation live'],
+                ['init tiers', 're-initialize prices from a preset'],
+                ['export / import', 'move a market to or from the command line'],
+              ].map(([c, d]) => (
+                <div key={c}>
+                  <button className="text-yellow hover:underline" onClick={() => openTerminal(c.split(' / ')[0])}>
+                    {c}
+                  </button>
+                  <span className="text-dim"> — {d}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <p className="mt-3 text-[14px]">
-          The same commands run from a shell with <Code>npm run market -- &lt;command&gt;</Code>, and <Code>npm run sim</Code> runs the whole scenario suite. See the repository README.
-        </p>
+            <p className="mt-3 text-[14px]">
+              The same commands run from a shell with <Code>npm run market -- &lt;command&gt;</Code>, and <Code>npm run sim</Code> runs the whole scenario suite. See the repository README.
+            </p>
+          </>
+        )}
 
         <H id="roadmap">Roadmap</H>
         <ul className="list-disc pl-5 space-y-1.5 marker:text-dim">
           <li>Squad lobbies with join codes so up to four players can join from their own devices (AWS AppSync + DynamoDB).</li>
-          <li>A real shared market that updates itself daily (a scheduled AWS Lambda running the same engine), with public price history.</li>
           <li>Budget Blitz.</li>
           <li>Possibly charging Requisition for reinforcements.</li>
           <li>Server-side protection against spam submissions (rate limits per lobby).</li>

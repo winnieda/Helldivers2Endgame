@@ -21,7 +21,7 @@ import {
 import { LineChart, Sparkline } from '@/components/charts';
 import { ArrowCode, FactionEmblem, ItemIcon } from '@/components/icons';
 import { ItemDetail } from '@/components/market/ItemDetail';
-import { openTerminal } from '@/components/terminal';
+import { openTerminal } from '@/lib/devtools';
 import { Delta, PriceTag, Req, SectionTitle, Stat } from '@/components/ui';
 import { req, timeAgo } from '@/lib/format';
 import { useMarketView, type ItemView } from '@/lib/marketView';
@@ -94,15 +94,17 @@ export default function MarketPage() {
         eyebrow={`Market day #${market.day} · updated ${timeAgo(market.updatedAt)}`}
         title="Galactic Market"
         right={
-          <div className="flex gap-2 items-center flex-wrap">
-            <span className="text-[13px] text-muted">{pending} loadout{pending === 1 ? '' : 's'} waiting for tomorrow’s update</span>
-            <button className="btn btn-ghost btn-sm font-mono normal-case tracking-normal" onClick={() => openTerminal('update')} title="Prototype only: the live site updates prices automatically once a day">
-              <span className="text-[10px] font-sans font-bold px-1 bg-white/10">PROTOTYPE</span> run today’s update
-            </button>
-          </div>
+          __DEV_TOOLS__ ? (
+            <div className="flex gap-2 items-center flex-wrap">
+              <span className="text-[13px] text-muted">{pending} loadout{pending === 1 ? '' : 's'} waiting for tomorrow’s update</span>
+              <button className="btn btn-ghost btn-sm font-mono normal-case tracking-normal" onClick={() => openTerminal('update')} title="Dev build only: the live site updates prices automatically once a day">
+                <span className="text-[10px] font-sans font-bold px-1 bg-white/10">DEV</span> run today’s update
+              </button>
+            </div>
+          ) : undefined
         }
       />
-      <p className="text-text-2 mt-2 max-w-3xl">
+      <p className="text-text-2 mt-2">
         Every enemy front has its own market: gear that shreds bugs can be cheap against bots. Prices follow what the community actually deploys — popular gear climbs, ignored gear gets cheap — and are updated once a
         day.
       </p>
@@ -127,7 +129,23 @@ export default function MarketPage() {
       <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat label={`Average loadout price vs ${FACTION_LABEL[faction]}`} value={<Req value={typicalLoadoutCost(market, faction)} size={20} />} sub="What the average loadout deployed on this front costs at today’s prices" accent />
         <Stat label="Median stratagem" value={<Req value={strat.median} size={20} />} sub={`range ${req(strat.min)} – ${req(strat.max)}`} />
-        <Stat label="Free stratagems" value={free.length} sub={free.map((v) => v.item.name).join(' · ')} />
+        <Stat
+          label="Today’s Free Stratagems"
+          value={
+            free.length ? (
+              <ul className="grid grid-cols-2 gap-x-3 gap-y-2 mt-1">
+                {free.map((v) => (
+                  <li key={v.item.index} className="flex items-center gap-2 min-w-0">
+                    <ItemIcon item={v.item} size={30} />
+                    <span className="font-sans font-semibold text-[13px] leading-tight text-text">{v.item.name}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-muted">None today</span>
+            )
+          }
+        />
         <Stat label="Loadouts counted" value={market.books[faction].totalLoadouts.toLocaleString()} sub={`${market.books[faction].lastLoadouts} in the last day`} />
       </div>
 
@@ -213,7 +231,17 @@ export default function MarketPage() {
               <div>
                 <div className="font-display font-bold uppercase tracking-wider">Price levels</div>
                 <p className="text-[13.5px] text-muted mt-2">
-                  No price history yet. Deploy some squads, or let synthetic squads play: run <button className="font-mono text-yellow hover:underline" onClick={() => openTerminal('sim day 40')}>sim day 40</button> a few times in the terminal.
+                  {__DEV_TOOLS__ ? (
+                    <>
+                      No price history yet. Deploy some squads, or let synthetic squads play: run{' '}
+                      <button className="font-mono text-yellow hover:underline" onClick={() => openTerminal('sim day 40')}>
+                        sim day 40
+                      </button>{' '}
+                      a few times in the terminal.
+                    </>
+                  ) : (
+                    'No price history yet. Prices update once a day, so the chart starts after the first update.'
+                  )}
                 </p>
               </div>
             )}

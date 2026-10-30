@@ -1,9 +1,16 @@
-import { ISSUES_URL, REPO_URL } from '@/lib/site';
+import { serverMode } from '@/lib/api';
+import { CONTACT_EMAIL, ISSUES_URL, REPO_URL } from '@/lib/site';
 
 // Deliberately out of universe: plain document styling, system font, no game theming.
 const A = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <a href={href} target="_blank" rel="noreferrer" className="text-[#0b57d0] underline underline-offset-2 hover:text-[#08368a]">
     {children}
+  </a>
+);
+
+const Mail = () => (
+  <a href={`mailto:${CONTACT_EMAIL}`} className="text-[#0b57d0] underline underline-offset-2 hover:text-[#08368a]">
+    {CONTACT_EMAIL}
   </a>
 );
 
@@ -23,13 +30,13 @@ export default function CreditsPage() {
         <p className="text-[13px] uppercase tracking-wide text-[#666] font-semibold">Out of character</p>
         <h1 className="text-[34px] font-extrabold text-[#111] leading-tight mt-1">Credits, Disclaimers &amp; Legal</h1>
         <p className="mt-3 text-[#444]">
-          Giving proper credit matters to us. Helldivers 2 Endgame exists only because of the people listed here and the game they made. If anything on this page is wrong or missing, please{' '}
+          Giving proper credit matters to us. HD2 Galactic Market exists only because of the people listed here and the game they made. If anything on this page is wrong or missing, please{' '}
           <A href={ISSUES_URL}>tell us</A>.
         </p>
 
         <Section title="Disclaimer">
           <p>
-            <strong>Helldivers 2 Endgame is an unofficial, free, non-commercial fan project.</strong> It is not affiliated with, endorsed, sponsored or approved by Arrowhead Game Studios AB, Sony Interactive
+            <strong>HD2 Galactic Market is an unofficial, free, non-commercial fan project.</strong> It is not affiliated with, endorsed, sponsored or approved by Arrowhead Game Studios AB, Sony Interactive
             Entertainment, PlayStation Studios or any of their affiliates.
           </p>
           <p>
@@ -43,8 +50,8 @@ export default function CreditsPage() {
 
         <Section title="Rights holders: removal requests">
           <p>
-            If you represent Arrowhead Game Studios, Sony Interactive Entertainment or any other rights holder and would like any asset or name removed or changed, open an issue at <A href={ISSUES_URL}>{ISSUES_URL.replace('https://', '')}</A>{' '}
-            and we will comply promptly — no argument. Every piece of game art is kept in one folder (<code>frontend/public/game</code>) and listed in a manifest specifically so it can be removed or replaced quickly.
+            If you represent Arrowhead Game Studios, Sony Interactive Entertainment or any other rights holder and would like any asset or name removed or changed, email <Mail /> (or open an issue at{' '}
+            <A href={ISSUES_URL}>{ISSUES_URL.replace('https://', '')}</A>) and we will comply promptly — no argument. Every piece of game art is kept in one folder (<code>frontend/public/game</code>) and listed in a manifest specifically so it can be removed or replaced quickly.
           </p>
         </Section>
 
@@ -73,25 +80,35 @@ export default function CreditsPage() {
               <strong>Software</strong> — built with Next.js, React and Tailwind CSS.
             </li>
             <li>
-              <strong>Helldivers 2 Endgame</strong> — designed and built by its contributors. Source code: <A href={REPO_URL}>{REPO_URL.replace('https://', '')}</A>.
+              <strong>HD2 Galactic Market</strong> — designed and built by its contributors. Source code: <A href={REPO_URL}>{REPO_URL.replace('https://', '')}</A>.
             </li>
           </ul>
         </Section>
 
         <Section title="Privacy">
-          <p>
-            <strong>This prototype collects nothing.</strong> Everything — the market, its history, your campaign — is stored in your own browser (localStorage) and never sent anywhere. Clearing your browser data
-            erases it.
-          </p>
-          <p>
-            In the planned online version, the only gameplay data collected will be the equipment in each deployed loadout and which front it was used on, anonymously, to price the Galactic Market. No accounts,
-            no names, no tracking. Players can opt out when starting a campaign.
-          </p>
+          {serverMode ? (
+            <>
+              <p>
+                <strong>What we collect.</strong> When you deploy, the equipment in each loadout, the front, the game mode and the prices paid are sent anonymously to price the Galactic Market. You can opt out
+                when starting a campaign. Feedback you choose to send is stored and emailed to the developers. That is all: no accounts, no names, no cookies, no analytics or tracking, and we don&apos;t keep IP
+                addresses or access logs.
+              </p>
+              <p>
+                Your campaigns and records stay in your own browser (localStorage); clearing your browser data erases them. The site is hosted on Amazon Web Services, which, like any host, sees your IP address
+                in order to deliver pages and block abusive traffic. Questions or deletion requests: <Mail />.
+              </p>
+            </>
+          ) : (
+            <p>
+              <strong>This offline build collects nothing.</strong> Everything — the market, its history, your campaign — is stored in your own browser (localStorage) and never sent anywhere. Clearing your browser
+              data erases it.
+            </p>
+          )}
         </Section>
 
         <Section title="Using this site">
           <p>
-            Endgame is an honour-system challenge played alongside Helldivers 2; it does not modify, connect to or interact with the game or its servers in any way. Prices, balances and rules are for fun and
+            HD2 Galactic Market is an honour-system challenge played alongside Helldivers 2; it does not modify, connect to or interact with the game or its servers in any way. Prices, balances and rules are for fun and
             have no real-world value.
           </p>
           <p className="text-[13.5px] text-[#666]">Last updated October 2026.</p>

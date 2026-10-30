@@ -1,0 +1,20 @@
+{
+  "name": "@hd2e/infrastructure",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Helldivers 2 Endgame on AWS (CDK): CloudFront + S3 for the site, a Lambda + S3 market API behind /api/*, the daily price update, and feedback email through SNS.",
+  "scripts": {
+    "build": "tsc -p .",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "bash scripts/deploy.sh"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.275.0",
+    "constructs": "^10.8.1"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.1146.1",
+    "esbuild": "^0.28.2"
+  }
+}

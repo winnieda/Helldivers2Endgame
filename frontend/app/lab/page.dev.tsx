@@ -123,7 +123,7 @@ export default function LabPage() {
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-10">
       <SectionTitle eyebrow="Pricing test bench" title="Market Lab" />
-      <p className="text-text-2 mt-2 max-w-3xl">
+      <p className="text-text-2 mt-2">
         Rule-based squads of simulated Helldivers (no AI — just budgets, preferences and dice) play months of operations against a copy of the market. Tune the pricing equations, run a scenario, and the
         health checks tell you if prices did anything unwanted. Your live market is never touched unless you apply the result.
       </p>

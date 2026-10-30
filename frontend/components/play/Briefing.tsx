@@ -55,7 +55,7 @@ export function Briefing() {
     <div className="rise">
       <div className="eyebrow text-yellow">{isOps ? `Operation ${c.operation} · briefing` : `Round ${c.round} · briefing`}</div>
       <h1 className="h-display text-[44px] sm:text-[56px]">{isOps ? c.operationName : `Budget Blitz — round ${c.round}`}</h1>
-      <p className="text-text-2 mt-1 max-w-2xl">
+      <p className="text-text-2 mt-1">
         {isOps
           ? 'Pick the front and difficulty you’ll play in Helldivers 2. All three missions of the operation are fought there, at that front’s prices.'
           : `Pick this round’s front and difficulty. To survive the round, each Helldiver must earn more than they spend${margin > 0 ? ` plus ${margin.toLocaleString()}` : ''}.`}
@@ -101,7 +101,7 @@ export function Briefing() {
         <div className="font-display font-bold uppercase tracking-wider text-[18px]">Difficulty</div>
         <div className="mt-4">{diffButton(10, true)}</div>
         <div className="mt-2 grid grid-cols-3 sm:grid-cols-9 gap-1.5">{[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => diffButton(d))}</div>
-        <div className="text-[12.5px] text-muted mt-3">Endgame works on every difficulty, but it’s built and balanced for Super Helldive.</div>
+        <div className="text-[12.5px] text-muted mt-3">HD2 Galactic Market works on every difficulty, but it’s built and balanced for Super Helldive.</div>
       </div>
 
       <div className="mt-6 flex justify-between gap-3 flex-wrap">

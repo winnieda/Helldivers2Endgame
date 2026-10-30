@@ -35,16 +35,21 @@
   --yellow-ink: #161300;
   --yellow-glow: rgba(255, 232, 31, 0.35);
 
+  /* Requisition amounts and balances: the exact yellow of the Requisition Slip icon
+     (public/game/Requisition_Slip.svg), so numbers match the symbol next to them. */
+  --req: #ffff5f;
+
   /* Stratagem families (HD2 convention: offensive red, supply blue, defensive green). */
   --offensive: #e5484d;
   --supply: #3d9ee0;
   --defensive: #3fb950;
   --weapon: #d8dee4;
 
-  /* Faction UI tints (charts use the validated series colors in lib/palette.ts). */
-  --terminids: #f0a32a;
-  --automatons: #ff5157;
-  --illuminate: #b08cff;
+  /* Faction UI tints: the exact fills of the faction symbols in public/game/factions/.
+     Charts use the validated series colors in lib/palette.ts. */
+  --terminids: #ffb901;
+  --automatons: #ff6161;
+  --illuminate: #cd8aea;
 
   --good: #3fb950;
   --warn: #fab219;
@@ -71,6 +76,7 @@
   --color-yellow: var(--yellow);
   --color-yellow-2: var(--yellow-2);
   --color-yellow-ink: var(--yellow-ink);
+  --color-req: var(--req);
   --color-offensive: var(--offensive);
   --color-supply: var(--supply);
   --color-defensive: var(--defensive);
@@ -241,7 +247,10 @@ input, select, textarea { font: inherit; color: inherit; }
 input[type='range'] { accent-color: var(--yellow); width: 100%; }
 
 /* Tabs */
-.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+/* The rule under the tabs is an inset shadow and the active underline sits inside the box: anything
+   poking past the bottom edge would give this horizontal scroller a few pixels of vertical scroll,
+   and the mouse wheel would nudge the tabs up and down. */
+.tabs { display: flex; gap: 2px; box-shadow: inset 0 -1px 0 var(--line); overflow-x: auto; overflow-y: hidden; }
 .tab { flex-shrink: 0; }
 .tab {
   position: relative;
@@ -258,7 +267,7 @@ input[type='range'] { accent-color: var(--yellow); width: 100%; }
 }
 .tab:hover { color: var(--text); }
 .tab[data-on='true'] { color: var(--yellow); }
-.tab[data-on='true']::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--yellow); box-shadow: 0 0 12px var(--yellow-glow); }
+.tab[data-on='true']::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; background: var(--yellow); box-shadow: 0 0 12px var(--yellow-glow); }
 
 }
 

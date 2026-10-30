@@ -24,7 +24,7 @@ function ShameModal({ open, onKeep, onOptOut }: { open: boolean; onKeep: () => v
           picks, anonymously.
         </p>
         <p>
-          Those picks are the whole Galactic Market. Every price exists because Helldivers like you reported what they brought. Without them the market can’t tell the meta from the forgotten, and Endgame stops
+          Those picks are the whole Galactic Market. Every price exists because Helldivers like you reported what they brought. Without them the market can’t tell the meta from the forgotten, and the mode stops
           working for everyone.
         </p>
         <p className="text-[13.5px] text-muted italic">A Democracy Officer has been informed and is choosing to look very, very disappointed rather than file a report.</p>
@@ -88,7 +88,7 @@ export function Setup() {
     <div className="mx-auto max-w-[1100px] px-4 py-12 rise">
       <div className="eyebrow text-yellow">New campaign</div>
       <h1 className="h-display text-[52px] sm:text-[64px]">Assemble your squad</h1>
-      <p className="text-text-2 max-w-2xl mt-2">
+      <p className="text-text-2 mt-2">
         Everything happens on this device: pass it around (or sit together) — each Helldiver gets their own balance and loadout. Play your missions in Helldivers 2 as normal and report back here.
       </p>
 

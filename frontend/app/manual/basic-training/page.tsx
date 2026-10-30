@@ -7,7 +7,7 @@ import { SectionTitle } from '@/components/ui';
 
 const STEPS = [
   { n: '01', t: 'Buy your loadout', d: 'Four stratagems, a primary, a secondary and a throwable, each priced in Requisition by the Galactic Market. Armor and boosters are on the house.' },
-  { n: '02', t: 'Dive', d: 'Play a normal Helldivers 2 mission using only what you bought. Endgame doesn’t touch the game itself.' },
+  { n: '02', t: 'Dive', d: 'Play a normal Helldivers 2 mission using only what you bought. HD2 Galactic Market doesn’t touch the game itself.' },
   { n: '03', t: 'Report & get paid', d: 'Back on the Super Destroyer, log how it went and the Requisition you earned. Then buy your next loadout.' },
 ];
 
@@ -45,7 +45,7 @@ export default function BasicTraining() {
       </Link>
       <div className="eyebrow text-yellow mt-4">Field manual · short version</div>
       <h1 className="h-display text-[52px] sm:text-[64px]">Basic Training</h1>
-      <div className="mt-4 max-w-3xl"><Pitch className="text-[17px]" /></div>
+      <div className="mt-4"><Pitch className="text-[17px]" /></div>
 
       <section className="mt-12">
         <SectionTitle eyebrow="The loop" title="Buy · Dive · Get paid · Repeat" />
@@ -89,7 +89,7 @@ export default function BasicTraining() {
 
       <section className="mt-14">
         <SectionTitle eyebrow="The Galactic Market" title="How prices work" />
-        <p className="text-text-2 mt-3 max-w-3xl">
+        <p className="text-text-2 mt-3">
           Every loadout deployed is counted, anonymously. Once a day the market looks at what everyone brought and reprices every item. Here’s what that looks like in practice (illustrative numbers):
         </p>
         <div className="mt-6 grid lg:grid-cols-3 gap-4">

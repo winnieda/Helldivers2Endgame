@@ -22,7 +22,7 @@ import {
 import { DIVER_COLORS, req } from "@/lib/format";
 import { store } from "@/lib/store";
 import { ArrowCode, Emblem, FactionEmblem, ItemIcon, ReqIcon } from "../icons";
-import { openTerminal } from "../terminal";
+import { openTerminal } from "@/lib/devtools";
 import { Modal, Req, Stepper } from "../ui";
 import { useCampaign } from "./useCampaign";
 
@@ -392,9 +392,9 @@ export function Summary() {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 mt-1 relative bg-yellow/10">
+                  <div className="h-2 mt-1 relative bg-req/10">
                     <div
-                      className="absolute inset-y-0 left-0 bg-yellow transition-[width] duration-500"
+                      className="absolute inset-y-0 left-0 bg-req transition-[width] duration-500"
                       style={{
                         width: `${(r.balanceAfter / c.rules.maxBalance) * 100}%`,
                       }}
@@ -584,7 +584,7 @@ export function CampaignHud() {
               </span>
             </div>
             {isOps && (
-              <div className="h-1.5 mt-1 bg-yellow/10">
+              <div className="h-1.5 mt-1 bg-req/10">
                 <div
                   className="h-full"
                   style={{
@@ -601,17 +601,22 @@ export function CampaignHud() {
         ))}
       </div>
       <div className="pt-3 border-t border-line text-[12.5px] text-muted">
-        Market day #{app.market.day}. Prices update once a day{" "}
-        <span className="text-dim">
-          (prototype:{" "}
-          <button
-            className="text-yellow hover:underline font-mono"
-            onClick={() => openTerminal("update")}
-          >
-            update
-          </button>{" "}
-          in the terminal)
-        </span>
+        Market day #{app.market.day}. Prices update once a day
+        {__DEV_TOOLS__ && (
+          <>
+            {" "}
+            <span className="text-dim">
+              (dev build:{" "}
+              <button
+                className="text-yellow hover:underline font-mono"
+                onClick={() => openTerminal("update")}
+              >
+                update
+              </button>{" "}
+              in the terminal)
+            </span>
+          </>
+        )}
         .
       </div>
     </aside>
