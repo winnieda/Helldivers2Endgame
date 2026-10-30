@@ -77,6 +77,29 @@ function SyncChip() {
   );
 }
 
+/** Back to wherever they were afterwards (the feedback page itself sends them home). */
+function FeedbackLink({ path, className = '' }: { path: string; className?: string }) {
+  const on = path.startsWith('/feedback');
+  return (
+    <Link href={feedbackUrl('header', on ? '/' : path)} draggable={false} className={`${linkClass(on)} ${className}`}>
+      Feedback
+      {on && <ActiveBar />}
+    </Link>
+  );
+}
+
+function CreditsLink({ path, className = '' }: { path: string; className?: string }) {
+  return (
+    <Link href="/credits/" draggable={false} className={`legal-pill ${path.startsWith('/credits') ? 'legal-pill-on' : ''} ${className}`} title="Credits, disclaimers and legal information">
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
+        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M12 10.5V17M12 7v.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+      </svg>
+      Credits &amp; Legal
+    </Link>
+  );
+}
+
 function Nav() {
   const path = usePathname() ?? '/';
   const { market, campaign: own, ready } = useApp();
@@ -98,8 +121,9 @@ function Nav() {
             DEV
           </span>
         )}
-        {/* Scrolls sideways only on narrow screens. On desktop the active underline hangs below the
-            nav onto the header rule, which inside a scroller would let the wheel nudge the tabs. */}
+        {/* On phones: one row under the logo that scrolls sideways, with Feedback alongside the pages
+            and Credits & Legal at the far end. On desktop the active underline hangs below the nav
+            onto the header rule, which inside a scroller would let the wheel nudge the tabs. */}
         <nav className="order-last md:order-none w-full md:w-auto md:flex-1 flex items-center gap-1 overflow-x-auto overflow-y-hidden md:overflow-visible -mx-3 md:mx-0 select-none">
           {LINKS.map((l) => {
             const on = path.startsWith(l.href);
@@ -116,13 +140,11 @@ function Nav() {
               </Link>
             );
           })}
+          <FeedbackLink path={path} className="md:hidden" />
+          <CreditsLink path={path} className="md:hidden shrink-0 ml-auto mr-3 my-1" />
         </nav>
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
-          {/* Back to wherever they were afterwards (the feedback page itself sends them home). */}
-          <Link href={feedbackUrl('header', path.startsWith('/feedback') ? '/' : path)} draggable={false} className={linkClass(path.startsWith('/feedback'))}>
-            Feedback
-            {path.startsWith('/feedback') && <ActiveBar />}
-          </Link>
+          <FeedbackLink path={path} className="hidden md:block" />
           <SyncChip />
           <span className="chip hidden lg:inline-flex" title="Market day: prices update once a day">
             Day <span className="text-text tnum">#{ready ? market.day : '—'}</span>
@@ -137,17 +159,7 @@ function Nav() {
               </button>
             </>
           )}
-          <Link
-            href="/credits/"
-            className={`legal-pill ${path.startsWith('/credits') ? 'legal-pill-on' : ''}`}
-            title="Credits, disclaimers and legal information"
-          >
-            <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden>
-              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 10.5V17M12 7v.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-            </svg>
-            Credits &amp; Legal
-          </Link>
+          <CreditsLink path={path} className="hidden md:inline-flex" />
         </div>
       </div>
     </header>
