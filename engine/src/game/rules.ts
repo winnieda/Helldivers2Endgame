@@ -47,7 +47,8 @@ export function defaultRules(): EconomyRules {
     startingBalance: 50000,
     maxBalance: 50000,
     reinforcementCost: 0,
-    earningsByDifficulty: [0, 2000, 3000, 4000, 5500, 7000, 8000, 9000, 10000, 11000, 12000],
+    // A Super Helldive pays about 8,000 or less in play; easier difficulties are scaled to match.
+    earningsByDifficulty: [0, 1350, 2000, 2650, 3650, 4650, 5350, 6000, 6650, 7350, 8000],
     outcomeMultiplier: { extracted: 1, completed: 0.6, failed: 0 },
     missionsPerOperation: 3,
     blitzSpendCap: 50000,

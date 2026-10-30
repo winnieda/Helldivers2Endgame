@@ -165,7 +165,7 @@ export function summarizeCategory(state: MarketState, faction: Faction, category
 /**
  * Cost of a "typical" loadout for a faction: every slot filled at the popularity-weighted average
  * list price of its category, ignoring which stratagems happen to be free right now. This is
- * the number the ~24,000 design benchmark refers to.
+ * the number the ~16,000 design benchmark refers to.
  */
 export function typicalLoadoutCost(state: MarketState, faction: Faction): number {
   const book = state.books[faction];

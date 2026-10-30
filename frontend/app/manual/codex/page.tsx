@@ -258,7 +258,7 @@ speed(q) = max(minSpeed, 2qᵞ ÷ (1 + qᵞ))`}
           <li>Cheap gear rises slowly and expensive gear reacts quickly, so a niche pick that suddenly catches on stays a bargain for a while — early adopters get rewarded.</li>
           <li>A category whose spending runs hot rises more slowly and falls faster (this only changes speed, never the target).</li>
           <li>
-            Baselines are tuned so the average loadout price (the community’s picks at full price, weighted by how often each item is picked) is about 24,000. The market doesn’t force spending back to that number; if everyone chases the meta, the average loadout
+            Baselines are tuned so the average loadout price (the community’s picks at full price, weighted by how often each item is picked) is about 16,000, roughly two Super Helldive payouts. The market doesn’t force spending back to that number; if everyone chases the meta, the average loadout
             gets pricier.
           </li>
         </ul>
@@ -301,7 +301,7 @@ speed(q) = max(minSpeed, 2qᵞ ÷ (1 + qᵞ))`}
         <ul className="list-disc pl-5 space-y-1 mt-2 marker:text-dim text-[14.5px]">
           <li>no runaway prices (fail above 20,000), no collapse to the minimum, no drift once settled, low day-to-day noise</li>
           <li>meta gear priced above weak gear; niche gear cheap; free defaults don’t crush premium weapons</li>
-          <li>average loadout price near 24,000; pricing pushes picks off the meta and onto niche gear compared with no prices</li>
+          <li>average loadout price near 16,000; pricing pushes picks off the meta and onto niche gear compared with no prices</li>
           <li>free stratagems rotate; prices differ by front; adapts to balance patches; resists brigading</li>
         </ul>
         <div className="mt-4 grid sm:grid-cols-2 gap-2 text-[13.5px]">

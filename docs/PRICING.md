@@ -90,12 +90,14 @@ price ← price · exp( clamp(min(k,1) · gap, ln(1 − maxStep), ln(1 + maxStep
 
 ### Calibration
 
-Baselines are 5,000 / 3,300 / 2,200 / 1,100 (stratagem / primary / secondary / throwable). With
-these, the **average loadout price** settles near the 24,000 design benchmark in simulation. That
+Baselines are 3,250 / 2,150 / 1,450 / 700 (stratagem / primary / secondary / throwable). With
+these, the **average loadout price** settles near the 16,000 design benchmark in simulation: about
+two Super Helldive payouts (~8,000 each, as measured in play). They were 5,000 / 3,300 / 2,200 / 1,100
+against a 24,000 benchmark until play showed missions pay less than first assumed. That
 loadout is four stratagems and three weapons at popularity-weighted *list* prices, about twice a
 high-difficulty payout.
 
-The algorithm deliberately does **not** force player spending back to 24,000. What players actually
+The algorithm deliberately does **not** force player spending back to 16,000. What players actually
 spend is capped by what they earn, and any controller that targets realized spend gets the sign
 wrong: broke players buy cheap gear, spend drops, and a spend controller would *raise* prices. A
 playerbase that concentrates on the meta makes the average loadout pricier; one that spreads out
@@ -113,7 +115,7 @@ High Explosive are always free regardless.
 
 | Path | Default | What it does |
 |---|---|---|
-| `anchored.baseline.*` | 5000 / 3300 / 2200 / 1100 | Price at exactly fair-share popularity |
+| `anchored.baseline.*` | 3250 / 2150 / 1450 / 700 | Price at exactly fair-share popularity |
 | `anchored.ema` | 0.35 | Popularity EMA rate for a large batch |
 | `anchored.halfSamplePerItem` | 8 | Batch size (picks per item) that gets half the EMA rate |
 | `anchored.elasticityUp` | 0.8 | Power-law exponent above fair share |
@@ -159,14 +161,14 @@ opinions. Scenarios can change it mid-run with a balance patch.
 
 | Check | Pass | Fail |
 |---|---|---|
-| No runaway prices | max ≤ 15,000 | > 20,000 |
+| No runaway prices | max ≤ 9,750 | > 13,000 |
 | No price collapse | < 10% of items near the hard floor, every category median ≥ 12% of baseline | ≥ 30% at floor or median < 5% |
 | No inflation/deflation | settled trend < 15% / month | ≥ 40% / month |
 | Stable day to day | < 3% avg move and < 20% zig-zag | ≥ 6% or ≥ 40% |
 | Meta gear is expensive | Spearman ρ(strength, price) ≥ 0.5 | < 0.25 |
 | Niche gear is affordable | weakest quarter ≤ 50% of baseline and top/bottom ≥ 3× | > 90% or < 1.8× |
 | Free defaults don't crush premium gear | strongest paid weapon above its category median on every front | 3+ exceptions |
-| Average loadout near 24k | 16k–32k | outside 10k–40k |
+| Average loadout near 16k | 10.5k–21.5k | outside 6.5k–26.5k |
 | Pricing spreads usage | fewer meta picks *and* more niche picks than the same divers with no prices | meta > 1.1× or niche < 0.9× |
 | Free stratagems rotate | enough distinct items, ≤ 2 swaps/day | (warn only) |
 | Prices differ by faction | typical cross-front gap ≥ 12% | < 5% |
@@ -204,7 +206,7 @@ What the warnings mean:
 
 ### Known limitations and open questions
 
-- **The simulated economy is tight.** With 10–12k per mission and a 24k average loadout price, simulated
+- **The simulated economy is tight.** With about 8k per Super Helldive and a 16k average loadout price, simulated
   divers average around 26k balance (runs restart at 50k after a failed mission, median run about 8
   missions). Over half of their stratagem picks are free ones. That is the designed "you can't afford
   your favourite kit every mission" pressure, but the free rotation carries a lot of weight, which is

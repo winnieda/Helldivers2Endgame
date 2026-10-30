@@ -84,7 +84,8 @@ export function defaultConfig(): MarketConfig {
   return {
     algorithm: 'anchored',
     anchored: {
-      baseline: { stratagem: 5000, primary: 3300, secondary: 2200, throwable: 1100 },
+      // Tuned so the average loadout price settles near 16,000: about two Super Helldive payouts.
+      baseline: { stratagem: 3250, primary: 2150, secondary: 1450, throwable: 700 },
       ema: 0.35,
       halfSamplePerItem: 8,
       elasticityUp: 0.8,

@@ -136,7 +136,7 @@ export function ResultCharts({ results }: { results: SimResult[] }) {
             subtitle="Average = community picks at full list price; spent is capped by income"
             x={x}
             series={charts.spend}
-            reference={{ y: 24000, label: '24k design target' }}
+            reference={{ y: 16000, label: '16k design target' }}
             markers={markers}
             zero
           />

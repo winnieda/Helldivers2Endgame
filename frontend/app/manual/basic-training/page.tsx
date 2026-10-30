@@ -132,10 +132,10 @@ export default function BasicTraining() {
             id="rs-422-railgun"
             faction="automatons"
             days={[
-              ['Mon', 5000],
-              ['Tue', 6000],
-              ['Wed', 6900],
-              ['Thu', 7300],
+              ['Mon', 3250],
+              ['Tue', 3900],
+              ['Wed', 4500],
+              ['Thu', 4750],
             ]}
             note="If half the bot front starts running the Railgun, it’s picked more than its fair share every day, so its price climbs — but never more than 20% in a day."
           />
@@ -143,9 +143,9 @@ export default function BasicTraining() {
             id="tx-41-sterilizer"
             faction="automatons"
             days={[
-              ['Mon', 1800],
-              ['Tue', 1450],
-              ['Wed', 1150],
+              ['Mon', 1150],
+              ['Tue', 950],
+              ['Wed', 750],
               ['Thu', 0],
             ]}
             note="Hardly anyone brings the Sterilizer, so it keeps getting cheaper until it lands among the day’s free stratagems. Niche gear is where the bargains are."
@@ -153,9 +153,9 @@ export default function BasicTraining() {
           <Example
             id="flam-40-flamethrower"
             days={[
-              ['Bots', 2900, 'automatons'],
-              ['Bugs', 6400, 'terminids'],
-              ['Squids', 7400, 'illuminate'],
+              ['Bots', 1900, 'automatons'],
+              ['Bugs', 4150, 'terminids'],
+              ['Squids', 4800, 'illuminate'],
             ]}
             note="Every front has its own market. Gear that’s brilliant against one enemy can be cheap against another, so check prices for the front you’re about to dive on."
           />

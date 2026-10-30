@@ -48,9 +48,9 @@ export function evaluateHealth(r: SimData): HealthReport {
   checks.push({
     id: 'ceiling',
     label: 'No runaway prices',
-    verdict: grade(maxEver, (v) => v <= 15000, (v) => v <= 20000),
+    verdict: grade(maxEver, (v) => v <= 9750, (v) => v <= 13000),
     value: `max ${fmt(maxEver)}`,
-    detail: 'Highest price any item reached. Above 20,000 means the algorithm is failing; above 15,000 is a warning.',
+    detail: 'Highest price any item reached. Above 13,000 (4× the stratagem baseline) means the algorithm is failing; above 9,750 (3×) is a warning.',
   });
 
   // 2. Collapse: prices pinned at the hard minimum mean the market has stopped working.
@@ -204,17 +204,17 @@ export function evaluateHealth(r: SimData): HealthReport {
       : 'In every weapon category the strongest paid item stays above the category median despite the free Constitution / Peacemaker / High Explosive.',
   });
 
-  // 8. Affordability: the design benchmark is a ~24,000 typical loadout, about twice what a
-  // high-difficulty mission pays. What players actually spend is capped by income, so that is
+  // 8. Affordability: the design benchmark is a ~16,000 typical loadout, about twice what a
+  // Super Helldive mission pays (~8,000). What players actually spend is capped by income, so that is
   // reported for context rather than graded.
   const typical = mean(last.map((d) => d.typicalLoadout));
   const spend = mean(last.map((d) => d.avgSpend));
   checks.push({
     id: 'affordability',
-    label: 'Average loadout near 24k',
-    verdict: grade(typical, (v) => v >= 16000 && v <= 32000, (v) => v >= 10000 && v <= 40000),
+    label: 'Average loadout near 16k',
+    verdict: grade(typical, (v) => v >= 10500 && v <= 21500, (v) => v >= 6500 && v <= 26500),
     value: `${fmt(typical)} average price · ${fmt(spend)} actually spent`,
-    detail: 'Average loadout price: every slot at the popularity-weighted list price of its category, over the last 30 cycles (target ~24,000). "Actually spent" is what budget-limited divers paid on average.',
+    detail: 'Average loadout price: every slot at the popularity-weighted list price of its category, over the last 30 cycles (target ~16,000). "Actually spent" is what budget-limited divers paid on average.',
   });
 
   // 9. Pricing should push usage off the meta and onto niche gear, compared with the same divers

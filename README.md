@@ -150,8 +150,9 @@ Initialization presets (`init <preset>`) support different kinds of testing:
   implemented and configurable.
 - **Price updates** are the `update` command (browser terminal or CLI), per the brief. Deployed
   loadouts wait in a pending queue until then.
-- **Mission results** are entered by the players. The debrief suggests earnings by difficulty
-  (11,000 for a Helldive extraction, 12,000 for Super Helldive). Reinforcements are recorded (marked
+- **Mission results** are entered by the players: the debrief asks for the in-game Squad Payout,
+  which every diver earns. The simulator assumes about 8,000 for Super Helldive (what it pays in
+  play) and scales easier difficulties down from there. Reinforcements are recorded (marked
   WIP) but cost nothing; `rules.reinforcementCost` defaults to 0 and is kept only as a possible future rule.
 - **Operations end on the first failed mission.** Money only limits what you can afford; a zero-cost
   loadout is always possible, so there is no bankruptcy. Earnings above the 50,000 cap are lost.
