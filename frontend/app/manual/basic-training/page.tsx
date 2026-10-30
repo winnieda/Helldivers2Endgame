@@ -151,11 +151,11 @@ export default function BasicTraining() {
             note="Hardly anyone brings the Sterilizer, so it keeps getting cheaper until it lands among the day’s free stratagems. Niche gear is where the bargains are."
           />
           <Example
-            id="flam-66-torcher"
+            id="flam-40-flamethrower"
             days={[
-              ['Bots', 1900, 'automatons'],
-              ['Bugs', 4100, 'terminids'],
-              ['Squids', 7200, 'illuminate'],
+              ['Bots', 2900, 'automatons'],
+              ['Bugs', 6400, 'terminids'],
+              ['Squids', 7400, 'illuminate'],
             ]}
             note="Every front has its own market. Gear that’s brilliant against one enemy can be cheap against another, so check prices for the front you’re about to dive on."
           />

@@ -143,9 +143,11 @@ function Nav() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    // A column at least the window's height: on short pages the footer rests on the bottom edge
+    // instead of floating mid-screen; on long pages it simply follows the content.
+    <div className="min-h-dvh flex flex-col">
       <Nav />
-      <main className="relative z-0">{children}</main>
+      <main className="relative z-0 flex-1">{children}</main>
       <footer className="mt-10 border-t border-line">
         <div className="mx-auto max-w-[1400px] px-4 py-2 text-[11px] leading-snug text-dim flex flex-wrap gap-x-6 gap-y-1 justify-between font-sans">
           <span>
@@ -163,6 +165,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </footer>
       {Terminal && <Terminal />}
       <Toaster />
-    </>
+    </div>
   );
 }
