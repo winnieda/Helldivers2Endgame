@@ -5,7 +5,7 @@
  */
 import { AVAILABLE, CATEGORY_LABEL, FACTION_LABEL, ITEMS, searchItems, STRATAGEM_TYPE_LABEL } from '../catalog/catalog';
 import { CATEGORIES, FACTIONS, type Category, type Faction, type Item } from '../catalog/types';
-import { batchSize } from '../market/batch';
+import { batchSize, emptyBatch } from '../market/batch';
 import { defaultConfig, getParam, PARAM_SPECS, setParam } from '../market/config';
 import { freeCyclesLeft, quote } from '../market/free';
 import { emptyHistory, priceSeries, recordHistory, type MarketHistory } from '../market/history';
@@ -288,10 +288,16 @@ const COMMANDS: Record<string, CommandDef> = {
   },
 
   pending: {
-    usage: 'pending',
-    summary: 'Loadouts waiting for the next market update.',
-    run: (_p, { market }) => {
+    usage: 'pending [clear]',
+    summary: 'Loadouts waiting for the next market update; "clear" discards them all (e.g. test runs).',
+    run: ({ words }, { market }) => {
       const n = pendingCount(market);
+      if (words[0] === 'clear') {
+        market.pending = emptyBatch();
+        market.recent = [];
+        return { lines: [line(seg('✔ ', 'good'), seg(`Discarded ${money(n)} pending loadouts.`), seg(' The next update will not count them.', 'muted'))], market, effect: 'market-changed' };
+      }
+      if (words[0]) return err('Usage: pending [clear]');
       const lines: Line[] = [heading(`PENDING: ${money(n)} LOADOUTS`)];
       for (const f of FACTIONS) {
         const counts = market.pending.counts[f];

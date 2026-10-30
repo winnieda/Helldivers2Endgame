@@ -4,11 +4,12 @@ import * as path from 'path';
 import { test } from 'node:test';
 import { ALWAYS_FREE, AVAILABLE, ITEMS, requireItem } from '../catalog/catalog';
 import { CATEGORIES, FACTIONS } from '../catalog/types';
+import { runCommand } from '../console/commands';
 import { addLoadout, emptyBatch } from '../market/batch';
 import { defaultConfig, setParam } from '../market/config';
 import { quote } from '../market/free';
 import { emptyHistory, migrateHistory, recordHistory } from '../market/history';
-import { deserializeMarket, priceLoadout, serializeMarket, submitLoadout, typicalLoadoutCost, updateMarket, validateLoadout } from '../market/market';
+import { deserializeMarket, pendingCount, priceLoadout, serializeMarket, submitLoadout, typicalLoadoutCost, updateMarket, validateLoadout, withdrawLoadout } from '../market/market';
 import { createMarket, PRESETS } from '../market/presets';
 import { popularityForMultiple, popularityMultiple } from '../market/pricing-anchored';
 
@@ -125,6 +126,23 @@ test('loadout validation enforces the seven-slot rules', () => {
   assert.ok(validateLoadout('terminids', wrong).some((p) => /can't go in/.test(p.message)));
   assert.ok(validateLoadout('terminids', ok.slice(0, 6)).length > 0);
   assert.ok(validateLoadout('illuminate', [...ok.slice(0, 3), requireItem('td-110-maelstrom').index, ...ok.slice(4)]).some((p) => /isn't available/.test(p.message)));
+});
+
+test('console "pending clear" discards queued loadouts without moving prices', () => {
+  const m = createMarket('tiers');
+  const l = cheapestLoadout(m, 'terminids');
+  const sub = { faction: 'terminids' as const, items: l, paid: priceLoadout(m, 'terminids', l), origin: 'manual' as const };
+  submitLoadout(m, sub);
+  submitLoadout(m, sub);
+  const before = m.books.terminids.items.map((b) => b?.price);
+  const res = runCommand('pending clear', { market: m, history: emptyHistory() });
+  assert.equal(res.effect, 'market-changed');
+  assert.equal(pendingCount(res.market!), 0);
+  assert.equal(res.market!.recent.length, 0);
+  assert.deepEqual(res.market!.books.terminids.items.map((b) => b?.price), before);
+  // A deploy cancelled after the clear finds nothing to take back, and the counts stay at zero.
+  assert.equal(withdrawLoadout(res.market!, sub), false);
+  assert.equal(pendingCount(res.market!), 0);
 });
 
 test('serialize → deserialize round-trips the market and pending queue', () => {
