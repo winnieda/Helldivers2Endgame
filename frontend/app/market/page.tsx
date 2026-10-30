@@ -74,7 +74,7 @@ export default function MarketPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history, faction, version]);
 
-  if (!ready) return <div className="mx-auto max-w-[1400px] px-4 py-24 text-muted font-mono">Connecting to the Galactic Market…</div>;
+  if (!ready) return <div className="mx-auto max-w-[1400px] px-4 py-24 text-muted font-mono">Connecting to the Price Database…</div>;
 
   const header = (key: SortKey, label: string, align: 'left' | 'right' = 'left') => (
     <th className={`px-3 py-2 font-display uppercase tracking-wider text-[12px] font-semibold text-${align}`}>
@@ -92,7 +92,7 @@ export default function MarketPage() {
     <div className="mx-auto max-w-[1400px] px-4 py-10">
       <SectionTitle
         eyebrow={`Market day #${market.day} · updated ${timeAgo(market.updatedAt)}`}
-        title="Galactic Market"
+        title="Price Database"
         right={
           __DEV_TOOLS__ ? (
             <div className="flex gap-2 items-center flex-wrap">
@@ -104,11 +104,6 @@ export default function MarketPage() {
           ) : undefined
         }
       />
-      <p className="text-text-2 mt-2">
-        Every enemy front has its own market: gear that shreds bugs can be cheap against bots. Prices follow what the community actually deploys — popular gear climbs, ignored gear gets cheap — and are updated once a
-        day.
-      </p>
-
       <div className="mt-6 flex gap-2 flex-wrap">
         {FACTIONS.map((f) => (
           <button

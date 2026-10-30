@@ -51,7 +51,7 @@ const TOC: [string, string][] = [
   ['blitz', '· Budget Blitz'],
   ['debrief', '· Reporting a mission'],
   ['free', '· Free gear'],
-  ['market', 'The Galactic Market'],
+  ['market', 'The Price Database'],
   ['data', '· What we collect'],
   ['equations', 'The pricing equations'],
   ['parameters', '· Parameters'],
@@ -174,7 +174,7 @@ export default function Codex() {
           </li>
         </ul>
 
-        <H id="market">The Galactic Market</H>
+        <H id="market">The Price Database</H>
         <p>
           There are three markets, one per front, and each has four categories (stratagems, primaries, secondaries, throwables). Every loadout deployed is counted anonymously into that front’s queue. Once a
           day the market processes the queue and reprices every item, then rotates the free stratagems.

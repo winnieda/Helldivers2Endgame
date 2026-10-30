@@ -89,7 +89,7 @@ export default function CreditsPage() {
           {serverMode ? (
             <>
               <p>
-                <strong>What we collect.</strong> When you deploy, the equipment in each loadout, the front, the game mode and the prices paid are sent anonymously to price the Galactic Market. You can opt out
+                <strong>What we collect.</strong> When you deploy, the equipment in each loadout, the front, the game mode and the prices paid are sent anonymously to set the prices in the Price Database. You can opt out
                 when starting a campaign. Feedback you choose to send is stored and emailed to the developers. That is all: no accounts, no names, no cookies, no analytics or tracking, and we don&apos;t keep IP
                 addresses or access logs.
               </p>

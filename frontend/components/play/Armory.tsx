@@ -428,7 +428,7 @@ export function Armory() {
       <Modal open={confirmAbandon} onClose={() => setConfirmAbandon(false)} title="Are you certain?">
         <p className="text-text-2 text-[15.5px]">
           You can’t resume an abandoned operation.{' '}
-          {c.log.length === 0 ? 'No missions have been played yet, so nothing is recorded and nothing is sent to the Galactic Market.' : 'The campaign ends here and goes into the hall of fame as it stands.'}
+          {c.log.length === 0 ? 'No missions have been played yet, so nothing is recorded and nothing is sent to the Price Database.' : 'The campaign ends here and goes into the hall of fame as it stands.'}
         </p>
         <div className="mt-6 flex justify-end gap-2">
           <button data-autofocus className="btn btn-ghost" onClick={() => setConfirmAbandon(false)}>

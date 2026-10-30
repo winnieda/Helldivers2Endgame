@@ -15,7 +15,7 @@ const Terminal = __DEV_TOOLS__ ? dynamic(() => import('./terminal').then((m) => 
 
 const LINKS = [
   { href: '/play/', label: 'Deploy' },
-  { href: '/market/', label: 'Galactic Market' },
+  { href: '/market/', label: 'Price Database' },
   ...(__DEV_TOOLS__ ? [{ href: '/lab/', label: 'Market Lab' }] : []),
   { href: '/manual/', label: 'Field Manual' },
 ];

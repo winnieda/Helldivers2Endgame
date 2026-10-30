@@ -6,7 +6,7 @@ import { FactionEmblem, ItemIcon } from '@/components/icons';
 import { SectionTitle } from '@/components/ui';
 
 const STEPS = [
-  { n: '01', t: 'Buy your loadout', d: 'Four stratagems, a primary, a secondary and a throwable, each priced in Requisition by the Galactic Market. Armor and boosters are on the house.' },
+  { n: '01', t: 'Buy your loadout', d: 'Four stratagems, a primary, a secondary and a throwable, each priced in Requisition (today’s prices are in the Price Database). Armor and boosters are on the house.' },
   { n: '02', t: 'Dive', d: 'Play a normal Helldivers 2 mission using only what you bought. HD2 Galactic Market doesn’t touch the game itself.' },
   { n: '03', t: 'Report & get paid', d: 'Back on the Super Destroyer, log how it went and the Requisition you earned. Then buy your next loadout.' },
 ];
@@ -88,7 +88,7 @@ export default function BasicTraining() {
       </section>
 
       <section className="mt-14">
-        <SectionTitle eyebrow="The Galactic Market" title="How prices work" />
+        <SectionTitle eyebrow="The Price Database" title="How prices work" />
         <p className="text-text-2 mt-3">
           Every loadout deployed is counted, anonymously. Once a day the market looks at what everyone brought and reprices every item. Here’s what that looks like in practice (illustrative numbers):
         </p>

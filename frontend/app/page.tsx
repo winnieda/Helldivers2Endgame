@@ -1,41 +1,11 @@
 'use client';
 import Link from 'next/link';
-import { useLayoutEffect, useRef, useState } from 'react';
 import { FactionEmblem } from '@/components/icons';
 import { Pitch } from '@/components/Pitch';
 import { Delta, SectionTitle } from '@/components/ui';
 import { req } from '@/lib/format';
 import { useMovers } from '@/lib/marketView';
 import { useApp } from '@/lib/store';
-
-/** One line of text scaled so it exactly spans its container's width. */
-function FitLine({ children, className = '' }: { children: string; className?: string }) {
-  const box = useRef<HTMLDivElement>(null);
-  const text = useRef<HTMLSpanElement>(null);
-  const [size, setSize] = useState(96);
-  useLayoutEffect(() => {
-    const fit = () => {
-      if (!box.current || !text.current) return;
-      const prev = text.current.style.fontSize;
-      text.current.style.fontSize = '100px';
-      const natural = text.current.getBoundingClientRect().width;
-      text.current.style.fontSize = prev;
-      if (natural > 0) setSize(Math.floor((100 * box.current.clientWidth) / natural));
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    if (box.current) ro.observe(box.current);
-    document.fonts?.ready.then(fit);
-    return () => ro.disconnect();
-  }, [children]);
-  return (
-    <div ref={box} className="w-full overflow-hidden">
-      <span ref={text} className={`inline-block whitespace-nowrap h-display ${className}`} style={{ fontSize: size, lineHeight: 0.92 }}>
-        {children}
-      </span>
-    </div>
-  );
-}
 
 function Ticker() {
   const movers = useMovers(18);
@@ -66,12 +36,15 @@ export default function Home() {
   return (
     <div>
       <section className="mx-auto max-w-[1400px] px-4 pt-12 pb-14 rise">
-        <div className="eyebrow text-yellow mb-5">Unofficial fan game mode · for veteran Helldivers</div>
-        <FitLine>Freedom isn’t free.</FitLine>
-        <FitLine className="text-yellow">Neither is your loadout.</FitLine>
-        <div className="hazard-thin mt-6 max-w-[420px]" />
-        <Pitch className="mt-6 text-[18px]" />
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <h1 className="h-display text-[44px] sm:text-[64px] lg:text-[84px] leading-[0.95]">
+          Welcome to the <span className="text-yellow">Helldivers 2 Galactic Market</span>
+        </h1>
+        <div className="hazard-thin mt-8 max-w-[420px]" />
+        <h2 className="h-display text-[30px] sm:text-[40px] leading-tight mt-6">
+          Freedom isn’t free. <span className="text-yellow">Neither is your loadout.</span>
+        </h2>
+        <Pitch className="mt-3 text-[18px]" />
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link href="/play/" className="btn btn-primary btn-lg">
             {active ? `Resume ${campaign.operationName}` : 'Start an Operation'}
           </Link>
@@ -79,7 +52,7 @@ export default function Home() {
             See Game Rules
           </Link>
           <Link href="/market/" className="btn btn-ghost">
-            Galactic Market
+            Price Database
           </Link>
         </div>
       </section>
