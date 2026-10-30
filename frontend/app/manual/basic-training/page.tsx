@@ -80,6 +80,25 @@ export default function BasicTraining() {
         spend it on the next one. Here’s how each part works.
       </p>
 
+      <section className="mt-10 panel panel-accent p-6">
+        <div className="font-display font-bold uppercase tracking-wider text-text text-[20px]">Keep the game and this site open together</div>
+        <div className="mt-4 grid sm:grid-cols-2 gap-3">
+          {[
+            ['In the game', 'Helldivers 2', 'Open on PC, PS5 or Xbox. Every mission is played there, just as you normally would.'],
+            ['In your browser', 'HD2 Galactic Market', 'Open on your phone or in another window. This is where you buy your loadout and report what you earned.'],
+          ].map(([where, what, how]) => (
+            <div key={where} className="panel-flat p-4">
+              <div className="text-[12px] text-muted uppercase tracking-wider font-display">{where}</div>
+              <div className="font-semibold text-text text-[16px] mt-1">{what}</div>
+              <p className="text-[14.5px] text-text-2 mt-1">{how}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[14.5px] text-text-2 mt-4">
+          If you’ve ever played Strat Roulette, it works much the same way: the site stays open on your phone or in another window while you play, and it shapes what you bring into each mission.
+        </p>
+      </section>
+
       <section className="mt-12">
         <SectionTitle title="Buy · Dive · Get paid · Repeat" />
         <div className="mt-6 grid md:grid-cols-3 gap-4">
