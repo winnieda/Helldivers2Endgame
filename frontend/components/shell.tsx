@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { pendingCount } from '@engine';
 import { API_URL } from '@/lib/api';
 import { openTerminal } from '@/lib/devtools';
+import { feedbackUrl } from '@/lib/feedback';
 import { store, useApp } from '@/lib/store';
 import { Emblem } from './icons';
 import { Toaster } from './ui';
@@ -12,6 +13,10 @@ import { Toaster } from './ui';
 // The ship terminal is a dev tool. Release builds compile this to `null`, so the import never
 // happens and the terminal (and its backtick shortcut) isn't in their bundles.
 const Terminal = __DEV_TOOLS__ ? dynamic(() => import('./terminal').then((m) => m.Terminal), { ssr: false }) : null;
+
+const linkClass = (on: boolean) =>
+  `relative px-3 py-2 font-display font-bold uppercase tracking-[0.1em] text-[14.5px] whitespace-nowrap transition-colors ${on ? 'text-yellow' : 'text-muted hover:text-text'}`;
+const ActiveBar = () => <span className="absolute left-3 right-3 bottom-0 md:-bottom-[9px] h-[2px] bg-yellow shadow-[0_0_10px_var(--yellow-glow)]" />;
 
 const LINKS = [
   { href: '/play/', label: 'Deploy' },
@@ -100,16 +105,21 @@ function Nav() {
                 key={l.href}
                 href={l.href}
                 draggable={false}
-                className={`relative px-3 py-2 font-display font-bold uppercase tracking-[0.1em] text-[14.5px] whitespace-nowrap transition-colors ${on ? 'text-yellow' : 'text-muted hover:text-text'}`}
+                className={linkClass(on)}
               >
                 {l.label}
                 {l.href === '/play/' && campaign && campaign.phase !== 'over' && <span className="absolute top-1.5 right-0.5 w-1.5 h-1.5 bg-yellow rounded-full" aria-label="campaign in progress" />}
-                {on && <span className="absolute left-3 right-3 bottom-0 md:-bottom-[9px] h-[2px] bg-yellow shadow-[0_0_10px_var(--yellow-glow)]" />}
+                {on && <ActiveBar />}
               </Link>
             );
           })}
         </nav>
         <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
+          {/* Back to wherever they were afterwards (the feedback page itself sends them home). */}
+          <Link href={feedbackUrl('header', path.startsWith('/feedback') ? '/' : path)} draggable={false} className={linkClass(path.startsWith('/feedback'))}>
+            Feedback
+            {path.startsWith('/feedback') && <ActiveBar />}
+          </Link>
           <SyncChip />
           <span className="chip hidden lg:inline-flex" title="Market day: prices update once a day">
             Day <span className="text-text tnum">#{ready ? market.day : '—'}</span>

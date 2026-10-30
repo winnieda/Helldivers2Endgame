@@ -12,12 +12,17 @@ import {
   createCampaign,
   deploy,
   finalizeMission,
+  nextOperation,
+  OPERATION_NAME_COUNT,
+  operationName,
   setLoadout,
   setReady,
   setResult,
   setSquadOutcome,
+  setSquadPayout,
   setSlot,
 } from '../game/campaign';
+import { Rng } from '../util/rng';
 import { pendingCount, submitLoadout, updateMarket, withdrawLoadout } from '../market/market';
 import { createMarket } from '../market/presets';
 import { quote } from '../market/free';
@@ -57,9 +62,43 @@ test('operations: buying, earning, the cap and the three-mission operation', () 
   assert.ok(c.log[1].divers[0].wasted > 0);
   c = advance(c);
   c = playMission(c, m, cheapestLoadout('automatons', m), { outcome: 'extracted' });
+  // After the third mission the squad decides: keep going or stand down.
   c = advance(c);
+  assert.equal(c.phase, 'intermission');
+  assert.equal(c.operation, 1);
+  const name = c.operationName;
+  c = nextOperation(c, new Rng(7));
   assert.equal(c.phase, 'briefing');
   assert.equal(c.operation, 2);
+  assert.equal(c.missionInOp, 1);
+  assert.notEqual(c.operationName, name);
+});
+
+test('operations: the Squad Payout is what every diver earns', () => {
+  const m = createMarket('tiers');
+  let c = beginLoadout(createCampaign({ mode: 'operations', names: ['Alpha', 'Bravo', 'Charlie'], faction: 'illuminate', seed: 3 }));
+  for (const d of c.divers) c = setReady(setLoadout(c, d.id, cheapestLoadout('illuminate', m)), d.id, true);
+  c = setSquadPayout(beginDebrief(deploy(c, m).campaign), 12345);
+  assert.deepEqual(
+    c.divers.map((d) => [d.result?.outcome, d.result?.earned]),
+    [['extracted', 12345], ['extracted', 12345], ['extracted', 12345]],
+  );
+  c = finalizeMission(c);
+  assert.ok(c.log[0].divers.every((d) => d.earned === 12345));
+});
+
+test('operation names: hundreds of thousands of them, never a repeated word', () => {
+  assert.ok(OPERATION_NAME_COUNT > 500_000, `${OPERATION_NAME_COUNT} names`);
+  const rng = new Rng(11);
+  const seen = new Set<string>();
+  for (let i = 0; i < 2000; i++) {
+    const n = operationName(rng);
+    assert.match(n, /^Operation \S/);
+    const words = n.replace('Operation ', '').split(/ of | /);
+    assert.equal(new Set(words).size, words.length, n);
+    seen.add(n);
+  }
+  assert.ok(seen.size > 1900, `only ${seen.size} distinct names in 2000 draws`);
 });
 
 test('operations: one failed mission ends the run; reinforcements cost nothing', () => {

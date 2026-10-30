@@ -425,7 +425,9 @@ input[type='range'] { accent-color: var(--yellow); width: 100%; }
   .choice-card:active { transform: translateY(0) scale(0.99); }
   .choice-card:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
   .choice-cta {
-    margin-top: 18px;
+    /* Pinned to the bottom, so every card's CTA lines up however long its text is. */
+    margin-top: auto;
+    padding-top: 18px;
     font-family: var(--font-display);
     font-weight: 700;
     text-transform: uppercase;

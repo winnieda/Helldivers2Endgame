@@ -47,3 +47,9 @@ export function familyOf(t: StratagemType): 'offensive' | 'supply' | 'defensive'
 }
 
 export const DIVER_COLORS = ['#ffe81f', '#5ee0ff', '#ff8fb1', '#9be564'];
+
+/** 1 → "1st", 2 → "2nd", 3 → "3rd", 11 → "11th", 22 → "22nd". */
+export function ordinal(n: number): string {
+  const teen = n % 100 >= 11 && n % 100 <= 13;
+  return `${n}${teen ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`;
+}

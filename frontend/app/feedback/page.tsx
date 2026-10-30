@@ -7,17 +7,30 @@ import { toast } from '@/lib/toast';
 
 type View = 'choose' | 'detailed' | 'brief';
 
-const QUESTIONS: { id: string; text: string; kind: 'scale' | 'choice' | 'text'; options?: string[] }[] = [
+type Question = { id: string; text: string; kind: 'scale' | 'choice' | 'text'; options?: string[] };
+
+const QUESTIONS: Question[] = [
   { id: 'overall', text: 'How much did you enjoy this session overall?', kind: 'scale' },
-  { id: 'mode', text: 'Which mode did you play?', kind: 'choice', options: ['Operations', 'Budget Blitz', 'Both'] },
   { id: 'rules', text: 'How clear were the rules?', kind: 'scale' },
   { id: 'prices', text: 'Did the prices make sense to you?', kind: 'scale' },
-  { id: 'offmeta', text: 'Did you feel rewarded for trying gear nobody else runs?', kind: 'choice', options: ['Yes', 'No', 'Not sure'] },
-  { id: 'squad', text: 'Did playing with your squad change what you bought? How?', kind: 'text' },
-  { id: 'armory', text: 'What in the armory was hardest to use?', kind: 'text' },
+  { id: 'motivated', text: 'Did you feel motivated to use gear you haven’t used often or at all before?', kind: 'choice', options: ['Yes', 'Somewhat', 'No'] },
+  { id: 'different', text: 'Did you pick gear that’s different to what you normally take in Helldivers?', kind: 'choice', options: ['Yes', 'Somewhat', 'No'] },
+  { id: 'loadouts', text: 'Did you enjoy the loadout(s) you created and played?', kind: 'scale' },
+  { id: 'confusing', text: 'Did you find anything in the UI or navigation confusing?', kind: 'text' },
   { id: 'change', text: 'What is the first thing you would change?', kind: 'text' },
   { id: 'bugs', text: 'Anything broken, confusing or surprising?', kind: 'text' },
+  { id: 'again', text: 'Do you think you will play Helldivers 2 Galactic Market again, and why?', kind: 'text' },
+  { id: 'squad', text: 'Did playing with your squad change what you bought? How?', kind: 'text' },
 ];
+
+const BRIEF_QUESTIONS: Question[] = [
+  { id: 'rating', text: 'How much did you enjoy this session? (1 = not at all, 5 = loved it)', kind: 'scale' },
+  { id: 'improved', text: 'Did this improve the experience compared to playing normally?', kind: 'choice' },
+  { id: 'text', text: 'Other thoughts, or a bug to report', kind: 'text' },
+];
+
+/** The questions as sent with the answers, so the feedback email can spell out the whole form. */
+const asked = (qs: Question[]) => qs.map(({ id, text, kind }) => ({ id, text: kind === 'scale' && !text.includes('(1') ? `${text} (1–5)` : text, kind }));
 
 const CHOICES: { id: Exclude<View, 'choose'> | 'skip'; title: string; sub: string }[] = [
   { id: 'detailed', title: 'Give Detailed Feedback', sub: 'Amazing :D! Thank you!' },
@@ -71,12 +84,11 @@ export default function FeedbackPage() {
     else toast('Feedback not sent', 'We couldn’t reach the server, so it was saved on this device only.', 'warn');
     leave();
   };
-  const submitDetailed = () => submit({ at: Date.now(), from, kind: 'detailed', payload: answers });
-  const submitBrief = () => submit({ at: Date.now(), from, kind: 'brief', payload: { rating: brief.rating, improved: brief.improved, text: brief.text } });
+  const submitDetailed = () => submit({ at: Date.now(), from, kind: 'detailed', questions: asked(QUESTIONS), payload: answers });
+  const submitBrief = () => submit({ at: Date.now(), from, kind: 'brief', questions: asked(BRIEF_QUESTIONS), payload: { rating: brief.rating, improved: brief.improved, text: brief.text } });
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-14 rise">
-      <div className="eyebrow text-yellow">Debrief · feedback</div>
       <h1 className="h-display text-[48px] sm:text-[60px]">
         {view === 'choose' ? 'Would you like to give us feedback?' : view === 'detailed' ? 'Detailed feedback' : 'Brief feedback'}
       </h1>

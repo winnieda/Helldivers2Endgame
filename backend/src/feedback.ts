@@ -9,6 +9,13 @@ import { ConflictError, type Storage } from './storage';
 export type FeedbackKind = 'detailed' | 'brief' | 'skipped';
 export type FeedbackValue = string | number | boolean | null;
 
+/** A question as the form showed it, so the email still makes sense if the form changes. */
+export interface FeedbackQuestion {
+  id: string;
+  text: string;
+  kind?: 'scale' | 'choice' | 'text';
+}
+
 export interface Feedback {
   /** Server time, ms. */
   at: number;
@@ -18,6 +25,8 @@ export interface Feedback {
   version?: string;
   kind: FeedbackKind;
   payload?: Record<string, FeedbackValue>;
+  /** The form's questions in order, answered or not. */
+  questions?: FeedbackQuestion[];
 }
 
 export interface Notifier {
@@ -48,14 +57,44 @@ export function subjectOf(f: Feedback): string {
   return ascii(`${SUBJECT_TAG} ${parts.join(' - ')}`, 99);
 }
 
+/** Where the form was opened from (the page's `from` parameter), in words. */
+const FROM: Record<string, string> = {
+  operation: 'after finishing an operation (all three missions)',
+  standdown: 'after standing down (ending a campaign)',
+  abandon: 'after abandoning a campaign in the armory',
+  header: 'from the Feedback button in the site header',
+};
+
+const answerOf = (v: FeedbackValue | undefined, kind?: string): string => {
+  if (v === undefined || v === null || v === '') return '(no answer)';
+  if (kind === 'scale' && typeof v === 'number') return `${v} / 5`;
+  return String(v);
+};
+
+/**
+ * The email body. It spells out every question the form asked, answered or not, so the email
+ * alone is enough to know what the player was shown.
+ */
 export function textOf(f: Feedback, key: string): string {
-  const lines = [`${f.kind === 'detailed' ? 'Detailed' : 'Brief'} feedback, ${new Date(f.at).toISOString().replace('T', ' ').slice(0, 16)} UTC${f.from ? `, from ${f.from}` : ''}`, ''];
-  for (const [k, v] of Object.entries(f.payload ?? {})) {
-    if (v === null || v === '') continue;
-    const text = String(v);
-    lines.push(text.includes('\n') || text.length > 60 ? `${k}:\n  ${text.replace(/\n/g, '\n  ')}` : `${k}: ${text}`);
+  const lines = [
+    `${f.kind === 'detailed' ? 'DETAILED' : 'BRIEF'} FEEDBACK FORM`,
+    `Sent:  ${new Date(f.at).toISOString().replace('T', ' ').slice(0, 16)} UTC`,
+    `Where: ${f.from ? `${FROM[f.from] ?? 'opened from an unrecognised place'} (from=${f.from})` : 'unknown'}`,
+    `Build: ${f.version || 'unknown'}`,
+    '',
+  ];
+  const payload = f.payload ?? {};
+  const asked = new Set<string>();
+  (f.questions ?? []).forEach((q, i) => {
+    asked.add(q.id);
+    lines.push(`${i + 1}. ${q.text}`, `   ${answerOf(payload[q.id], q.kind).replace(/\n/g, '\n   ')}`, '');
+  });
+  // Answers without a question (an older form, or one that sent no questions).
+  for (const [k, v] of Object.entries(payload)) {
+    if (asked.has(k) || v === null || v === '') continue;
+    lines.push(`${k}:`, `   ${String(v).replace(/\n/g, '\n   ')}`, '');
   }
-  lines.push('', `Build: ${f.version || 'unknown'}`, `Saved as ${key} in the data bucket.`);
+  lines.push(`Saved as ${key} in the data bucket.`);
   return lines.join('\n');
 }
 

@@ -8,7 +8,7 @@
  *   GET  /api/live/<name>               live war data synced from api.helldivers2.dev
  *   POST /api/loadouts                  { submissions }  queue deployed loadouts
  *   POST /api/loadouts/withdraw         { submissions }  take cancelled deploys back out
- *   POST /api/feedback                  { kind, from, version?, payload }  the debrief feedback form
+ *   POST /api/feedback                  { kind, from, version?, questions?, payload }  the feedback form
  *   POST /api/admin/update              run the daily price update now
  *   POST /api/admin/console             { command }  run a ship-terminal market command
  *   PUT  /api/admin/market              { market, history? }  replace the market (import)
@@ -17,7 +17,7 @@
 import { timingSafeEqual } from 'crypto';
 import { deserializeMarket, FACTIONS, ITEMS, migrateHistory, SLOT_CATEGORIES, validateLoadout, type Faction, type Submission } from '@hd2e/engine';
 import type { Config } from './config';
-import { consoleNotifier, recordFeedback, type Feedback, type FeedbackKind, type FeedbackValue, type Notifier } from './feedback';
+import { consoleNotifier, recordFeedback, type Feedback, type FeedbackKind, type FeedbackQuestion, type FeedbackValue, type Notifier } from './feedback';
 import { LIVE_ENDPOINTS, syncLive } from './live';
 import { HISTORY, MARKET, MarketService } from './market-service';
 import type { Storage, Stored } from './storage';
@@ -89,6 +89,15 @@ function parseFeedback(body: Record<string, unknown>, raw: string | undefined): 
   if (!FEEDBACK_KINDS.includes(body.kind as FeedbackKind)) throw new HttpError(400, `kind must be one of ${FEEDBACK_KINDS.join(', ')}.`);
   const out: Feedback = { at: Date.now(), from: typeof body.from === 'string' ? body.from.slice(0, 120) : '', kind: body.kind as FeedbackKind };
   if (typeof body.version === 'string' && body.version) out.version = body.version.slice(0, 80);
+  if (body.questions !== undefined) {
+    if (!Array.isArray(body.questions) || body.questions.length > 40) throw new HttpError(400, 'questions must be a list of up to 40 questions.');
+    out.questions = body.questions.map((raw, i): FeedbackQuestion => {
+      const q = raw as Record<string, unknown>;
+      if (typeof q?.id !== 'string' || !/^[a-z0-9_-]{1,40}$/i.test(q.id) || typeof q.text !== 'string' || !q.text.trim()) throw new HttpError(400, `questions[${i}] needs an id and text.`);
+      const kind = q.kind === 'scale' || q.kind === 'choice' || q.kind === 'text' ? q.kind : undefined;
+      return { id: q.id, text: q.text.slice(0, 300), ...(kind ? { kind } : {}) };
+    });
+  }
   if (body.payload === undefined) return out;
   if (!body.payload || typeof body.payload !== 'object' || Array.isArray(body.payload)) throw new HttpError(400, 'payload must be an object.');
   const entries = Object.entries(body.payload);

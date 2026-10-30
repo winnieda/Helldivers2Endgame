@@ -220,13 +220,23 @@ test('feedback is saved, emailed with the subject tag, checked, and capped per d
     return { status: res.status, json: JSON.parse(res.body) };
   };
 
-  const brief = await post({ kind: 'brief', from: 'debrief', version: '2026-10-29.abc1234', payload: { rating: 4, improved: 'yes', text: 'Loved the market.\nMore please' } });
+  const questions = [
+    { id: 'rating', text: 'How much did you enjoy this session? (1 = not at all, 5 = loved it)', kind: 'scale' },
+    { id: 'improved', text: 'Did this improve the experience compared to playing normally?', kind: 'choice' },
+    { id: 'text', text: 'Other thoughts, or a bug to report', kind: 'text' },
+  ];
+  const brief = await post({ kind: 'brief', from: 'operation', version: '2026-10-29.abc1234', questions, payload: { rating: 4, improved: null, text: 'Loved the market.\nMore please' } });
   assert.equal(brief.status, 200);
   assert.deepEqual(brief.json, { saved: true, emailed: true });
-  assert.equal(sent[0].subject, '[H2E Feedback Email] Brief - 4/5 - from debrief');
-  assert.match(sent[0].text, /^Brief feedback, .+ UTC, from debrief$/m);
-  assert.match(sent[0].text, /text:\n  Loved the market\.\n  More please/);
-  assert.match(sent[0].text, /^Build: 2026-10-29\.abc1234$/m);
+  assert.equal(sent[0].subject, '[H2E Feedback Email] Brief - 4/5 - from operation');
+  const body = sent[0].text;
+  assert.match(body, /^BRIEF FEEDBACK FORM$/m);
+  assert.match(body, /^Where: after finishing an operation \(all three missions\) \(from=operation\)$/m);
+  assert.match(body, /^Build: 2026-10-29\.abc1234$/m);
+  // Every question is spelled out, answered or not, with scales shown out of 5.
+  assert.match(body, /^1\. How much did you enjoy this session\? \(1 = not at all, 5 = loved it\)\n   4 \/ 5$/m);
+  assert.match(body, /^2\. Did this improve the experience compared to playing normally\?\n   \(no answer\)$/m);
+  assert.match(body, /^3\. Other thoughts, or a bug to report\n   Loved the market\.\n   More please$/m);
   assert.match(sent[0].text, /Saved as feedback\/\d{4}-\d\d-\d\d\/\S+ in the data bucket\./);
 
   // Skips are saved for the counts but not emailed; a failed email still saves the entry.
@@ -235,7 +245,7 @@ test('feedback is saved, emailed with the subject tag, checked, and capped per d
   assert.deepEqual((await post({ kind: 'detailed', payload: { overall: 5 } })).json, { saved: true, emailed: false });
   failing = false;
 
-  for (const bad of [{ kind: 'rant' }, { kind: 'brief', payload: [1] }, { kind: 'brief', payload: { nested: { a: 1 } } }, { kind: 'brief', payload: { 'bad key!': 1 } }, 'not json']) {
+  for (const bad of [{ kind: 'rant' }, { kind: 'brief', payload: [1] }, { kind: 'brief', payload: { nested: { a: 1 } } }, { kind: 'brief', payload: { 'bad key!': 1 } }, { kind: 'brief', questions: [{ id: 'x' }] }, 'not json']) {
     assert.equal((await post(bad)).status, 400, JSON.stringify(bad));
   }
   assert.equal((await post({ kind: 'brief', payload: { text: 'x'.repeat(20_000) } })).status, 413);

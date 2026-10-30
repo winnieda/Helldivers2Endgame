@@ -1,7 +1,7 @@
 'use client';
 import { Armory } from '@/components/play/Armory';
 import { Briefing } from '@/components/play/Briefing';
-import { CampaignHud, Debrief, Deployed, GameOver, MissionHeader, MissionLog, Summary } from '@/components/play/Mission';
+import { CampaignHud, Debrief, Deployed, GameOver, Intermission, MissionHeader, MissionLog, Summary } from '@/components/play/Mission';
 import { Setup } from '@/components/play/Setup';
 import { useApp } from '@/lib/store';
 
@@ -16,6 +16,13 @@ export default function PlayPage() {
       <div className="mx-auto max-w-[1400px] px-4 py-10">
         <GameOver />
         <MissionLog />
+      </div>
+    );
+
+  if (campaign.phase === 'intermission')
+    return (
+      <div className="mx-auto max-w-[1200px] px-4 py-10">
+        <Intermission />
       </div>
     );
 

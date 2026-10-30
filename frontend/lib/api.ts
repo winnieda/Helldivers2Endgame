@@ -87,7 +87,7 @@ export const postLoadouts = (submissions: Submission[]) => send<{ accepted: numb
 
 export const postWithdrawals = (submissions: Submission[]) => send<{ withdrawn: number; refused: number; pending: number }>('POST', '/api/loadouts/withdraw', { submissions });
 
-export const postFeedback = (entry: { from: string; kind: string; version: string; payload?: Record<string, unknown> }) => send<{ saved: boolean; emailed: boolean }>('POST', '/api/feedback', entry);
+export const postFeedback = (entry: { from: string; kind: string; version: string; questions?: { id: string; text: string; kind: string }[]; payload?: Record<string, unknown> }) => send<{ saved: boolean; emailed: boolean }>('POST', '/api/feedback', entry);
 
 export const adminConsole = (command: string) => send<{ lines: Line[]; changed: boolean }>('POST', '/api/admin/console', { command }, true);
 

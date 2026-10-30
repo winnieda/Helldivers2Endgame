@@ -13,6 +13,8 @@ export interface FeedbackEntry {
   at: number;
   from: string;
   kind: 'detailed' | 'brief' | 'skipped';
+  /** The questions the form showed, in order (sent so the email can list them). */
+  questions?: { id: string; text: string; kind: string }[];
   payload?: Record<string, unknown>;
 }
 
@@ -27,7 +29,7 @@ export async function saveFeedback(entry: FeedbackEntry): Promise<boolean> {
   }
   if (!serverMode) return false;
   try {
-    await postFeedback({ from: entry.from, kind: entry.kind, version: __BUILD_ID__, payload: entry.payload });
+    await postFeedback({ from: entry.from, kind: entry.kind, version: __BUILD_ID__, questions: entry.questions, payload: entry.payload });
     return true;
   } catch {
     return false;

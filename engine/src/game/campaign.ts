@@ -3,7 +3,10 @@
  * (and, on deploy, the anonymous submissions for the market). The web app drives this for a
  * hot-seat squad in one browser; a future multiplayer backend can run the same transitions.
  *
- *   briefing ──► loadout ──► deployed ──► debrief ──► summary ──► (loadout | briefing | over)
+ *   briefing ──► loadout ──► deployed ──► debrief ──► summary ──► loadout          (next mission)
+ *                                                                ├─► intermission ──► briefing | over
+ *                                                                │   (operation complete: keep going or stand down)
+ *                                                                └─► over             (failed mission)
  *
  * Operations: each diver has a balance (start 50,000, cap 50,000). Loadouts are bought at lock-in
  * and earnings are paid after the mission. Operations are three missions on one front. Failing a
@@ -26,7 +29,7 @@ import { Rng } from '../util/rng';
 import { blitzRequiredMargin, defaultRules, suggestedEarnings, type EconomyRules, type MissionOutcome } from './rules';
 
 export type GameMode = 'operations' | 'blitz';
-export type Phase = 'briefing' | 'loadout' | 'deployed' | 'debrief' | 'summary' | 'over';
+export type Phase = 'briefing' | 'loadout' | 'deployed' | 'debrief' | 'summary' | 'intermission' | 'over';
 export type DiverStatus = 'active' | 'eliminated';
 
 export interface MissionResult {
@@ -121,12 +124,53 @@ export interface Campaign {
 const EMPTY_LOADOUT = () => new Array<number | null>(SLOT_CATEGORIES.length).fill(null);
 const now = () => Date.now();
 
-const ADJECTIVES = ['Righteous', 'Swift', 'Iron', 'Liberty', 'Burning', 'Silent', 'Valiant', 'Eternal', 'Steel', 'Crimson', 'Patriotic', 'Unyielding', 'Glorious', 'Free', 'Lawful', 'Hallowed', 'Thundering', 'Vigilant'];
-const NOUNS = ['Hammer', 'Liberty', 'Dawn', 'Judgment', 'Freedom', 'Eagle', 'Tempest', 'Guardian', 'Spear', 'Harvest', 'Mandate', 'Bastion', 'Verdict', 'Inferno', 'Anthem', 'Citadel', 'Ballot', 'Vanguard'];
+// Operation names, all in Super Earth's finest bureaucratic patriotism: "Operation <adjective>
+// <noun>" most of the time, otherwise "Operation <noun> of <cause>" or, rarely, the full
+// "Operation <adjective> <noun> of <cause>". Several hundred thousand combinations.
+const ADJECTIVES = [
+  'Absolute', 'Approved', 'Armored', 'Ashen', 'Atomic', 'Authorized', 'Azure', 'Ballistic', 'Blazing', 'Bold', 'Boundless', 'Brave', 'Brazen', 'Burning', 'Celestial',
+  'Certified', 'Civic', 'Cobalt', 'Compulsory', 'Constitutional', 'Crimson', 'Dauntless', 'Decisive', 'Defiant', 'Democratic', 'Dutiful', 'Electric', 'Endless', 'Eternal', 'Exemplary',
+  'Explosive', 'Faithful', 'Fearless', 'Federal', 'Fiery', 'Final', 'First', 'Fortified', 'Free', 'Freedom-Loving', 'Frozen', 'Furious', 'Galactic', 'Gallant', 'Gleaming',
+  'Glorious', 'Golden', 'Grand', 'Hallowed', 'Hardened', 'Heroic', 'Honorable', 'Howling', 'Incendiary', 'Indomitable', 'Infinite', 'Invincible', 'Iron', 'Kinetic', 'Last',
+  'Lawful', 'Liberating', 'Liberty', 'Lightning', 'Loyal', 'Lunar', 'Managed', 'Mandatory', 'Merciless', 'Midnight', 'Mighty', 'Ministerial', 'Molten', 'Noble', 'Obsidian',
+  'Official', 'Orbital', 'Overwhelming', 'Patriotic', 'Precise', 'Proud', 'Radiant', 'Rapid', 'Reinforced', 'Relentless', 'Resolute', 'Righteous', 'Rising', 'Roaring', 'Sanctioned',
+  'Savage', 'Scarlet', 'Scorching', 'Searing', 'Shining', 'Silent', 'Silver', 'Solar', 'Sovereign', 'Stalwart', 'Steadfast', 'Steel', 'Stellar', 'Strategic', 'Supreme',
+  'Surgical', 'Swift', 'Tactical', 'Thundering', 'Thunderous', 'Tireless', 'Titanium', 'Total', 'Triumphant', 'Unbroken', 'Undaunted', 'Unstoppable', 'Unyielding', 'Valiant', 'Vengeful',
+  'Victorious', 'Vigilant', 'Voluntary', 'Wrathful', 'Zealous',
+];
+const NOUNS = [
+  'Amendment', 'Anthem', 'Anvil', 'Armada', 'Arrow', 'Aurora', 'Ballot', 'Banner', 'Barrage', 'Bastion', 'Battalion', 'Beacon', 'Bear', 'Behemoth', 'Blade',
+  'Bolt', 'Brigade', 'Bulwark', 'Census', 'Charge', 'Charter', 'Citadel', 'Claw', 'Cohort', 'Colossus', 'Comet', 'Condor', 'Constitution', 'Covenant', 'Crucible',
+  'Crusader', 'Dawn', 'Decree', 'Descent', 'Destiny', 'Directive', 'Dividend', 'Dragon', 'Drop', 'Eagle', 'Eclipse', 'Election', 'Ember', 'Equinox', 'Falcon',
+  'Fang', 'Fist', 'Flag', 'Flame', 'Fleet', 'Forge', 'Fortress', 'Freedom', 'Frontier', 'Furnace', 'Fury', 'Garrison', 'Gauntlet', 'Glory', 'Griffin',
+  'Guardian', 'Hammer', 'Harvest', 'Hawk', 'Honor', 'Horizon', 'Hydra', 'Inferno', 'Judgment', 'Juggernaut', 'Justice', 'Lance', 'Landing', 'Legion', 'Leviathan',
+  'Liberation', 'Liberty', 'Lighthouse', 'Lion', 'Mandate', 'Marshal', 'Medal', 'Meridian', 'Meteor', 'Nova', 'Oath', 'Onslaught', 'Outpost', 'Paladin', 'Parade',
+  'Patriot', 'Payload', 'Phalanx', 'Phoenix', 'Pioneer', 'Pledge', 'Proclamation', 'Promise', 'Prosperity', 'Providence', 'Pyre', 'Quota', 'Rampart', 'Reckoning', 'Referendum',
+  'Requisition', 'Resolve', 'Sacrifice', 'Salute', 'Salvo', 'Sentinel', 'Settler', 'Shield', 'Solstice', 'Spear', 'Spearhead', 'Stallion', 'Standard', 'Statute', 'Storm',
+  'Strike', 'Stronghold', 'Supernova', 'Sword', 'Talon', 'Tempest', 'Thunder', 'Titan', 'Torch', 'Tribute', 'Triumph', 'Valor', 'Vanguard', 'Vengeance', 'Verdict',
+  'Victory', 'Vigil', 'Volley', 'Warden', 'Wolf', 'Wrath', 'Zenith',
+];
+const CAUSES = [
+  'Democracy', 'Destiny', 'Freedom', 'Glory', 'Honor', 'Justice', 'Liberty', 'Managed Democracy', 'Prosperity', 'Super Earth', 'the Ballot', 'the Brave', 'the Constitution',
+  'the Free', 'the Ministry', 'the Republic', 'the Stars', 'Tomorrow', 'Truth', 'Victory', 'the Homeworld', 'the Cause', 'the Fallen', 'the Federation', 'Civic Duty',
+  'Lawful Order', 'the Galaxy', 'Eternal Vigilance', 'the Mandate', 'Liberation', 'the Flag', 'the Anthem', 'Unity', 'Humanity', 'the Future',
+];
 
 export function operationName(rng: Rng = new Rng(now())): string {
-  return `Operation ${rng.pick(ADJECTIVES)} ${rng.pick(NOUNS)}`;
+  const noun = rng.pick(NOUNS);
+  const other = <T>(list: readonly T[]): T => {
+    let w = rng.pick(list);
+    while ((w as unknown) === noun) w = rng.pick(list);
+    return w;
+  };
+  const roll = rng.next();
+  if (roll < 0.65) return `Operation ${other(ADJECTIVES)} ${noun}`;
+  if (roll < 0.85) return `Operation ${noun} of ${other(CAUSES)}`;
+  return `Operation ${other(ADJECTIVES)} ${noun} of ${other(CAUSES)}`;
 }
+
+/** How many different operation names there are. */
+export const OPERATION_NAME_COUNT = NOUNS.length * (ADJECTIVES.length + CAUSES.length + ADJECTIVES.length * CAUSES.length);
 
 function squadCode(rng: Rng): string {
   const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -339,6 +383,14 @@ export function setResult(c: Campaign, diverId: string, patch: Partial<MissionRe
   });
 }
 
+/**
+ * Operations debrief: everyone in the squad earns the Squad Payout shown in-game at the end of the
+ * mission (Helldivers 2 pays every player the same Requisition).
+ */
+export function setSquadPayout(c: Campaign, earned: number, outcome: MissionOutcome = 'extracted'): Campaign {
+  return activeDivers(c).reduce((acc, d) => setResult(acc, d.id, { outcome, earned }), c);
+}
+
 /** Applies one outcome to the whole squad (missions are usually won or lost together). */
 export function setSquadOutcome(c: Campaign, outcome: MissionOutcome): Campaign {
   return activeDivers(c).reduce((acc, d) => setResult(acc, d.id, { outcome }), c);
@@ -417,12 +469,21 @@ export function finalizeMission(c: Campaign, opts: { marketDay?: number } = {}):
   return next;
 }
 
-/** Advance after the summary: next mission of the operation, next operation, or next Blitz round. */
+/**
+ * Advance after the summary: the next mission of the operation, the operation-complete
+ * intermission (where the squad decides to keep going or stand down), or the next Blitz round.
+ */
 export function advance(c: Campaign): Campaign {
   assertPhase(c, 'summary');
   if (c.mode === 'blitz') return touch({ ...c, phase: 'briefing', round: c.round + 1 });
   if (c.missionInOp < c.rules.missionsPerOperation) return beginLoadout({ ...c, missionInOp: c.missionInOp + 1 });
-  return touch({ ...c, phase: 'briefing', operation: c.operation + 1, missionInOp: 1, operationName: operationName() });
+  return touch({ ...c, phase: 'intermission' });
+}
+
+/** From the intermission: start the next operation, with a new name, balances carried over. */
+export function nextOperation(c: Campaign, rng: Rng = new Rng(now())): Campaign {
+  assertPhase(c, 'intermission');
+  return touch({ ...c, phase: 'briefing', operation: c.operation + 1, missionInOp: 1, operationName: operationName(rng) });
 }
 
 export function endCampaign(c: Campaign, reason = 'The squad stood down.'): Campaign {
